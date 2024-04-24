@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record ManganeseSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record ManganeseSettings(double Value = 1) : SettingsFieldBase(Value);

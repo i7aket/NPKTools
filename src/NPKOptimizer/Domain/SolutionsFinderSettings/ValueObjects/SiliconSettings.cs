@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record SiliconSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record SiliconSettings(double Value = 1) : SettingsFieldBase(Value);

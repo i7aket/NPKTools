@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record NitrogenSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record NitrogenSettings(double Value = 1) : SettingsFieldBase(Value);

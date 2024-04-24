@@ -2,4 +2,4 @@ using NPKOptimizer.Common;
 
 namespace NPKOptimizer.Domain.PartsPerMillion.ValueObjects;
 
-public record ChlorinePpm(double Value) : FieldBase(Value);
+public record ChlorinePpm(double Value) : ElementFieldBase(Value);

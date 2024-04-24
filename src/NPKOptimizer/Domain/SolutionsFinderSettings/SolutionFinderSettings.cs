@@ -5,150 +5,97 @@ using NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
 namespace NPKOptimizer.Domain.SolutionsFinderSettings;
 
-public sealed record SolutionFinderSettings
+public class SolutionFinderSettings
 {
-    public NitrogenSettings N { get; }
-    public PhosphorusSettings P { get; }
-    public PotassiumSettings K { get; }
-    public CalciumSettings Ca { get; }
-    public MagnesiumSettings Mg { get; }
-    public SulfurSettings S { get; }
-    public ChlorineSettings Cl { get; }
-    public IronSettings Fe { get; }
-    public CopperSettings Cu { get; }
-    public ManganeseSettings Mn { get; }
-    public ZincSettings Zn { get; }
-    public BoronSettings B { get; }
-    public MolybdenumSettings Mo { get; }
-    public SiliconSettings Si { get; }
-    public SeleniumSettings Se { get; }
-    public SodiumSettings Na { get; }
-
-    public SolutionFinderSettings(NitrogenSettings n, PhosphorusSettings p, PotassiumSettings k, CalciumSettings ca,
-        MagnesiumSettings mg, SulfurSettings s, ChlorineSettings cl, IronSettings fe, CopperSettings cu,
-        ManganeseSettings mn, ZincSettings zn, BoronSettings b, MolybdenumSettings mo, SiliconSettings si,
-        SeleniumSettings se, SodiumSettings na)
+    public RangeFactorSettings RangeFactor { get; set; }
+    public NitrogenSettings Nitrogen { get; set; }
+    public PhosphorusSettings Phosphorus { get; set; }
+    public PotassiumSettings Potassium { get;  set;}
+    public CalciumSettings Calcium { get;  set;}
+    public MagnesiumSettings Magnesium { get;  set;}
+    public SulfurSettings Sulfur { get;  set;}
+    public ChlorineSettings Chlorine { get;  set;}
+    public IronSettings Iron { get;  set;}
+    public CopperSettings Copper { get;  set;}
+    public ManganeseSettings Manganese { get;  set;}
+    public ZincSettings Zinc { get;  set;}
+    public BoronSettings Boron { get; set; }
+    public MolybdenumSettings Molybdenum { get;  set;}
+    public SiliconSettings Silicon { get;  set;}
+    public SeleniumSettings Selenium { get;  set;}
+    public SodiumSettings Sodium { get; set; }
+    public SolutionFinderSettings(){} 
+    public SolutionFinderSettings(RangeFactorSettings rangeFactor, NitrogenSettings nitrogen, PhosphorusSettings phosphorus, PotassiumSettings potassium, CalciumSettings calcium,
+        MagnesiumSettings magnesium, SulfurSettings sulfur, ChlorineSettings chlorine, IronSettings iron, CopperSettings copper,
+        ManganeseSettings manganese, ZincSettings zinc, BoronSettings boron, MolybdenumSettings molybdenum, SiliconSettings silicon,
+        SeleniumSettings selenium, SodiumSettings sodium)
     {
-        Validate.NotNull(n);
-        Validate.NotNull(p);
-        Validate.NotNull(k);
-        Validate.NotNull(ca);
-        Validate.NotNull(mg);
-        Validate.NotNull(s);
-        Validate.NotNull(cl);
-        Validate.NotNull(fe);
-        Validate.NotNull(cu);
-        Validate.NotNull(mn);
-        Validate.NotNull(zn);
-        Validate.NotNull(b);
-        Validate.NotNull(mo);
-        Validate.NotNull(si);
-        Validate.NotNull(se);
-        Validate.NotNull(na);
+        ArgumentNullException.ThrowIfNull(rangeFactor);
+        ThrowIf.NotInRange(rangeFactor.Value, 0, 1);
+        RangeFactor = rangeFactor;
+        
+        ArgumentNullException.ThrowIfNull(nitrogen);
+        ThrowIf.NotInRange(nitrogen.Value, 0, 1);
+        Nitrogen = nitrogen;
 
-        N = n;
-        P = p;
-        K = k;
-        Ca = ca;
-        Mg = mg;
-        S = s;
-        Cl = cl;
-        Fe = fe;
-        Cu = cu;
-        Mn = mn;
-        Zn = zn;
-        B = b;
-        Mo = mo;
-        Si = si;
-        Se = se;
-        Na = na;
-    }
+        ArgumentNullException.ThrowIfNull(phosphorus);
+        ThrowIf.NotInRange(phosphorus.Value, 0, 1);
+        Phosphorus = phosphorus;
 
-    public static SolutionFinderSettings CreateDefault()
-    {
-        return new SolutionFinderSettings(
-            new NitrogenSettings(),
-            new PhosphorusSettings(),
-            new PotassiumSettings(),
-            new CalciumSettings(),
-            new MagnesiumSettings(),
-            new SulfurSettings(0),
-            new ChlorineSettings(),
-            new IronSettings(),
-            new CopperSettings(),
-            new ManganeseSettings(),
-            new ZincSettings(),
-            new BoronSettings(),
-            new MolybdenumSettings(),
-            new SiliconSettings(),
-            new SeleniumSettings(),
-            new SodiumSettings()
-        );
-    }
+        ArgumentNullException.ThrowIfNull(potassium);
+        ThrowIf.NotInRange(potassium.Value, 0, 1);
+        Potassium = potassium;
 
-    public static SolutionFinderSettings CreateDefaultMacro()
-    {
-        return new SolutionFinderSettings(
-            new NitrogenSettings(),
-            new PhosphorusSettings(),
-            new PotassiumSettings(),
-            new CalciumSettings(),
-            new MagnesiumSettings(),
-            new SulfurSettings(),
-            new ChlorineSettings(),
-            new IronSettings(),
-            new CopperSettings(),
-            new ManganeseSettings(),
-            new ZincSettings(),
-            new BoronSettings(),
-            new MolybdenumSettings(),
-            new SiliconSettings(),
-            new SeleniumSettings(),
-            new SodiumSettings(0)
-        );
-    }
+        ArgumentNullException.ThrowIfNull(calcium);
+        ThrowIf.NotInRange(calcium.Value, 0, 1);
+        Calcium = calcium;
 
-    public static SolutionFinderSettings CreateDefaultMacroNoSulfur()
-    {
-        return new SolutionFinderSettings(
-            new NitrogenSettings(),
-            new PhosphorusSettings(),
-            new PotassiumSettings(),
-            new CalciumSettings(),
-            new MagnesiumSettings(),
-            new SulfurSettings(0),
-            new ChlorineSettings(),
-            new IronSettings(),
-            new CopperSettings(),
-            new ManganeseSettings(),
-            new ZincSettings(),
-            new BoronSettings(),
-            new MolybdenumSettings(),
-            new SiliconSettings(),
-            new SeleniumSettings(),
-            new SodiumSettings(0)
-        );
-    }
+        ArgumentNullException.ThrowIfNull(magnesium);
+        ThrowIf.NotInRange(magnesium.Value, 0, 1);
+        Magnesium = magnesium;
 
-    public static SolutionFinderSettings CreateDefaultMicro()
-    {
-        return new SolutionFinderSettings(
-            new NitrogenSettings(0),
-            new PhosphorusSettings(0),
-            new PotassiumSettings(0),
-            new CalciumSettings(0),
-            new MagnesiumSettings(0),
-            new SulfurSettings(0),
-            new ChlorineSettings(),
-            new IronSettings(),
-            new CopperSettings(),
-            new ManganeseSettings(),
-            new ZincSettings(),
-            new BoronSettings(),
-            new MolybdenumSettings(),
-            new SiliconSettings(),
-            new SeleniumSettings(),
-            new SodiumSettings(0)
-        );
+        ArgumentNullException.ThrowIfNull(sulfur);
+        ThrowIf.NotInRange(sulfur.Value, 0, 1);
+        Sulfur = sulfur;
+
+        ArgumentNullException.ThrowIfNull(iron);
+        ThrowIf.NotInRange(iron.Value, 0, 1);
+        Iron = iron;
+
+        ArgumentNullException.ThrowIfNull(copper);
+        ThrowIf.NotInRange(copper.Value, 0, 1);
+        Copper = copper;
+
+        ArgumentNullException.ThrowIfNull(manganese);
+        ThrowIf.NotInRange(manganese.Value, 0, 1);
+        Manganese = manganese;
+
+        ArgumentNullException.ThrowIfNull(zinc);
+        ThrowIf.NotInRange(zinc.Value, 0, 1);
+        Zinc = zinc;
+
+        ArgumentNullException.ThrowIfNull(boron);
+        ThrowIf.NotInRange(boron.Value, 0, 1);
+        Boron = boron;
+
+        ArgumentNullException.ThrowIfNull(molybdenum);
+        ThrowIf.NotInRange(molybdenum.Value, 0, 1);
+        Molybdenum = molybdenum;
+
+        ArgumentNullException.ThrowIfNull(chlorine);
+        ThrowIf.NotInRange(chlorine.Value, 0, 1);
+        Chlorine = chlorine;
+
+        ArgumentNullException.ThrowIfNull(silicon);
+        ThrowIf.NotInRange(silicon.Value, 0, 1);
+        Silicon = silicon;
+
+        ArgumentNullException.ThrowIfNull(selenium);
+        ThrowIf.NotInRange(selenium.Value, 0, 1);
+        Selenium = selenium;
+
+        ArgumentNullException.ThrowIfNull(sodium);
+        ThrowIf.NotInRange(sodium.Value, 0, 1);
+        Sodium = sodium;
     }
 }

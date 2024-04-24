@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record SulfurSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record SulfurSettings(double Value = 1) : SettingsFieldBase(Value);

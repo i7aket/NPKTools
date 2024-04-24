@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record CalciumSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record CalciumSettings(double Value = 1) : SettingsFieldBase(Value);

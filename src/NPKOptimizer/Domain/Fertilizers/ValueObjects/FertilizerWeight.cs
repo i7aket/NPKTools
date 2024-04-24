@@ -2,4 +2,7 @@ using NPKOptimizer.Common;
 
 namespace NPKOptimizer.Domain.Fertilizers.ValueObjects;
 
-public record FertilizerWeight (double Value = 0) : FieldBase (Value);
+public record FertilizerWeight (double Value = 0) : ElementFieldBase (Value);
+
+    
+    

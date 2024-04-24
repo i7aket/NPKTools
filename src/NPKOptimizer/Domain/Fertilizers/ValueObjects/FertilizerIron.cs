@@ -4,7 +4,7 @@ using NPKOptimizer.Common;
 
 namespace NPKOptimizer.Domain.Fertilizers.ValueObjects;
 
-public record FertilizerIron : FieldBase
+public record FertilizerIron : ElementFieldBase
 {
     public double FeNonChelated { get; }
     public double FeEdta { get; }
@@ -16,22 +16,22 @@ public record FertilizerIron : FieldBase
     public FertilizerIron(double feNonChelated = 0, double feEdta = 0, double feDtpa = 0, double feEddha = 0,
         double feHbed = 0, double feOrthoPart = 0) : base(feNonChelated + feEdta + feDtpa + feEddha + feHbed)
     {
-        Validate.Positive(feNonChelated);
+        ThrowIf.LowerThan(feNonChelated,0);
         FeNonChelated = feNonChelated;
 
-        Validate.Positive(feEdta);
+        ThrowIf.LowerThan(feEdta,0);
         FeEdta = feEdta;
 
-        Validate.Positive(feDtpa);
+        ThrowIf.LowerThan(feDtpa,0);
         FeDtpa = feDtpa;
 
-        Validate.Positive(feEddha);
+        ThrowIf.LowerThan(feEddha,0);
         FeEddha = feEddha;
 
-        Validate.Positive(feHbed);
+        ThrowIf.LowerThan(feHbed,0);
         FeHbed = feHbed;
 
-        Validate.Positive(feOrthoPart);
+        ThrowIf.LowerThan(feOrthoPart,0);
         FeOrthoPart = feOrthoPart;
     }
 }

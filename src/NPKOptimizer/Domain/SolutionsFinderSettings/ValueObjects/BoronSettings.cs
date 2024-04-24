@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record BoronSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record BoronSettings(double Value = 1) : SettingsFieldBase(Value);

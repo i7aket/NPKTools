@@ -2,16 +2,20 @@ namespace NPKOptimizer.Common;
 
 public abstract class BuilderBase<TBuilder> where TBuilder : BuilderBase<TBuilder>
 {
-    private readonly HashSet<string> _addedProperties = new();
+    protected readonly HashSet<string> PropertiesSet = new();
 
-    protected TBuilder SetElementValue<TField>(ref TField field, TField value, string propertyName)
+    protected abstract TBuilder Self { get; }
+
+    protected TBuilder SetValue<T>(ref T field, T value, string propertyName)
     {
-        if (!_addedProperties.Add(propertyName))
+        if (PropertiesSet.Add(propertyName))
         {
-            throw new InvalidOperationException($"Property {propertyName} has already been set.");
+            field = value;
+            return Self;
         }
 
-        field = value;
-        return (TBuilder)this; 
+        throw new InvalidOperationException($"Property {propertyName} has already been set.");
     }
+
+    public abstract object Build();
 }

@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record IronSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record IronSettings(double Value = 1) : SettingsFieldBase(Value);

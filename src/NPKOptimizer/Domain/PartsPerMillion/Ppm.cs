@@ -1,117 +1,101 @@
-using System.Text;
 using NPKOptimizer.Common;
-using NPKOptimizer.Const;
 using NPKOptimizer.Domain.PartsPerMillion.ValueObjects;
-
-// ReSharper disable MemberCanBePrivate.Global
 
 namespace NPKOptimizer.Domain.PartsPerMillion;
 
-public sealed record Ppm
+public class Ppm
 {
-    public NitrogenPpm N { get; }
-    public PhosphorusPpm P { get; }
-    public PotassiumPpm K { get; }
-    public CalciumPpm Ca { get; }
-    public MagnesiumPpm Mg { get; }
-    public SulfurPpm S { get; }
-    public IronPpm Fe { get; }
-    public CopperPpm Cu { get; }
-    public ManganesePpm Mn { get; }
-    public ZincPpm Zn { get; }
-    public BoronPpm B { get; }
-    public MolybdenumPpm Mo { get; }
-    public ChlorinePpm Cl { get; }
-    public SiliconPpm Si { get; }
-    public SeleniumPpm Se { get; }
-    public SodiumPpm Na { get; }
-    // ReSharper disable once MemberCanBePrivate.Global
-    public TotalMassPpm TotalWeight { get; }
+    public NitrogenPpm Nitrogen { get; set;}
+    public PhosphorusPpm Phosphorus { get; set;}
+    public PotassiumPpm Potassium { get; set;}
+    public CalciumPpm Calcium { get; set;}
+    public MagnesiumPpm Magnesium { get; set;}
+    public SulfurPpm Sulfur { get; set;}
+    public IronPpm Iron { get; set;}
+    public CopperPpm Copper { get; set;}
+    public ManganesePpm Manganese { get; set;}
+    public ZincPpm Zinc { get; set;}
+    public BoronPpm Boron { get; set;}
+    public MolybdenumPpm Molybdenum { get; set;}
+    public ChlorinePpm Chlorine { get; set;}
+    public SiliconPpm Silicon { get; set;}
+    public SeleniumPpm Selenium { get; set;}
+    public SodiumPpm Sodium { get; set;}
 
-    public double Value => N.Value + P.Value + K.Value + Ca.Value + Mg.Value + S.Value +
-                              Fe.Value + Cu.Value + Mn.Value + Zn.Value + B.Value + Mo.Value +
-                              Cl.Value + Na.Value + Si.Value + Se.Value;
+    public double Value => Nitrogen.Value + Phosphorus.Value + Potassium.Value + Calcium.Value + Magnesium.Value + Sulfur.Value +
+                           Iron.Value + Copper.Value + Manganese.Value + Zinc.Value + Boron.Value + Molybdenum.Value +
+                           Chlorine.Value + Sodium.Value + Silicon.Value + Selenium.Value;
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    public ElectricalConductivityPpm Ec => new (NutrientConverter.PpmToEc500(Value));
-    public Ppm(NitrogenPpm n, PhosphorusPpm p, PotassiumPpm k, CalciumPpm ca, MagnesiumPpm mg, SulfurPpm s, IronPpm fe, CopperPpm cu,
-        ManganesePpm mn, ZincPpm zn, BoronPpm b, MolybdenumPpm mo, ChlorinePpm cl, SiliconPpm si, SeleniumPpm se, SodiumPpm na,
-        TotalMassPpm totalMassPpm)
+    public  Ppm(){}
+
+    public Ppm(NitrogenPpm nitrogen, PhosphorusPpm phosphorus, PotassiumPpm potassium, CalciumPpm calcium, MagnesiumPpm magnesium, SulfurPpm sulfur, IronPpm iron,
+        CopperPpm copper, ManganesePpm manganese, ZincPpm zinc, BoronPpm boron, MolybdenumPpm molybdenum, ChlorinePpm chlorine, SiliconPpm silicon,
+        SeleniumPpm selenium, SodiumPpm sodium)
     {
-        Validate.NotNull(n);
-        N = n;
-        Validate.NotNull(p);
-        P = p;
-        Validate.NotNull(k);
-        K = k;
-        Validate.NotNull(ca);
-        Ca = ca;
-        Validate.NotNull(mg);
-        Mg = mg;
-        Validate.NotNull(s);
-        S = s;
-        Validate.NotNull(fe);
-        Fe = fe;
-        Validate.NotNull(cu);
-        Cu = cu;
-        Validate.NotNull(mn);
-        Mn = mn;
-        Validate.NotNull(zn);
-        Zn = zn;
-        Validate.NotNull(b);
-        B = b;
-        Validate.NotNull(mo);
-        Mo = mo;
-        Validate.NotNull(cl);
-        Cl = cl;
-        Validate.NotNull(si);
-        Si = si;
-        Validate.NotNull(se);
-        Se = se;
-        Validate.NotNull(na);
-        Na = na;
-        Validate.NotNull(totalMassPpm);
-        TotalWeight = totalMassPpm;
-    }
-    
-    public override string ToString()
-    {
-        StringBuilder responseBuilder = new ();
+        ArgumentNullException.ThrowIfNull(nitrogen);
+        ThrowIf.LowerThan(nitrogen.Ammonium,0);
+        ThrowIf.LowerThan(nitrogen.Amine,0);
+        ThrowIf.LowerThan(nitrogen.Nitrate,0);
+        Nitrogen = nitrogen;
+        
+        ArgumentNullException.ThrowIfNull(phosphorus);
+        ThrowIf.LowerThan(phosphorus.Value, 0);
+        Phosphorus = phosphorus;
 
-        responseBuilder.AppendLine($"{Labels.PpmReport}");
-        AppendLineIfNonZero($"{Labels.TotalPpm}", Value);
-        AppendLineIfNonZero($"{Labels.Ec}", Ec.Value);
-        AppendLineIfNonZero($"{Labels.TotalMass}", TotalWeight.Value);
-        AppendLineIfNonZero(Labels.Nitrogen, N.Value);
-        AppendLineIfNonZero($"{Labels.SubItemPrefix}{Labels.NitrateNo3}", N.Nitrate);
-        AppendLineIfNonZero($"{Labels.SubItemPrefix}{Labels.AmmoniumNh4}", N.Ammonium);
-        AppendLineIfNonZero($"{Labels.SubItemPrefix}{Labels.AmineNh2}", N.Amine);
-        AppendLineIfNonZero(Labels.Phosphorus, P.Value);
-        AppendLineIfNonZero(Labels.Potassium, K.Value);
-        AppendLineIfNonZero(Labels.Magnesium, Mg.Value);
-        AppendLineIfNonZero(Labels.Sulfur, S.Value);
-        AppendLineIfNonZero(Labels.Calcium, Ca.Value);
-        responseBuilder.AppendLine();
-        AppendLineIfNonZero(Labels.Iron, Fe.Value);
-        AppendLineIfNonZero(Labels.Copper, Cu.Value);
-        AppendLineIfNonZero(Labels.Manganese, Mn.Value);
-        AppendLineIfNonZero(Labels.Zinc, Zn.Value);
-        AppendLineIfNonZero(Labels.Boron, B.Value);
-        AppendLineIfNonZero(Labels.Molybdenum, Mo.Value);
-        AppendLineIfNonZero(Labels.Chlorine, Cl.Value);
-        AppendLineIfNonZero(Labels.Sodium, Na.Value);
-        AppendLineIfNonZero(Labels.Silicon, Si.Value);
-        AppendLineIfNonZero(Labels.Selenium, Se.Value);
+        ArgumentNullException.ThrowIfNull(potassium);
+        ThrowIf.LowerThan(potassium.Value, 0);
+        Potassium = potassium;
 
-        return responseBuilder.ToString();
+        ArgumentNullException.ThrowIfNull(calcium);
+        ThrowIf.LowerThan(calcium.Value, 0);
+        Calcium = calcium;
 
-        void AppendLineIfNonZero(string label, double value)
-        {
-            if (value > 0)
-            {
-                responseBuilder.AppendLine($"{label}: {Math.Round(value, Settings.Precision)}");
-            }
-        }
+        ArgumentNullException.ThrowIfNull(magnesium);
+        ThrowIf.LowerThan(magnesium.Value, 0);
+        Magnesium = magnesium;
+
+        ArgumentNullException.ThrowIfNull(sulfur);
+        ThrowIf.LowerThan(sulfur.Value, 0);
+        Sulfur = sulfur;
+
+        ArgumentNullException.ThrowIfNull(iron);
+        ThrowIf.LowerThan(iron.Value, 0);
+        Iron = iron;
+
+        ArgumentNullException.ThrowIfNull(copper);
+        ThrowIf.LowerThan(copper.Value, 0);
+        Copper = copper;
+
+        ArgumentNullException.ThrowIfNull(manganese);
+        ThrowIf.LowerThan(manganese.Value, 0);
+        Manganese = manganese;
+
+        ArgumentNullException.ThrowIfNull(zinc);
+        ThrowIf.LowerThan(zinc.Value, 0);
+        Zinc = zinc;
+
+        ArgumentNullException.ThrowIfNull(boron);
+        ThrowIf.LowerThan(boron.Value, 0);
+        Boron = boron;
+
+        ArgumentNullException.ThrowIfNull(molybdenum);
+        ThrowIf.LowerThan(molybdenum.Value, 0);
+        Molybdenum = molybdenum;
+
+        ArgumentNullException.ThrowIfNull(chlorine);
+        ThrowIf.LowerThan(chlorine.Value, 0);
+        Chlorine = chlorine;
+
+        ArgumentNullException.ThrowIfNull(silicon);
+        ThrowIf.LowerThan(silicon.Value, 0);
+        Silicon = silicon;
+
+        ArgumentNullException.ThrowIfNull(selenium);
+        ThrowIf.LowerThan(selenium.Value, 0);
+        Selenium = selenium;
+
+        ArgumentNullException.ThrowIfNull(sodium);
+        ThrowIf.LowerThan(sodium.Value, 0);
+        Sodium = sodium;
     }
 }
-

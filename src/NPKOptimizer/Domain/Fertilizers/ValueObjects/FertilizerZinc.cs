@@ -4,17 +4,17 @@ using NPKOptimizer.Common;
 
 namespace NPKOptimizer.Domain.Fertilizers.ValueObjects;
 
-public record FertilizerZinc : FieldBase
+public record FertilizerZinc : ElementFieldBase
 {
     public double ZnNonChelated { get; }
     public double ZnEdta { get; }
 
     public FertilizerZinc(double znNonChelated = 0, double znEdta = 0) : base(znNonChelated + znEdta)
     {
-        Validate.Positive(znNonChelated);
+        ThrowIf.LowerThan(znNonChelated,0);
         ZnNonChelated = znNonChelated;
 
-        Validate.Positive(znEdta);
+        ThrowIf.LowerThan(znEdta,0);
         ZnEdta = znEdta;
     }
 }

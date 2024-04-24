@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record CopperSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record CopperSettings(double Value = 1) : SettingsFieldBase(Value);

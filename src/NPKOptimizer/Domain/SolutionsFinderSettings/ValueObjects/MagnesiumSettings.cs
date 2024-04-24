@@ -1,3 +1,3 @@
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
-public record MagnesiumSettings(double Accuracy = 1) : SettingsFieldBase(Accuracy);
+public record MagnesiumSettings(double Value = 1) : SettingsFieldBase(Value);
