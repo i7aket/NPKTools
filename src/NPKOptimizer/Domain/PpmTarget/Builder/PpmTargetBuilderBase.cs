@@ -7,6 +7,7 @@ public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
     where TBuilder : PpmTargetBuilderBase<TBuilder>
 {
     protected double N, P, K, Ca, Mg, S, Fe, Cu, Mn, Zn, B, Mo, Cl, Si, Se, Na;
+    protected double Liters = 1;
     protected override TBuilder Self => (TBuilder)this;
 
     public override PpmTarget Build()
@@ -27,7 +28,8 @@ public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
             new ChlorinePpmTarget(Cl),
             new SiliconPpmTarget(Si),
             new SeleniumPpmTarget(Se),
-            new SodiumPpmTarget(Na)
+            new SodiumPpmTarget(Na),
+            new WaterVolumeLitersPpm(Liters)
         );
     }
 
@@ -47,4 +49,5 @@ public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
     public TBuilder AddSi(double value) => SetValue(ref Si, value, nameof(Si));
     public TBuilder AddSe(double value) => SetValue(ref Se, value, nameof(Se));
     public TBuilder AddNa(double value) => SetValue(ref Na, value, nameof(Na));
+    public TBuilder AddLitters(double value) => SetValue(ref Liters, value, nameof(Liters));
 }

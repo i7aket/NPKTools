@@ -1,3 +1,4 @@
+using NPKOptimizer.Common;
 using NPKOptimizer.Const;
 using NPKOptimizer.Contracts;
 using NPKOptimizer.Domain.Collections;
@@ -8,11 +9,30 @@ using NPKOptimizer.Domain.SolutionsFinderSettings;
 
 namespace NPKOptimizer.Components;
 
+/// <summary>
+/// Implements the IOptimizationProblemMapper interface to provide concrete mappings
+/// between the domain model and the structures required for optimization.
+/// This class translates user-defined nutrient targets and fertilizer data
+/// into an optimization problem that can be solved algorithmically.
+/// </summary>
 public class OptimizationProblemMapper : IOptimizationProblemMapper
 {
+    /// <summary>
+    /// Creates an optimization problem from given nutrient targets, a collection of fertilizers,
+    /// and solution finder settings. This method sets up the necessary variables,
+    /// objectives, and constraints for the optimization problem based on the specified parameters.
+    /// </summary>
+    /// <param name="target">The target nutrient levels to be achieved.</param>
+    /// <param name="sourceCollection">The collection of fertilizers available for use.</param>
+    /// <param name="settings">Settings that influence the optimization process, such as tolerance levels and cost considerations.</param>
+    /// <returns>An OptimizationProblem object configured with all necessary variables and constraints.</returns>
     public OptimizationProblem CreateOptimizationProblem(PpmTarget target,
         IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings)
     {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(settings);
+        ThrowIf.NullOrEmpty(sourceCollection);
+        
         OptimizationProblem problem = new();
         HashSet<FertilizerOptimizationModel> fertilizerSet = new HashSet<FertilizerOptimizationModel>(new FertilizerAttributesComparer());  
         HashSet<Guid> idsSet = new HashSet<Guid>();
@@ -85,24 +105,41 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
         }
         return problem;
     }
-    public IList<Fertilizer> MapSolution(Dictionary<string, double> solutionValues,
-        IList<FertilizerOptimizationModel> originalSourceCollection)
+    
+    /// <summary>
+    /// Creates a solution based on the optimization results, mapping the calculated values back to
+    /// real-world quantities of fertilizers to be used, adjusted by the volume of water specified.
+    /// </summary>
+    /// <param name="solutionValues">The calculated quantities of each fertilizer from the optimization.</param>
+    /// <param name="originalSourceCollection">The original collection of fertilizers used in the optimization.</param>
+    /// <param name="waterLiters">The amount of water to be used with the fertilizers, affecting the final solution concentrations.</param>
+    /// <returns>A Solution object detailing the types and quantities of fertilizers to be used.</returns>
+    public Solution CreateSolution(Dictionary<string, double> solutionValues,
+        IList<FertilizerOptimizationModel> originalSourceCollection, double waterLiters = 1)
     {
-        IList<Fertilizer> solutionCollection = new List<Fertilizer>();
+        ThrowIf.NullOrEmpty(solutionValues);
+        ThrowIf.NullOrEmpty(originalSourceCollection);
+        ThrowIf.LowerThanOrEqual(waterLiters, 0);
+        
+        Solution solutionCollection = new Solution
+        {
+            WaterLiters = waterLiters
+        };
         foreach (KeyValuePair<string, double> item in solutionValues)
         {
             Guid itemId = Guid.Parse(item.Key);
+            
             FertilizerOptimizationModel? fertilizerOptimizationModel =
                 originalSourceCollection.FirstOrDefault(f => f.RefId.Value == itemId);
-            if (fertilizerOptimizationModel == null)
-                throw new InvalidOperationException($"No matching fertilizer found for ID: {item.Key}");
-            if (item.Value < 0)
-                throw new ArgumentException("Weight cannot be negative.", nameof(item.Value));
+            
+            ArgumentNullException.ThrowIfNull(fertilizerOptimizationModel);
+            ThrowIf.LowerThan(item.Value, 0);
             if (item.Value == 0) continue;
+            
             FertilizerWeight weight = new FertilizerWeight(Math.Round(item.Value, OptimizationSettings.RoundingPrecision));
             Fertilizer fertilizer = new Fertilizer(
                 fertilizerOptimizationModel.RefId,
-                weight,
+                new FertilizerWeight(weight.Value * waterLiters),
                 fertilizerOptimizationModel.Price,
                 fertilizerOptimizationModel.Nitrogen,
                 fertilizerOptimizationModel.Phosphorus,

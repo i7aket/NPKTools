@@ -1,6 +1,6 @@
-using System.Reflection;
 using NPKOptimizer.Components;
 using NPKOptimizer.Contracts;
+using NPKOptimizer.Domain.Collections;
 using NPKOptimizer.Domain.Fertilizers;
 using NPKOptimizer.Domain.Fertilizers.Builders;
 using NPKOptimizer.Domain.PpmTarget;
@@ -644,9 +644,12 @@ public class OptimizationProblemMapperTests
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(0.5)]
     [Trait("Category", "Unit")]
-    public void Map()
+    public void Map_ShouldCorrectlyCalculateSolution_WithGivenWaterVolume(double waterLiters)
     {
         //Arrange
         Dictionary<string, double> solution = new Dictionary<string, double>
@@ -767,46 +770,46 @@ public class OptimizationProblemMapperTests
                 .Build()
         };
 
-        List<Fertilizer> expectedMapResult = new List<Fertilizer>
+        Solution expectedMapResult = new Solution
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
-                .AddWeight(0.589)
+                .AddWeight(0.589 * waterLiters)
                 .AddNo3(11.863)
                 .AddCaNonChelated(16.972)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("2fc8a292-2095-42c0-bd50-9b6b355bf92a")) //AmmoniumNitrate 
-                .AddWeight(0.137)
+                .AddWeight(0.137 * waterLiters)
                 .AddNo3(17.499)
                 .AddNh4(17.499)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("8389dbfb-792f-40d0-8fd9-701a506af48b")) //MagnesiumSulfate 
-                .AddWeight(0.325)
+                .AddWeight(0.325 * waterLiters)
                 .AddMgNonChelated(9.861)
                 .AddS(13.008)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("9d0460fc-596f-4b70-8ebb-af217aecc097")) //PotassiumDihydrogenPhosphate 
-                .AddWeight(0.22)
+                .AddWeight(0.22 * waterLiters)
                 .AddP(22.761)
                 .AddK(28.731)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("4fa956e7-114a-41e4-b6da-10643cdd8086")) //PotassiumSulfat
-                .AddWeight(0.305)
+                .AddWeight(0.305 * waterLiters)
                 .AddS(18.401)
                 .AddK(44.874)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("6aeff6a8-a8dc-4b3c-acf5-817ada864557")) // MagnesiumNitrate
-                .AddWeight(0.295)
+                .AddWeight(0.295 * waterLiters)
                 .AddMgNonChelated(9.479)
                 .AddNo3(10.925)
                 .Build(),
@@ -815,72 +818,75 @@ public class OptimizationProblemMapperTests
                 .AddId(Guid.Parse("a3ce72b5-8496-48d6-a8eb-4df3f6ca01fb")) // IronSulfate
                 .AddFeNonChelated(20.088)
                 .AddS(11.532)
-                .AddWeight(0.01)
+                .AddWeight(0.01 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("9f0c6df5-6dc1-4113-b911-e50af9410248")) //CopperSulfate
                 .AddS(12.841)
                 .AddCuNonChelated(25.451)
-                .AddWeight(0.0002)
+                .AddWeight(0.0002 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("31c557f5-ced3-4b5a-ab9f-b1b8aa34dc43")) //ManganeseSulfate
                 .AddS(18.969)
                 .AddMnNonChelated(32.506)
-                .AddWeight(0.0017)
+                .AddWeight(0.0017 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("39bb0466-fe87-4144-82c0-9aa460ac77c6")) //ZincSulfate
                 .AddS(17.866)
                 .AddZnNonChelated(36.433)
-                .AddWeight(0.0009)
+                .AddWeight(0.0009 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("10f35129-8b50-448d-98ed-8442cfc26985")) //BoricAcid
                 .AddB(17.483)
-                .AddWeight(0.0016)
+                .AddWeight(0.0016 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("d190bcb4-1236-4bb4-95d6-584c719f4bde")) //SodiumMolybdate
                 .AddNa(19.003)
                 .AddMo(39.656)
-                .AddWeight(0.000126)
+                .AddWeight(0.000126 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("337401e7-cbe4-48aa-968b-cceba18d6478")) //CalciumChloride
                 .AddCaNonChelated(18.295)
                 .AddCl(32.364)
-                .AddWeight(3.09E-05)
+                .AddWeight(3.09E-05 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("0f886cf2-729e-4d89-a1cf-08acb99d5ffe")) //SodiumSilicate
                 .AddSi(23.009)
                 .AddNa(37.669)
-                .AddWeight(4.346E-05)
+                .AddWeight(4.346E-05 * waterLiters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("2e7b59c1-b44b-4e82-a408-a6cb7d9db2cb")) //SodiumSelenate 
                 .AddSe(41.795)
                 .AddNa(24.335)
-                .AddWeight(2.393E-05)
-                .Build()
+                .AddWeight(2.393E-05 * waterLiters)
+                .Build(),
         };
 
+        expectedMapResult.WaterLiters = waterLiters;
+
         //Act
-        IList<Fertilizer> result = Mapper.MapSolution(solution, sourceCollection);
+        Solution result = Mapper.CreateSolution(solution, sourceCollection, waterLiters);
         //Assert
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedMapResult.Count, result.Count);
+        Assert.Equal(expectedMapResult.WaterLiters, waterLiters);
 
         double tolerancePercent = 0.1; // 1% допуск
 
@@ -925,7 +931,7 @@ public class OptimizationProblemMapperTests
                 expected.Selenium.Value * (1 + tolerancePercent));
         }
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void CreateOptimizationProblem_WithDuplicateFertilizerIds_ThrowsInvalidOperationException()
@@ -945,7 +951,8 @@ public class OptimizationProblemMapperTests
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder().Build();
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => Mapper.CreateOptimizationProblem(target, sourceCollection, settings));
+        Assert.Throws<InvalidOperationException>(() =>
+            Mapper.CreateOptimizationProblem(target, sourceCollection, settings));
     }
 
     [Fact]
@@ -966,7 +973,7 @@ public class OptimizationProblemMapperTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => Mapper.MapSolution(solution, sourceCollection));
+        Assert.Throws<ArgumentException>(() => Mapper.CreateSolution(solution, sourceCollection));
     }
 
     [Fact]
@@ -979,10 +986,10 @@ public class OptimizationProblemMapperTests
             { "72f90e90-804c-4955-9e51-8e7b921836c5", 0.5 }
         };
 
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>(); 
+        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>();
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => Mapper.MapSolution(solution, sourceCollection));
+        Assert.Throws<ArgumentException>(() => Mapper.CreateSolution(solution, sourceCollection));
     }
 
     [Fact]
@@ -993,14 +1000,15 @@ public class OptimizationProblemMapperTests
         IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
         {
             new FertilizerBuilder().AddId(Guid.NewGuid()).AddNo3(11).AddCaNonChelated(16).Build(),
-            new FertilizerBuilder().AddId(Guid.NewGuid()).AddNo3(11).AddCaNonChelated(16).Build() 
+            new FertilizerBuilder().AddId(Guid.NewGuid()).AddNo3(11).AddCaNonChelated(16).Build()
         };
 
         PpmTarget target = new PpmTargetBuilder().Build();
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder().Build();
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => Mapper.CreateOptimizationProblem(target, sourceCollection, settings));
+        Assert.Throws<InvalidOperationException>(() =>
+            Mapper.CreateOptimizationProblem(target, sourceCollection, settings));
     }
 
     [Fact]
@@ -1021,15 +1029,88 @@ public class OptimizationProblemMapperTests
             .Build();
 
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
-            .AddNa(0.1) 
+            .AddNa(0.1)
             .Build();
 
         // Act
         OptimizationProblem problem = Mapper.CreateOptimizationProblem(target, sourceCollection, settings);
 
         // Assert
-        Assert.Contains("Na", problem.Constraints.Select(c => c.Name)); 
+        Assert.Contains("Na", problem.Constraints.Select(c => c.Name));
         Assert.NotEmpty(problem.Constraints.Where(c => c.Name == "Na").SelectMany(c => c.Coefficients));
     }
-    
+
+    [Fact]
+    public void CreateSolution_NullSolutionValues_ThrowsArgumentNullException()
+    {
+        // Arrange
+        OptimizationProblemMapper mapper = new OptimizationProblemMapper();
+        Dictionary<string, double> nullSolutionValues = null;
+        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
+            { new FertilizerOptimizationModel() };
+        double waterLiters = 1.0;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            mapper.CreateSolution(nullSolutionValues, sourceCollection, waterLiters));
+    }
+
+    [Fact]
+    public void CreateSolution_EmptySolutionValues_ThrowsArgumentException()
+    {
+        // Arrange
+        OptimizationProblemMapper mapper = new OptimizationProblemMapper();
+        Dictionary<string, double> emptySolutionValues = new Dictionary<string, double>();
+        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
+            { new FertilizerOptimizationModel() };
+        double waterLiters = 1.0;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(
+            () => mapper.CreateSolution(emptySolutionValues, sourceCollection, waterLiters));
+    }
+
+    [Fact]
+    public void CreateSolution_NullSourceCollection_ThrowsArgumentNullException()
+    {
+        // Arrange
+        OptimizationProblemMapper mapper = new OptimizationProblemMapper();
+        Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
+        IList<FertilizerOptimizationModel> nullSourceCollection = null;
+        double waterLiters = 1.0;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            mapper.CreateSolution(solutionValues, nullSourceCollection, waterLiters));
+    }
+
+    [Fact]
+    public void CreateSolution_EmptySourceCollection_ThrowsArgumentException()
+    {
+        // Arrange
+        OptimizationProblemMapper mapper = new OptimizationProblemMapper();
+        Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
+        IList<FertilizerOptimizationModel> emptySourceCollection = new List<FertilizerOptimizationModel>();
+        double waterLiters = 1.0;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(
+            () => mapper.CreateSolution(solutionValues, emptySourceCollection, waterLiters));
+    }
+
+    // Additional test for checking non-positive waterLiters
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void CreateSolution_NonPositiveWaterLiters_ThrowsArgumentException(double waterLiters)
+    {
+        // Arrange
+        OptimizationProblemMapper mapper = new OptimizationProblemMapper();
+        Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
+        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
+            { new FertilizerOptimizationModel() };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => mapper.CreateSolution(solutionValues, sourceCollection, waterLiters));
+    }
 }

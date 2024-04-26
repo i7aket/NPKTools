@@ -98,4 +98,57 @@ public class ThrowIfTests
         Exception exceptionRecord = Record.Exception(() => ThrowIf.NotInRange(value, min, max, nameof(value)));
         Assert.Null(exceptionRecord);
     }
+    
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void NotEmpty_WithNullCollection_ThrowsArgumentNullException()
+    {
+        IEnumerable<int> nullCollection = null;
+
+        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => ThrowIf.NullOrEmpty(nullCollection, nameof(nullCollection)));
+        Assert.StartsWith("The collection cannot be null.", exception.Message);
+        Assert.Equal("nullCollection", exception.ParamName);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void NotEmpty_WithEmptyCollection_ThrowsArgumentException()
+    {
+        List<int> emptyCollection = new List<int>();
+
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => ThrowIf.NullOrEmpty(emptyCollection, nameof(emptyCollection)));
+        Assert.StartsWith("The collection cannot be empty.", exception.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void NotEmpty_WithNonEmptyCollection_DoesNotThrow()
+    {
+        List<int> nonEmptyCollection = new List<int> { 1, 2, 3 };
+
+        Exception exceptionRecord = Record.Exception(() => ThrowIf.NullOrEmpty(nonEmptyCollection, nameof(nonEmptyCollection)));
+        Assert.Null(exceptionRecord);
+    }
+    
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void LowerThanOrEqual_WithValueLowerThanOrEqualMin_ThrowsArgumentException()
+    {
+        double value = 0;
+        double min = 0;
+
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => ThrowIf.LowerThanOrEqual(value, min, nameof(value)));
+        Assert.Equal($"Value must be greater than {min}. (Parameter 'value')", exception.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void LowerThanOrEqual_WithValueGreaterThanMin_DoesNotThrow()
+    {
+        double value = 1;
+        double min = 0;
+
+        Exception exceptionRecord = Record.Exception(() => ThrowIf.LowerThanOrEqual(value, min, nameof(value)));
+        Assert.Null(exceptionRecord);
+    }
 }

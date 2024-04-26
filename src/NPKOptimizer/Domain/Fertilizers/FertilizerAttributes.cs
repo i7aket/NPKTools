@@ -44,7 +44,7 @@ public class FertilizerAttributes
         FertilizerSodium sodium)
     {
         ArgumentNullException.ThrowIfNull(price);
-        ThrowIf.LowerThan(price.Value, 0);
+        ThrowIf.LowerThanOrEqual(price.Value, 0);
         Price = price;
 
         ArgumentNullException.ThrowIfNull(nitrogen);

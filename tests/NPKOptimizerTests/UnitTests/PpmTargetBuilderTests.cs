@@ -17,6 +17,7 @@ namespace NPKOptimizer.Tests.UnitTests
             double fe = 10.0, cu = 5.0, mn = 3.0;
             double zn = 7.0, b = 0.5, mo = 0.3;
             double cl = 2.0, si = 1.5, se = 0.1, na = 0.2;
+            double liters = 1;
 
             // Act
             PpmTarget ppmTarget = builder
@@ -36,6 +37,7 @@ namespace NPKOptimizer.Tests.UnitTests
                 .AddSi(si)
                 .AddSe(se)
                 .AddNa(na)
+                .AddLitters(liters)
                 .Build();
 
             // Assert
@@ -55,6 +57,7 @@ namespace NPKOptimizer.Tests.UnitTests
             Assert.Equal(si, ppmTarget.Si.Value);
             Assert.Equal(se, ppmTarget.Se.Value);
             Assert.Equal(na, ppmTarget.Na.Value);
+            Assert.Equal(liters, ppmTarget.Liters.Value);
         }
     }
 }

@@ -6,7 +6,8 @@ namespace NPKOptimizer.Domain.SolutionsFinderSettings.Builder;
 public class SolutionFinderSettingsBuilderBase<TBuilder> : BuilderBase<TBuilder>
     where TBuilder : SolutionFinderSettingsBuilderBase<TBuilder>
 {
-    protected double Accuracy, N, P, K, Ca, Mg, S, Cl, Fe, Cu, Mn, Zn, B, Mo, Si, Se, Na;
+    protected double N, P, K, Ca, Mg, S, Cl, Fe, Cu, Mn, Zn, B, Mo, Si, Se, Na;
+    protected double Accuracy = 1;
     protected override TBuilder Self => (TBuilder)this;
 
     public override SolutionFinderSettings Build()

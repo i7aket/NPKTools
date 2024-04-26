@@ -23,7 +23,7 @@ public class FertilizerOptimizerTests
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Optimizer = new FertilizerOptimizationAdapter(solver, mapper);
     }
-    
+
     [Fact]
     [Trait("Category", "Integration")]
     public void Optimize_WithValidInputMacro_ReturnCorrectCollection()
@@ -143,6 +143,7 @@ public class FertilizerOptimizerTests
             .AddCl(0.01)
             .AddSi(0.01)
             .AddSe(0.01)
+            .AddLitters(1)
             .Build();
 
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
@@ -208,7 +209,7 @@ public class FertilizerOptimizerTests
                 .AddMgNonChelated(9.479)
                 .AddNo3(10.925)
                 .Build(),
-            
+
             new FertilizerBuilder()
                 .AddId(Guid.Parse("a3ce72b5-8496-48d6-a8eb-4df3f6ca01fb")) // IronSulfate
                 .AddFeNonChelated(20.088)
@@ -271,7 +272,7 @@ public class FertilizerOptimizerTests
                 .AddWeight(2.393E-05)
                 .Build()
         };
-        
+
         //Act
         IList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
 
@@ -340,5 +341,55 @@ public class FertilizerOptimizerTests
 
         // Assert
         Assert.Throws<InvalidOperationException>(act);
+    }
+
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public void Optimize_WithPricePriority_SelectsLeastExpensiveOption()
+    {
+        // Arrange
+        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        {
+            new FertilizerBuilder()
+                .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))
+                .AddNo3(10)
+                .AddPrice(1.0) 
+                .Build(),
+
+            new FertilizerBuilder()
+                .AddId(Guid.Parse("00000000-0000-0000-0000-000000000002"))
+                .AddNo3(15)
+                .AddPrice(2.0)
+                .Build(),
+
+            new FertilizerBuilder()
+                .AddId(Guid.Parse("00000000-0000-0000-0000-000000000003"))
+                .AddNo3(5)
+                .AddPrice(0.8) 
+                .Build(),
+        };
+
+        PpmTarget target = new PpmTargetBuilder()
+            .AddN(10) 
+            .Build();
+
+        SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
+            .AddN(1) 
+            .Build();
+
+        Fertilizer expected = new FertilizerBuilder()
+            .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))
+            .AddWeight(0.1) 
+            .AddNo3(10)
+            .Build();
+
+        // Act
+        IList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(expected.RefId.Value, result.First().RefId.Value);
+        Assert.Equal(expected.Weight.Value, result.First().Weight.Value);
     }
 }

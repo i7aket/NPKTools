@@ -21,6 +21,7 @@ public class PpmTarget
     public SiliconPpmTarget Si { get; set;}
     public SeleniumPpmTarget Se { get; set;}
     public SodiumPpmTarget Na { get; set;}
+    public WaterVolumeLitersPpm Liters { get; set;}
 
     public PpmTarget(){}
     public PpmTarget(
@@ -39,7 +40,8 @@ public class PpmTarget
         ChlorinePpmTarget cl,
         SiliconPpmTarget si,
         SeleniumPpmTarget se,
-        SodiumPpmTarget na)
+        SodiumPpmTarget na,
+        WaterVolumeLitersPpm liters)
     {
         ArgumentNullException.ThrowIfNull(n);
         ThrowIf.LowerThan(n.Value, 0);
@@ -104,5 +106,9 @@ public class PpmTarget
         ArgumentNullException.ThrowIfNull(na);
         ThrowIf.LowerThan(na.Value, 0);
         Na = na;
+        
+        ArgumentNullException.ThrowIfNull(liters);
+        ThrowIf.LowerThanOrEqual(liters.Value, 0);
+        Liters = liters;
     }
 }

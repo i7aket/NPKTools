@@ -37,4 +37,24 @@ public static class ThrowIf
             throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be between {min} and {max}.");
         }
     }
+    
+    public static void NullOrEmpty<T>(IEnumerable<T> collection, [CallerArgumentExpression("collection")] string? parameterName = null)
+    {
+        if (collection == null)
+        {
+            throw new ArgumentNullException(parameterName, "The collection cannot be null.");
+        }
+        if (!collection.Any())
+        {
+            throw new ArgumentException("The collection cannot be empty.", parameterName);
+        }
+    }
+    
+    public static void LowerThanOrEqual(double value, double min, [CallerArgumentExpression("value")] string? parameterName = null)
+    {
+        if (value <= min)
+        {
+            throw new ArgumentException($"Value must be greater than {min}.", parameterName);
+        }
+    }
 }

@@ -1,13 +1,30 @@
 using Google.OrTools.LinearSolver;
+using NPKOptimizer.Common;
 using NPKOptimizer.Const;
 using NPKOptimizer.Contracts;
 
 namespace NPKOptimizer.Components;
 
+/// <summary>
+/// Provides an implementation of the <see cref="IOptimizationProblemSolver"/> using Google's OR-Tools.
+/// </summary>
 public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 {
+    /// <summary>
+    /// Solves the given optimization problem using the linear solver from Google OR-Tools.
+    /// </summary>
+    /// <param name="problem">The optimization problem to solve, containing variables, constraints, and an objective.</param>
+    /// <returns>A dictionary where keys are variable names and values are their optimized numerical values.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when any critical component of the problem (such as the problem itself, its variables, constraints, or objective) is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the solver does not find an optimal solution.</exception>
     public Dictionary<string, double> Solve(OptimizationProblem problem)
     {
+        ArgumentNullException.ThrowIfNull(problem);
+        ArgumentNullException.ThrowIfNull(problem.Objective);
+        ThrowIf.NullOrEmpty(problem.Objective.Coefficients);
+        ThrowIf.NullOrEmpty(problem.Variables);
+        ThrowIf.NullOrEmpty(problem.Constraints);
+
         Solver solver = Solver.CreateSolver("GLOP");
         
         Dictionary<string, Variable> variables = problem.Variables.ToDictionary(
