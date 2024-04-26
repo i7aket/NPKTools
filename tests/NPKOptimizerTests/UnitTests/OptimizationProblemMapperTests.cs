@@ -973,7 +973,7 @@ public class OptimizationProblemMapperTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => Mapper.CreateSolution(solution, sourceCollection));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Mapper.CreateSolution(solution, sourceCollection));
     }
 
     [Fact]
@@ -1111,6 +1111,6 @@ public class OptimizationProblemMapperTests
             { new FertilizerOptimizationModel() };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => mapper.CreateSolution(solutionValues, sourceCollection, waterLiters));
+        Assert.Throws<ArgumentOutOfRangeException>(() => mapper.CreateSolution(solutionValues, sourceCollection, waterLiters));
     }
 }

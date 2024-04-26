@@ -33,69 +33,69 @@ public class Ppm
         SeleniumPpm selenium, SodiumPpm sodium)
     {
         ArgumentNullException.ThrowIfNull(nitrogen);
-        ThrowIf.LowerThan(nitrogen.Ammonium,0);
-        ThrowIf.LowerThan(nitrogen.Amine,0);
-        ThrowIf.LowerThan(nitrogen.Nitrate,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Ammonium);
+        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Amine);
+        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Nitrate);
         Nitrogen = nitrogen;
         
         ArgumentNullException.ThrowIfNull(phosphorus);
-        ThrowIf.LowerThan(phosphorus.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(phosphorus.Value);
         Phosphorus = phosphorus;
 
         ArgumentNullException.ThrowIfNull(potassium);
-        ThrowIf.LowerThan(potassium.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(potassium.Value);
         Potassium = potassium;
 
         ArgumentNullException.ThrowIfNull(calcium);
-        ThrowIf.LowerThan(calcium.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(calcium.Value);
         Calcium = calcium;
 
         ArgumentNullException.ThrowIfNull(magnesium);
-        ThrowIf.LowerThan(magnesium.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(magnesium.Value);
         Magnesium = magnesium;
 
         ArgumentNullException.ThrowIfNull(sulfur);
-        ThrowIf.LowerThan(sulfur.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(sulfur.Value);
         Sulfur = sulfur;
 
         ArgumentNullException.ThrowIfNull(iron);
-        ThrowIf.LowerThan(iron.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(iron.Value);
         Iron = iron;
 
         ArgumentNullException.ThrowIfNull(copper);
-        ThrowIf.LowerThan(copper.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(copper.Value);
         Copper = copper;
 
         ArgumentNullException.ThrowIfNull(manganese);
-        ThrowIf.LowerThan(manganese.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(manganese.Value);
         Manganese = manganese;
 
         ArgumentNullException.ThrowIfNull(zinc);
-        ThrowIf.LowerThan(zinc.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(zinc.Value);
         Zinc = zinc;
 
         ArgumentNullException.ThrowIfNull(boron);
-        ThrowIf.LowerThan(boron.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(boron.Value);
         Boron = boron;
 
         ArgumentNullException.ThrowIfNull(molybdenum);
-        ThrowIf.LowerThan(molybdenum.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(molybdenum.Value);
         Molybdenum = molybdenum;
 
         ArgumentNullException.ThrowIfNull(chlorine);
-        ThrowIf.LowerThan(chlorine.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(chlorine.Value);
         Chlorine = chlorine;
 
         ArgumentNullException.ThrowIfNull(silicon);
-        ThrowIf.LowerThan(silicon.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(silicon.Value);
         Silicon = silicon;
 
         ArgumentNullException.ThrowIfNull(selenium);
-        ThrowIf.LowerThan(selenium.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(selenium.Value);
         Selenium = selenium;
 
         ArgumentNullException.ThrowIfNull(sodium);
-        ThrowIf.LowerThan(sodium.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(sodium.Value);
         Sodium = sodium;
     }
 }

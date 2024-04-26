@@ -11,10 +11,10 @@ public record FertilizerZinc : ElementFieldBase
 
     public FertilizerZinc(double znNonChelated = 0, double znEdta = 0) : base(znNonChelated + znEdta)
     {
-        ThrowIf.LowerThan(znNonChelated,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(znNonChelated);
         ZnNonChelated = znNonChelated;
 
-        ThrowIf.LowerThan(znEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(znEdta);
         ZnEdta = znEdta;
     }
 }

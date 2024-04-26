@@ -11,10 +11,10 @@ public record FertilizerCopper : ElementFieldBase
 
     public FertilizerCopper(double cuNonChelated = 0, double cuEdta = 0) : base(cuNonChelated + cuEdta)
     {
-        ThrowIf.LowerThan(cuNonChelated,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(cuNonChelated);
         CuNonChelated = cuNonChelated;
 
-        ThrowIf.LowerThan(cuEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(cuEdta);
         CuEdta = cuEdta;
     }
 }

@@ -20,11 +20,11 @@ public class PpmCalculationService : IPpmCalculationService
     /// <param name="waterLiters">The volume of water in liters used for dilution. Must be greater than 0.</param>
     /// <returns>A <see cref="Ppm"/> object containing the ppm values for all relevant nutrients.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceCollection"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="sourceCollection"/> is empty or if <paramref name="waterLiters"/> is less than or equal to zero.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="sourceCollection"/> is empty or if <paramref name="waterLiters"/> is less than or equal to zero.</exception>
     public Ppm CalculatePpm(IList<Fertilizer> sourceCollection, double waterLiters = 1)
     {
         ThrowIf.NullOrEmpty(sourceCollection);
-        ThrowIf.LowerThan(waterLiters, 0);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);
         
         double totalNo3 = 0, totalNh4 = 0, totalNh2 = 0, totalP = 0, totalK = 0, totalMg = 0, totalS = 0, totalCa = 0;
         double totalFe = 0, totalCu = 0, totalMn = 0, totalZn = 0, totalB = 0, totalMo = 0, totalCl = 0;

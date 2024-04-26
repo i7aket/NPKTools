@@ -16,22 +16,22 @@ public record FertilizerIron : ElementFieldBase
     public FertilizerIron(double feNonChelated = 0, double feEdta = 0, double feDtpa = 0, double feEddha = 0,
         double feHbed = 0, double feOrthoPart = 0) : base(feNonChelated + feEdta + feDtpa + feEddha + feHbed)
     {
-        ThrowIf.LowerThan(feNonChelated,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feNonChelated);
         FeNonChelated = feNonChelated;
 
-        ThrowIf.LowerThan(feEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feEdta);
         FeEdta = feEdta;
 
-        ThrowIf.LowerThan(feDtpa,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feDtpa);
         FeDtpa = feDtpa;
 
-        ThrowIf.LowerThan(feEddha,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feEddha);
         FeEddha = feEddha;
 
-        ThrowIf.LowerThan(feHbed,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feHbed);
         FeHbed = feHbed;
 
-        ThrowIf.LowerThan(feOrthoPart,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(feOrthoPart);
         FeOrthoPart = feOrthoPart;
     }
 }

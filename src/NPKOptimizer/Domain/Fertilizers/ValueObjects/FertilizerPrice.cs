@@ -8,7 +8,7 @@ public record FertilizerPrice
 
     public FertilizerPrice(double value = 1)
     {
-        ThrowIf.LowerThanOrEqual(value,0);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
         Value = value;
     }
     

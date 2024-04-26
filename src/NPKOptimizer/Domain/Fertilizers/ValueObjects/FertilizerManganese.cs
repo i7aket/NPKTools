@@ -9,10 +9,10 @@ public record FertilizerManganese : ElementFieldBase
 
     public FertilizerManganese(double mnNonChelated = 0, double mnEdta = 0) : base(mnNonChelated + mnEdta)
     {
-        ThrowIf.LowerThan(mnNonChelated,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mnNonChelated);
         MnNonChelated = mnNonChelated;
 
-        ThrowIf.LowerThan(mnEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mnEdta);
         MnEdta = mnEdta;
     }
 }

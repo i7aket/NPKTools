@@ -14,7 +14,7 @@ public class Fertilizer : FertilizerOptimizationModel
         : base(price, nitrogen, phosphorus, potassium, calcium, magnesium, sulfur, iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium, sodium, refId)
     {
         ArgumentNullException.ThrowIfNull(weight);
-        ThrowIf.LowerThan(weight.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(weight.Value);
         Weight = weight;
     }
     

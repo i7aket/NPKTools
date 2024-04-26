@@ -31,71 +31,88 @@ public class SolutionFinderSettings
         SeleniumSettings selenium, SodiumSettings sodium)
     {
         ArgumentNullException.ThrowIfNull(rangeFactor);
-        ThrowIf.NotInRange(rangeFactor.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(rangeFactor.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(rangeFactor.Value, 1);
         RangeFactor = rangeFactor;
         
         ArgumentNullException.ThrowIfNull(nitrogen);
-        ThrowIf.NotInRange(nitrogen.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(nitrogen.Value, 1);
         Nitrogen = nitrogen;
 
         ArgumentNullException.ThrowIfNull(phosphorus);
-        ThrowIf.NotInRange(phosphorus.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(phosphorus.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(phosphorus.Value, 1);
         Phosphorus = phosphorus;
 
         ArgumentNullException.ThrowIfNull(potassium);
-        ThrowIf.NotInRange(potassium.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(potassium.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(potassium.Value, 1);
         Potassium = potassium;
 
         ArgumentNullException.ThrowIfNull(calcium);
-        ThrowIf.NotInRange(calcium.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(calcium.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(calcium.Value, 1);
         Calcium = calcium;
 
         ArgumentNullException.ThrowIfNull(magnesium);
-        ThrowIf.NotInRange(magnesium.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(magnesium.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(magnesium.Value, 1);
         Magnesium = magnesium;
 
         ArgumentNullException.ThrowIfNull(sulfur);
-        ThrowIf.NotInRange(sulfur.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(sulfur.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(sulfur.Value, 1);
         Sulfur = sulfur;
 
         ArgumentNullException.ThrowIfNull(iron);
-        ThrowIf.NotInRange(iron.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(iron.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(iron.Value, 1);
         Iron = iron;
 
         ArgumentNullException.ThrowIfNull(copper);
-        ThrowIf.NotInRange(copper.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(copper.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(copper.Value, 1);
         Copper = copper;
 
         ArgumentNullException.ThrowIfNull(manganese);
-        ThrowIf.NotInRange(manganese.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(manganese.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(manganese.Value, 1);
         Manganese = manganese;
 
         ArgumentNullException.ThrowIfNull(zinc);
-        ThrowIf.NotInRange(zinc.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(zinc.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(zinc.Value, 1);
         Zinc = zinc;
 
         ArgumentNullException.ThrowIfNull(boron);
-        ThrowIf.NotInRange(boron.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(boron.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boron.Value, 1);
         Boron = boron;
 
         ArgumentNullException.ThrowIfNull(molybdenum);
-        ThrowIf.NotInRange(molybdenum.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(molybdenum.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(molybdenum.Value, 1);
         Molybdenum = molybdenum;
 
         ArgumentNullException.ThrowIfNull(chlorine);
-        ThrowIf.NotInRange(chlorine.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(chlorine.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(chlorine.Value, 1);
         Chlorine = chlorine;
 
         ArgumentNullException.ThrowIfNull(silicon);
-        ThrowIf.NotInRange(silicon.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(silicon.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(silicon.Value, 1);
         Silicon = silicon;
 
         ArgumentNullException.ThrowIfNull(selenium);
-        ThrowIf.NotInRange(selenium.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(selenium.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(selenium.Value, 1);
         Selenium = selenium;
 
         ArgumentNullException.ThrowIfNull(sodium);
-        ThrowIf.NotInRange(sodium.Value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(sodium.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(sodium.Value, 1);
         Sodium = sodium;
     }
 }

@@ -10,9 +10,9 @@ public record FertilizerNitrogen : ElementFieldBase
 
     public FertilizerNitrogen(double nitrate = 0, double ammonium = 0, double amine = 0) : base(nitrate + ammonium + amine)
     {
-        ThrowIf.LowerThan(nitrate,0);
-        ThrowIf.LowerThan(ammonium,0);
-        ThrowIf.LowerThan(amine,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(nitrate);
+        ArgumentOutOfRangeException.ThrowIfNegative(ammonium);
+        ArgumentOutOfRangeException.ThrowIfNegative(amine);
         Nitrate = nitrate;
         Ammonium = ammonium;
         Amine = amine;

@@ -9,8 +9,8 @@ public record FertilizerCalcium : ElementFieldBase
 
     public FertilizerCalcium(double caNonChelated = 0, double caEdta = 0) : base(caNonChelated + caEdta)
     {
-        ThrowIf.LowerThan(caNonChelated, 0);
-        ThrowIf.LowerThan(caEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(caNonChelated);
+        ArgumentOutOfRangeException.ThrowIfNegative(caEdta);
 
         CaNonChelated = caNonChelated;
         CaEdta = caEdta;

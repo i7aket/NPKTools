@@ -25,7 +25,8 @@ public abstract record SettingsFieldBase
     /// A value of 0 indicates infinite precision, while values greater than 0 specify the allowable precision percentage.</param>
     protected SettingsFieldBase(double value = 1)
     {
-        ThrowIf.NotInRange(value, 0, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 1);
         Value = value;
     }
 }

@@ -44,71 +44,71 @@ public class PpmTarget
         WaterVolumeLitersPpm liters)
     {
         ArgumentNullException.ThrowIfNull(n);
-        ThrowIf.LowerThan(n.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(n.Value);
         N = n;
 
         ArgumentNullException.ThrowIfNull(p);
-        ThrowIf.LowerThan(p.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(p.Value);
         P = p;
 
         ArgumentNullException.ThrowIfNull(k);
-        ThrowIf.LowerThan(k.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(k.Value);
         K = k;
 
         ArgumentNullException.ThrowIfNull(ca);
-        ThrowIf.LowerThan(ca.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(ca.Value);
         Ca = ca;
 
         ArgumentNullException.ThrowIfNull(mg);
-        ThrowIf.LowerThan(mg.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mg.Value);
         Mg = mg;
 
         ArgumentNullException.ThrowIfNull(s);
-        ThrowIf.LowerThan(s.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(s.Value);
         S = s;
 
         ArgumentNullException.ThrowIfNull(fe);
-        ThrowIf.LowerThan(fe.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(fe.Value);
         Fe = fe;
 
         ArgumentNullException.ThrowIfNull(cu);
-        ThrowIf.LowerThan(cu.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(cu.Value);
         Cu = cu;
 
         ArgumentNullException.ThrowIfNull(mn);
-        ThrowIf.LowerThan(mn.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mn.Value);
         Mn = mn;
 
         ArgumentNullException.ThrowIfNull(zn);
-        ThrowIf.LowerThan(zn.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(zn.Value);
         Zn = zn;
 
         ArgumentNullException.ThrowIfNull(b);
-        ThrowIf.LowerThan(b.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(b.Value);
         B = b;
 
         ArgumentNullException.ThrowIfNull(mo);
-        ThrowIf.LowerThan(mo.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mo.Value);
         Mo = mo;
 
         ArgumentNullException.ThrowIfNull(cl);
-        ThrowIf.LowerThan(cl.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(cl.Value);
         Cl = cl;
 
         ArgumentNullException.ThrowIfNull(si);
-        ThrowIf.LowerThan(si.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(si.Value);
         Si = si;
 
         ArgumentNullException.ThrowIfNull(se);
-        ThrowIf.LowerThan(se.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(se.Value);
         Se = se;
 
         ArgumentNullException.ThrowIfNull(na);
-        ThrowIf.LowerThan(na.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(na.Value);
         Na = na;
         
         ArgumentNullException.ThrowIfNull(liters);
-        ThrowIf.LowerThanOrEqual(liters.Value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(liters.Value);
         Liters = liters;
     }
 }

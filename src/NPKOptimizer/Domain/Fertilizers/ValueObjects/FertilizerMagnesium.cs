@@ -11,8 +11,8 @@ public record FertilizerMagnesium : ElementFieldBase
 
     public FertilizerMagnesium(double mgNonChelated = 0, double mgEdta = 0) : base(mgNonChelated + mgEdta)
     {
-        ThrowIf.LowerThan(mgNonChelated,0);
-        ThrowIf.LowerThan(mgEdta,0);
+        ArgumentOutOfRangeException.ThrowIfNegative(mgNonChelated);
+        ArgumentOutOfRangeException.ThrowIfNegative(mgEdta);
 
         MgNonChelated = mgNonChelated;
         MgEdta = mgEdta;

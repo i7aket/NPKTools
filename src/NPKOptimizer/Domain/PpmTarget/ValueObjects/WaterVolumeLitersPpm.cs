@@ -7,7 +7,7 @@ public record WaterVolumeLitersPpm
     public double Value { get; }
     public WaterVolumeLitersPpm (double value)
     {
-        ThrowIf.LowerThanOrEqual(value, 0);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
         Value = value;
     }
 };

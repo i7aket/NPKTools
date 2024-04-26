@@ -119,8 +119,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     {
         ThrowIf.NullOrEmpty(solutionValues);
         ThrowIf.NullOrEmpty(originalSourceCollection);
-        ThrowIf.LowerThanOrEqual(waterLiters, 0);
-        
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);
         Solution solutionCollection = new Solution
         {
             WaterLiters = waterLiters
@@ -133,7 +132,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
                 originalSourceCollection.FirstOrDefault(f => f.RefId.Value == itemId);
             
             ArgumentNullException.ThrowIfNull(fertilizerOptimizationModel);
-            ThrowIf.LowerThan(item.Value, 0);
+            ArgumentOutOfRangeException.ThrowIfNegative(item.Value);
             if (item.Value == 0) continue;
             
             FertilizerWeight weight = new FertilizerWeight(Math.Round(item.Value, OptimizationSettings.RoundingPrecision));
