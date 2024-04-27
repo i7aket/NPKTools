@@ -15,7 +15,7 @@ namespace NPKOptimizer.Tests.UnitTests
             double nitrate = 100.0, ammonium = 50.0, amine = 25.0;
             double p = 80.0, k = 120.0, ca = 60.0, mg = 40.0, s = 30.0;
             double fe = 15.0, cu = 7.0, mn = 3.0, zn = 5.0, b = 1.0, mo = 0.5;
-            double cl = 10.0, si = 8.0, se = 0.2, na = 2.0;
+            double cl = 10.0, si = 8.0, se = 0.2, na = 2.0, liters = 2;
     
             double expectedTotalValue = nitrate + ammonium + amine + p + k + ca + mg + s + fe +
                                         cu + mn + zn + b + mo + cl + si + se + na;
@@ -40,6 +40,7 @@ namespace NPKOptimizer.Tests.UnitTests
                 .AddSi(si)
                 .AddSe(se)
                 .AddNa(na)
+                .AddLiters(liters)
                 .Build();
 
             // Assert
@@ -62,6 +63,7 @@ namespace NPKOptimizer.Tests.UnitTests
             Assert.Equal(si, ppm.Silicon.Value);
             Assert.Equal(se, ppm.Selenium.Value);
             Assert.Equal(na, ppm.Sodium.Value);
+            Assert.Equal(liters, ppm.Liters.Value);
             Assert.Equal(expectedTotalValue, ppm.Value); 
         }
     }

@@ -5,7 +5,7 @@ namespace NPKOptimizer.Domain.PartsPerMillion.Builder;
 
 public class PpmBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : PpmBuilderBase<TBuilder>
 {
-    protected double Nitrate, Ammonium, Amine, P, K, Ca, Mg, S, Fe, Cu, Mn, Zn, B, Mo, Cl, Si, Se, Na;
+    protected double Nitrate, Ammonium, Amine, P, K, Ca, Mg, S, Fe, Cu, Mn, Zn, B, Mo, Cl, Si, Se, Na, Liters;
 
     protected override TBuilder Self => (TBuilder)this;
 
@@ -27,7 +27,8 @@ public class PpmBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : P
             new ChlorinePpm(Cl),
             new SiliconPpm(Si),
             new SeleniumPpm(Se),
-            new SodiumPpm(Na)
+            new SodiumPpm(Na),
+            new WaterVolumeLitersPpm(Liters)
         );
     }
 
@@ -49,4 +50,5 @@ public class PpmBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : P
     public TBuilder AddSi(double value) => SetValue(ref Si, value, nameof(Si));
     public TBuilder AddSe(double value) => SetValue(ref Se, value, nameof(Se));
     public TBuilder AddNa(double value) => SetValue(ref Na, value, nameof(Na));
+    public TBuilder AddLiters(double value) => SetValue(ref Liters, value, nameof(Liters));
 }

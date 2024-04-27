@@ -89,7 +89,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
                     ElementName.Si => fertilizer.Silicon.Value,
                     ElementName.Se => fertilizer.Selenium.Value,
                     ElementName.Na => fertilizer.Sodium.Value,
-                    _ => throw new ArgumentException($"Unknown nutrient: {element.Key}")
+                    _ => throw new ArgumentException($"Unknown nutrient: {element.Key}") 
                 };
                 constraintCoefficients[fertilizer.RefId.Value.ToString()] = nutrientValue;
             }

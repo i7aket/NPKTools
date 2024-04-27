@@ -29,7 +29,7 @@ public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
             new SiliconPpmTarget(Si),
             new SeleniumPpmTarget(Se),
             new SodiumPpmTarget(Na),
-            new WaterVolumeLitersPpm(Liters)
+            new WaterVolumeLitersPpmTarget(Liters)
         );
     }
 

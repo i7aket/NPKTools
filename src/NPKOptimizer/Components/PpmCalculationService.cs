@@ -71,7 +71,8 @@ public class PpmCalculationService : IPpmCalculationService
             chlorine: new ChlorinePpm(totalCl / waterLiters * OptimizationSettings.ConversionFactor),
             silicon: new SiliconPpm(totalSi / waterLiters * OptimizationSettings.ConversionFactor),
             selenium: new SeleniumPpm(totalSe / waterLiters * OptimizationSettings.ConversionFactor),
-            sodium: new SodiumPpm(totalNa / waterLiters * OptimizationSettings.ConversionFactor)
+            sodium: new SodiumPpm(totalNa / waterLiters * OptimizationSettings.ConversionFactor),
+            liters: new WaterVolumeLitersPpm(waterLiters)
         );
     }
 }

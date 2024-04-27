@@ -1,30 +1,218 @@
 # Fertilizer Optimizer
+<img src="assets/logo.png" alt="Logo" width="200"/>
 
-## Project Description
-
-Fertilizer Optimizer is a tool for agronomists and gardeners, developed on the .NET platform, that helps optimize the composition of fertilizers to achieve a specified nutrient concentration (measured in PPM - parts per million) in the mixture. The tool not only helps calculate the necessary amount of each fertilizer to achieve the desired PPM profile but can also analyze fertilizer mixtures, provide the current PPM profile, and suggest optimal mixture recipes based on the specified PPM profile.
-
-## Developer
-
-This program was developed by **Anatoliy Yermakov**.
-
+Fertilizer Optimizer is a tool developed on the .NET platform that helps adjust the ratio of each fertilizer to achieve the desired PPM (parts per million) profile. Additionally, it is capable of calculating the PPM of a mixture of fertilizers.
+## Features:
+### Fertilizer Optimizer
+- The FertilizerOptimizer is composed of three main components: an adapter, a mapper, and a solver. It takes a nutrient target in NPK values, a list of available fertilizers, and specific precision settings as inputs to calculate the optimal fertilizer mix. Here's how the flow works with these components:
+- Mapper: This component converts the high-level nutrient targets and the list of available fertilizers into a structured optimization problem. It translates real-world data about fertilizers and nutrient requirements into mathematical variables, constraints, and objectives suitable for optimization. After the solver processes these, the mapper also translates the optimized mathematical solution back into practical terms, specifying exact quantities of each fertilizer to use.
+- Solver: Once the optimization problem is defined, this component uses mathematical algorithms to find the best combination of fertilizers. The solver processes the variables and constraints set by the mapper to minimize or maximize the objective function, typically focusing on cost efficiency or nutrient precision.
+- Adapter: Acts as the bridge between the domain-specific data (fertilizers and nutrient targets) and the optimization tools. It takes the problem as defined by the mapper, passes it to the solver for optimization, and then interprets the output from the solver back into a practical solution, detailing the specific amounts of each fertilizer to use to achieve the nutrient targets.
+- Together, these components ensure that the FertilizerOptimizer effectively integrates and processes the inputs to produce an optimized fertilizer mix that meets the specified NPK goals with the required precision.
+### Ppm Analizerer
+- The PpmCalculationService is a component in the NPKOptimizer software that calculates the concentration of various nutrients in parts per million (ppm) when a specified collection of fertilizers is diluted in a given volume of water. This service is essential for users who need to understand the nutrient composition of their fertilizer solutions to ensure optimal plant growth.
+- Key Functions:
+Nutrient Calculation: It computes the ppm concentrations of major and minor plant nutrients including nitrogen (in forms of nitrate, ammonium, and amine), phosphorus, potassium, magnesium, sulfur, calcium, and trace elements such as iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium, and sodium.
+Flexible Dilution: Users can specify the volume of water in liters for the dilution process. This flexibility allows for accurate adjustment of nutrient concentrations based on different watering needs or systems.
+### Fertilizer Optimizer
+- The FertilizerOptimizer receives a nutrient target in NPK values, a list of available fertilizers for blending, and specific precision settings. These inputs enable it to calculate the optimal mix of fertilizers that meets the desired nutrient levels as closely as possible according to the specified accuracy requirements.
+## Developers
+This tool was developed by **Anatoliy Yermakov**.
 - **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
 - **GitHub**: [i7aket](https://github.com/i7aket)
 
-## Acknowledgements
-
 Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
-
 - **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
 - **GitHub**: [AqueGen](https://github.com/AqueGen)
+## Installation:
+To set up the Fertilizer Optimizer tool, you need to clone the repository and set up the environment. Follow these steps:
+1. **Clone the repository**
+    - For the stable version from the main branch:
+        ```
+        git clone https://github.com/i7aket/NPKOptimizer.git
+        ```
+    - For the latest developments from the develop branch:
+        ```
+        git clone -b develop https://github.com/i7aket/NPKOptimizer.git
+        ```
+2. **Set up the environment**
+    Navigate to the project directory and install the necessary dependencies:
+    ```
+    cd NPKOptimizer
+    dotnet restore
+    ```
+3. **Build the project**
+Compile the project to make sure everything is set up correctly:
+    ```
+    dotnet build
+    ```
+## License:
+This project is licensed under the MIT License - see the [License](LICENSE) file for details.
 
-## Features
+## Code Coverage:
+The project maintains a high standard of code quality with 99% unit test coverage, ensuring that the features perform as expected and are reliable under various scenarios.
 
-- **PPM Calculation**: Enter your fertilizer mixture, and the tool will calculate the current PPM profile of each nutrient, including both macro and microelements.
-- **Fertilizer Mixture Optimization**: Specify the desired PPM profile, and the tool will offer optimal fertilizer recipes to achieve the specified concentration. The tool includes a database of more than 30 fertilizers and is capable of proposing the maximum number of recipes with optimal fertilizer ratios.
-- **Custom Fertilizer Construction**: Users can create their own fertilizers by setting their composition according to their own needs and available resources, providing maximum flexibility in mixture selection.
-- **Atom Directory and Fertilizer Composition**: The tool contains an atom directory used for accurate calculations of fertilizer composition. Users can set the composition of each fertilizer, allowing for highly accurate PPM profile calculations based on the actual content of elements in the fertilizers.
+## Roadmap:
+### Optimal Fertilizer Ratio Finder: ✔ Completed - Currently in final testing phase.
+Description: This feature calculates the best combination of fertilizers from a provided collection based on fertilizer attributes and the desired ppm (parts per million) profile. This process optimizes nutrient delivery for specific agricultural needs.
+### PPM Calculation for Fertilizer Mixtures: ✔ Completed - Currently in final testing phase.
+Description: This function computes the PPM (parts per million) of nutrients in a given mixture of fertilizers, taking into account the weights of the fertilizers and the volume of liquid in which they will be dissolved. This is crucial for ensuring the accuracy of nutrient delivery according to the specified agricultural requirements.
+### Atom Repository and Fertilizer Composition: ✔ In final stages of development.
+Description: A comprehensive atom directory that allows for the formulation of fertilizer compositions and the calculation of NPK values based on their atomic compositions. A representation of fertilizer as a composition of atoms, enabling precise data on the percentage of each element present.
+### NPKOptimizer Preconfigured: ✔ In final stages of development.
+Description: A preconfigured version featuring over 40 fertilizers, built using Fertilizer Composition, and more than 20 fertilizer blending scenarios.
+### GreenSecrets Telegram Bot: ✔ In final stages of development.
+Description: A demo version of the final NPKOptimizer Preconfigured as a Telegram bot.
+### Fertilizer Composition Extended: In design phase.
+Description: An advanced model of fertilizer composition that includes molecular ions and more, providing a deeper level of detail and customization for nutrient optimization.
+## Contact Information:
+- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+## Usage:
+### Example of fertilizer ratio optimizer usage
+    ```
+    // Create the base optimizer
+    BaseMacroOptimizer optimizer = new BaseMacroOptimizer();
 
-## User Benefits
+    // Create the target profile for optimization
+    PpmTarget target = new PpmTargetBuilder()
+        .AddN(150)
+        .AddP(50)
+        .AddK(200)
+        .AddMg(60)
+        .AddCa(60)
+        .AddS(80)
+        .Build();
 
-This tool can be especially useful for both professional agronomists and gardening enthusiasts who aim to precisely select fertilizers for their plants. Thanks to the wide selection of fertilizers and the ability to create various mixtures, users can experiment and find the best solutions for their gardens and fields. For commercial organizations, implementing the Fertilizer Optimizer allows stores to provide a unique service to their customers: based on a specified PPM profile, necessary fertilizers can be selected from the store's current inventory. This makes the purchase of fertilizers more targeted and economically beneficial for the customer, as they receive exactly the fertilizers that are optimal for their agricultural needs.
+    // Obtain the optimized solution
+    Solution solutionResult = optimizer.Optimize(target);
+
+    // Print the solution to the console
+    PrintSolutionResults(solutionResult);
+
+    // Create the fertilizer mix analyzer
+    IPpmCalculationService calc = new PpmCalculationService();
+
+    // Analyze the mix generated by the optimizer
+    Ppm ppmResult = calc.CalculatePpm(solutionResult);
+
+    // Print the analysis results to the console
+    PrintPpmResults(ppmResult);
+
+    static void PrintSolutionResults(Solution solution)
+    {
+        StringBuilder outputBuilder = new StringBuilder();
+        foreach (Fertilizer fertilizer in solution)
+        {
+            outputBuilder.AppendLine($"Fertilizer ID: {fertilizer.RefId.Value}, ");
+            if (fertilizer.Nitrogen.Value != 0)
+                outputBuilder.AppendLine($"Nitrogen: {fertilizer.Nitrogen.Value}, ");
+            if (fertilizer.Phosphorus.Value != 0)
+                outputBuilder.AppendLine($"Phosphorus: {fertilizer.Phosphorus.Value}, ");
+            if (fertilizer.Potassium.Value != 0)
+                outputBuilder.AppendLine($"Potassium: {fertilizer.Potassium.Value}, ");
+            if (fertilizer.Calcium.Value != 0)
+                outputBuilder.AppendLine($"Calcium: {fertilizer.Calcium.Value}, ");
+            if (fertilizer.Magnesium.Value != 0)
+                outputBuilder.AppendLine($"Magnesium: {fertilizer.Magnesium.Value}, ");
+            if (fertilizer.Sulfur.Value != 0)
+                outputBuilder.AppendLine($"Sulfur: {fertilizer.Sulfur.Value}, ");
+            if (fertilizer.Weight.Value != 0)
+                outputBuilder.AppendLine($"Weight: {fertilizer.Weight.Value} gr");
+            outputBuilder.AppendLine($"----------------------------------------");
+        }
+
+        Console.WriteLine(outputBuilder.ToString());
+    }
+
+    static void PrintPpmResults(Ppm ppmResult)
+    {
+        StringBuilder outputBuilder = new StringBuilder();
+        outputBuilder.AppendLine($"Nitrogen ppm: {ppmResult.Nitrogen?.Value ?? 0}");
+        outputBuilder.AppendLine($"Phosphorus ppm: {ppmResult.Phosphorus?.Value ?? 0}");
+        outputBuilder.AppendLine($"Potassium ppm: {ppmResult.Potassium?.Value ?? 0}");
+        outputBuilder.AppendLine($"Calcium ppm: {ppmResult.Calcium?.Value ?? 0}");
+        outputBuilder.AppendLine($"Magnesium ppm: {ppmResult.Magnesium?.Value ?? 0}");
+        outputBuilder.AppendLine($"Sulfur ppm: {ppmResult.Sulfur?.Value ?? 0}");
+        outputBuilder.AppendLine($"Liters: {ppmResult.Liters?.Value ?? 0}");
+        Console.WriteLine(outputBuilder.ToString());
+    }
+
+    // Base class for the macro optimizer
+    public class BaseMacroOptimizer
+    {
+        // Instantiate the optimizer with a mapper and a solver adapter
+        IFertilizerOptimizer _optimizer =
+            new FertilizerOptimizationAdapter(new GoogleOrToolsOptimizationSolver(), new OptimizationProblemMapper());
+
+        // Method to optimize based on the desired profile
+        public Solution Optimize(PpmTarget ppmTarget)
+        {
+            // Define the basic set of fertilizers for the recipe
+            IList<FertilizerOptimizationModel> collection = new List<FertilizerOptimizationModel>()
+            {
+                // CalciumNitrate
+                new FertilizerBuilder()
+                    .AddNo3(11.863)
+                    .AddCaNonChelated(16.972)
+                    .Build(),
+
+                // PotassiumNitrate
+                new FertilizerBuilder()
+                    .AddNo3(13.854)
+                    .AddK(38.672)
+                    .Build(),
+
+                // AmmoniumNitrate
+                new FertilizerBuilder()
+                    .AddNo3(17.499)
+                    .AddNh4(17.499)
+                    .Build(),
+
+                // MagnesiumSulfate
+                new FertilizerBuilder()
+                    .AddMgNonChelated(9.861)
+                    .AddS(13.008)
+                    .Build(),
+
+                // PotassiumDihydrogenPhosphate
+                new FertilizerBuilder()
+                    .AddP(22.761)
+                    .AddK(28.731)
+                    .Build(),
+
+                // PotassiumSulfate
+                new FertilizerBuilder()
+                    .AddS(18.401)
+                    .AddK(44.874)
+                    .Build(),
+
+                // MagnesiumNitrate
+                new FertilizerBuilder()
+                    .AddMgNonChelated(9.479)
+                    .AddNo3(10.925)
+                    .Build(),
+
+                // ManganeseSulfate
+                new FertilizerBuilder()
+                    .AddS(18.969)
+                    .AddMnNonChelated(32.506)
+                    .Build()
+            };
+
+            // Set the options for matching the macro elements precisely
+            SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
+                .AddN(1)
+                .AddP(1)
+                .AddK(1)
+                .AddCa(1)
+                .AddMg(1)
+                .AddS(1)
+                .AddCl(1)
+                .Build();
+
+            // Perform the optimization and return the result
+            return _optimizer.Optimize(ppmTarget, collection, settings);
+        }
+    }
+    ```
+

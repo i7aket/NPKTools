@@ -1,5 +1,3 @@
-using NPKOptimizer.Common;
-
 namespace NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
 /// <summary>

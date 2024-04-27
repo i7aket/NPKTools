@@ -1,26 +1,96 @@
-using NPKOptimizer.Common;
 using NPKOptimizer.Domain.Fertilizers.ValueObjects;
 namespace NPKOptimizer.Domain.Fertilizers;
-
+/// <summary>
+/// Represents the base type for a fertilizer detailing all fundamental nutrient attributes.
+/// This class serves as a central collection of data points, each representing a specific nutrient or property of the fertilizer.
+/// These attributes are essential for the optimization of fertilizers
+/// </summary>
 public class FertilizerAttributes 
 {
+    /// <summary>
+    /// Represents the monetary price of the fertilizer.
+    /// </summary>
     public FertilizerPrice Price { get; set; }
-    public FertilizerNitrogen Nitrogen { get; set;}
-    public FertilizerPhosphorus Phosphorus { get; set;}
-    public FertilizerPotassium Potassium { get; set;}
-    public FertilizerCalcium Calcium { get; set;}
-    public FertilizerMagnesium Magnesium { get; set;}
-    public FertilizerSulfur Sulfur { get; set;}
-    public FertilizerIron Iron { get; set;}
-    public FertilizerCopper Copper { get; set;}
-    public FertilizerManganese Manganese { get; set;}
-    public FertilizerZinc Zinc { get; set;}
-    public FertilizerBoron Boron { get; set;}
-    public FertilizerMolybdenum Molybdenum { get; set;}
-    public FertilizerChlorine Chlorine { get; set;}
-    public FertilizerSilicon Silicon { get; set;}
-    public FertilizerSelenium Selenium { get; set;}
-    public FertilizerSodium Sodium { get; set;}
+
+    /// <summary>
+    /// Represents the nitrogen (N) content in the fertilizer.
+    /// </summary>
+    public FertilizerNitrogen Nitrogen { get; set; }
+
+    /// <summary>
+    /// Represents the phosphorus (P) content in the fertilizer.
+    /// </summary>
+    public FertilizerPhosphorus Phosphorus { get; set; }
+
+    /// <summary>
+    /// Represents the potassium (K) content in the fertilizer.
+    /// </summary>
+    public FertilizerPotassium Potassium { get; set; }
+
+    /// <summary>
+    /// Represents the calcium (Ca) content in the fertilizer.
+    /// </summary>
+    public FertilizerCalcium Calcium { get; set; }
+
+    /// <summary>
+    /// Represents the magnesium (Mg) content in the fertilizer.
+    /// </summary>
+    public FertilizerMagnesium Magnesium { get; set; }
+
+    /// <summary>
+    /// Represents the sulfur (S) content in the fertilizer.
+    /// </summary>
+    public FertilizerSulfur Sulfur { get; set; }
+
+    /// <summary>
+    /// Represents the iron (Fe) content in the fertilizer.
+    /// </summary>
+    public FertilizerIron Iron { get; set; }
+
+    /// <summary>
+    /// Represents the copper (Cu) content in the fertilizer.
+    /// </summary>
+    public FertilizerCopper Copper { get; set; }
+
+    /// <summary>
+    /// Represents the manganese (Mn) content in the fertilizer.
+    /// </summary>
+    public FertilizerManganese Manganese { get; set; }
+
+    /// <summary>
+    /// Represents the zinc (Zn) content in the fertilizer.
+    /// </summary>
+    public FertilizerZinc Zinc { get; set; }
+
+    /// <summary>
+    /// Represents the boron (B) content in the fertilizer.
+    /// </summary>
+    public FertilizerBoron Boron { get; set; }
+
+    /// <summary>
+    /// Represents the molybdenum (Mo) content in the fertilizer.
+    /// </summary>
+    public FertilizerMolybdenum Molybdenum { get; set; }
+
+    /// <summary>
+    /// Represents the chlorine (Cl) content in the fertilizer.
+    /// </summary>
+    public FertilizerChlorine Chlorine { get; set; }
+
+    /// <summary>
+    /// Represents the silicon (Si) content in the fertilizer.
+    /// </summary>
+    public FertilizerSilicon Silicon { get; set; }
+
+    /// <summary>
+    /// Represents the selenium (Se) content in the fertilizer.
+    /// </summary>
+    public FertilizerSelenium Selenium { get; set; }
+
+    /// <summary>
+    /// Represents the sodium (Na) content in the fertilizer.
+    /// </summary>
+    public FertilizerSodium Sodium { get; set; }
     
     public FertilizerAttributes(){}
     
@@ -44,83 +114,54 @@ public class FertilizerAttributes
         FertilizerSodium sodium)
     {
         ArgumentNullException.ThrowIfNull(price);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price.Value);
         Price = price;
 
         ArgumentNullException.ThrowIfNull(nitrogen);
-        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Amine);
-        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Ammonium);
-        ArgumentOutOfRangeException.ThrowIfNegative(nitrogen.Nitrate);
         Nitrogen = nitrogen;
 
         ArgumentNullException.ThrowIfNull(phosphorus);
-        ArgumentOutOfRangeException.ThrowIfNegative(phosphorus.Value);
         Phosphorus = phosphorus;
 
         ArgumentNullException.ThrowIfNull(potassium);
-        ArgumentOutOfRangeException.ThrowIfNegative(potassium.Value);
         Potassium = potassium;
 
         ArgumentNullException.ThrowIfNull(calcium);
-        ArgumentOutOfRangeException.ThrowIfNegative(calcium.CaEdta);
-        ArgumentOutOfRangeException.ThrowIfNegative(calcium.CaNonChelated);
         Calcium = calcium;
 
         ArgumentNullException.ThrowIfNull(magnesium);
-        ArgumentOutOfRangeException.ThrowIfNegative(magnesium.MgEdta);
-        ArgumentOutOfRangeException.ThrowIfNegative(magnesium.MgNonChelated);
         Magnesium = magnesium;
 
         ArgumentNullException.ThrowIfNull(sulfur);
-        ArgumentOutOfRangeException.ThrowIfNegative(sulfur.Value);
         Sulfur = sulfur;
 
         ArgumentNullException.ThrowIfNull(iron);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeNonChelated);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeEdta);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeDtpa);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeEddha);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeHbed);
-        ArgumentOutOfRangeException.ThrowIfNegative(iron.FeOrthoPart);
         Iron = iron;
 
         ArgumentNullException.ThrowIfNull(copper);
-        ArgumentOutOfRangeException.ThrowIfNegative(copper.CuNonChelated);
-        ArgumentOutOfRangeException.ThrowIfNegative(copper.CuEdta);
         Copper = copper;
 
         ArgumentNullException.ThrowIfNull(manganese);
-        ArgumentOutOfRangeException.ThrowIfNegative(manganese.MnEdta);
-        ArgumentOutOfRangeException.ThrowIfNegative(manganese.MnNonChelated);
         Manganese = manganese;
 
         ArgumentNullException.ThrowIfNull(zinc);
-        ArgumentOutOfRangeException.ThrowIfNegative(zinc.ZnNonChelated);
-        ArgumentOutOfRangeException.ThrowIfNegative(zinc.ZnEdta);
         Zinc = zinc;
 
         ArgumentNullException.ThrowIfNull(boron);
-        ArgumentOutOfRangeException.ThrowIfNegative(boron.Value);
         Boron = boron;
 
         ArgumentNullException.ThrowIfNull(molybdenum);
-        ArgumentOutOfRangeException.ThrowIfNegative(molybdenum.Value);
         Molybdenum = molybdenum;
 
         ArgumentNullException.ThrowIfNull(chlorine);
-        ArgumentOutOfRangeException.ThrowIfNegative(chlorine.Value);
         Chlorine = chlorine;
 
         ArgumentNullException.ThrowIfNull(silicon);
-        ArgumentOutOfRangeException.ThrowIfNegative(silicon.Value);
         Silicon = silicon;
 
         ArgumentNullException.ThrowIfNull(selenium);
-        ArgumentOutOfRangeException.ThrowIfNegative(selenium.Value);
         Selenium = selenium;
 
         ArgumentNullException.ThrowIfNull(sodium);
-        ArgumentOutOfRangeException.ThrowIfNegative(sodium.Value);
         Sodium = sodium;
     }
 }

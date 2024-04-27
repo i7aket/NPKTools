@@ -10,9 +10,13 @@ namespace NPKOptimizer.Tests.UnitTests;
 
 public class PpmCalculationServiceTests
 {
-    [Fact]
+    [Theory]
     [Trait("Category", "Unit")]
-    public void CalculatePpm_WithValidMix_ReturnsCorrectPpmValues()
+    [InlineData(1)]
+    [InlineData(0.5)]
+    [InlineData(2)]
+    [InlineData(100)]
+    public void CalculatePpm_WithValidMix_ReturnsCorrectPpmValues(double liters)
     {
         // Arrange
         IPpmCalculationService ppmCalculationService = new PpmCalculationService();
@@ -21,42 +25,42 @@ public class PpmCalculationServiceTests
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5"))
-                .AddWeight(0.589)
+                .AddWeight(0.589 * liters)
                 .AddNo3(11.863)
                 .AddCaNonChelated(16.972)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("2fc8a292-2095-42c0-bd50-9b6b355bf92a"))
-                .AddWeight(0.137)
+                .AddWeight(0.137 * liters)
                 .AddNo3(17.499)
                 .AddNh4(17.499)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("8389dbfb-792f-40d0-8fd9-701a506af48b"))
-                .AddWeight(0.325)
+                .AddWeight(0.325 * liters)
                 .AddMgNonChelated(9.861)
                 .AddS(13.008)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("9d0460fc-596f-4b70-8ebb-af217aecc097"))
-                .AddWeight(0.22)
+                .AddWeight(0.22 * liters)
                 .AddP(22.761)
                 .AddK(28.731)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("4fa956e7-114a-41e4-b6da-10643cdd8086"))
-                .AddWeight(0.305)
+                .AddWeight(0.305 * liters)
                 .AddS(18.401)
                 .AddK(44.874)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("6aeff6a8-a8dc-4b3c-acf5-817ada864557"))
-                .AddWeight(0.295)
+                .AddWeight(0.295 * liters)
                 .AddMgNonChelated(9.479)
                 .AddNo3(10.925)
                 .Build(),
@@ -65,66 +69,65 @@ public class PpmCalculationServiceTests
                 .AddId(Guid.Parse("a3ce72b5-8496-48d6-a8eb-4df3f6ca01fb"))
                 .AddFeNonChelated(20.088)
                 .AddS(11.532)
-                .AddWeight(0.01)
+                .AddWeight(0.01 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("9f0c6df5-6dc1-4113-b911-e50af9410248"))
                 .AddS(12.841)
                 .AddCuNonChelated(25.451)
-                .AddWeight(0.0002)
+                .AddWeight(0.0002 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("31c557f5-ced3-4b5a-ab9f-b1b8aa34dc43"))
                 .AddS(18.969)
                 .AddMnNonChelated(32.506)
-                .AddWeight(0.0017)
+                .AddWeight(0.0017 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("39bb0466-fe87-4144-82c0-9aa460ac77c6"))
                 .AddS(17.866)
                 .AddZnNonChelated(36.433)
-                .AddWeight(0.0009)
+                .AddWeight(0.0009 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("10f35129-8b50-448d-98ed-8442cfc26985"))
                 .AddB(17.483)
-                .AddWeight(0.0016)
+                .AddWeight(0.0016 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("d190bcb4-1236-4bb4-95d6-584c719f4bde"))
                 .AddNa(19.003)
                 .AddMo(39.656)
-                .AddWeight(0.000126)
+                .AddWeight(0.000126 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("337401e7-cbe4-48aa-968b-cceba18d6478"))
                 .AddCaNonChelated(18.295)
                 .AddCl(32.364)
-                .AddWeight(3.09E-05)
+                .AddWeight(3.09E-05 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("0f886cf2-729e-4d89-a1cf-08acb99d5ffe"))
                 .AddSi(23.009)
                 .AddNa(37.669)
-                .AddWeight(4.346E-05)
+                .AddWeight(4.346E-05 * liters)
                 .Build(),
 
             new FertilizerBuilder()
                 .AddId(Guid.Parse("2e7b59c1-b44b-4e82-a408-a6cb7d9db2cb"))
                 .AddSe(41.795)
                 .AddNa(24.335)
-                .AddWeight(2.393E-05)
+                .AddWeight(2.393E-05 * liters)
                 .Build()
         };
-
-
+        
         Ppm expectedPpm = new PpmBuilder()
             .AddNitrate(126)
             .AddAmmonium(24)
@@ -143,11 +146,11 @@ public class PpmCalculationServiceTests
             .AddSi(0.01)
             .AddSe(0.01)
             .AddNa(0.046)
+            .AddLiters(liters)
             .Build();
 
         // Act
-        Ppm actualPpm = ppmCalculationService.CalculatePpm(fertilizers);
-        const double precision = 1;
+        Ppm actualPpm = ppmCalculationService.CalculatePpm(fertilizers, liters);
 
         // Assert
         Assert.InRange(actualPpm.Nitrogen.Nitrate, expectedPpm.Nitrogen.Nitrate * 0.99, expectedPpm.Nitrogen.Nitrate * 1.01);

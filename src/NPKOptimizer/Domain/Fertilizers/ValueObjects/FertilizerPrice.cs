@@ -1,7 +1,7 @@
-using NPKOptimizer.Common;
-
 namespace NPKOptimizer.Domain.Fertilizers.ValueObjects;
-
+/// <summary>
+/// Represents the monetary price of the fertilizer. The price must be a positive value.
+/// </summary>
 public record FertilizerPrice
 {
     public double Value;
@@ -11,5 +11,4 @@ public record FertilizerPrice
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
         Value = value;
     }
-    
 }
