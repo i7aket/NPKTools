@@ -17,7 +17,7 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
     /// <returns>A dictionary where keys are variable names and values are their optimized numerical values.</returns>
     /// <exception cref="ArgumentNullException">Thrown when any critical component of the problem (such as the problem itself, its variables, constraints, or objective) is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the solver does not find an optimal solution.</exception>
-    public Dictionary<string, double> Solve(OptimizationProblem problem)
+    public Dictionary<string, double>? Solve(OptimizationProblem problem)
     {
         ArgumentNullException.ThrowIfNull(problem);
         ArgumentNullException.ThrowIfNull(problem.Objective);
@@ -59,9 +59,7 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
         Solver.ResultStatus resultStatus = solver.Solve();
 
         if (resultStatus != Solver.ResultStatus.OPTIMAL)
-        {
-            throw new InvalidOperationException(OptimizationSettings.SolverOptimalSolutionNotFoundMessage);
-        }
+            return default;
 
         return variables.ToDictionary(variable => variable.Key, variable => variable.Value.SolutionValue());
     }

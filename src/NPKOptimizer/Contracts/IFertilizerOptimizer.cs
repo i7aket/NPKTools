@@ -17,5 +17,5 @@ public interface IFertilizerOptimizer
     /// <param name="sourceCollection">The collection of fertilizers available for optimization.</param>
     /// <param name="settings">Settings to guide the optimization process.</param>
     /// <returns>A solution detailing the optimized quantities of each fertilizer.</returns>
-    Solution Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings);
+    Solution? Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings);
 }

@@ -122,9 +122,11 @@ public class GoogleOrToolsOptimizationSolverTests
             }
         };
 
-        // Act & Assert
-        Action act = () => Solver.Solve(problem);
-        act.Should().Throw<InvalidOperationException>().WithMessage(NPKOptimizer.Const.OptimizationSettings.SolverOptimalSolutionNotFoundMessage);
+        // Act
+        Dictionary<string, double> result = Solver.Solve(problem);
+
+        // Assert
+        result.Should().BeNull();
     }
     
     [Fact]

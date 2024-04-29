@@ -38,4 +38,20 @@ public static class ThrowIf
             throw new ArgumentException("The collection cannot be empty.", parameterName);
         }
     }
+    
+    /// <summary>
+    /// Throws an InvalidOperationException if the item cannot be added to the set (indicating a duplicate).
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the set.</typeparam>
+    /// <param name="set">The set to which the item is being added.</param>
+    /// <param name="item">The item to add.</param>
+    /// <param name="parameterName">The name of the parameter being checked. This is captured automatically.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the item is already in the set.</exception>
+    public static void Duplicate<T>(HashSet<T> set, T item, [CallerArgumentExpression("item")] string? parameterName = null)
+    {
+        if (!set.Add(item))
+        {
+            throw new InvalidOperationException($"Duplicate {parameterName} detected with identical attributes.");
+        }
+    }
 }

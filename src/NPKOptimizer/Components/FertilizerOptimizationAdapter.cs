@@ -35,12 +35,17 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
     /// <param name="sourceCollection">The collection of fertilizers available for use.</param>
     /// <param name="settings">The settings that influence how the optimization is performed.</param>
     /// <returns>A <see cref="Solution"/> that specifies the optimized amounts of each fertilizer to meet the nutrient targets.</returns>
-    public Solution Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection,
+    public Solution? Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection,
         SolutionFinderSettings settings)
     {
         OptimizationProblem problem = Mapper.CreateOptimizationProblem(target, sourceCollection, settings);
 
-        Dictionary<string, double> result = OptimizationProblemSolver.Solve(problem);
+        Dictionary<string, double>? result = OptimizationProblemSolver.Solve(problem);
+
+        if (result == null)
+        {
+            return default;
+        }
 
         return Mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
     }

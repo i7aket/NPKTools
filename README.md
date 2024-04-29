@@ -65,6 +65,18 @@ Description: A preconfigured version featuring over 40 fertilizers, built using 
 Description: A demo version of the final NPKOptimizer Preconfigured as a Telegram bot.
 ### Fertilizer Composition Extended: In design phase.
 Description: An advanced model of fertilizer composition that includes molecular ions and more, providing a deeper level of detail and customization for nutrient optimization.
+
+## Dependencies
+### NPKOptimizer
+- [**Google OR-Tools**](https://developers.google.com/optimization): Used for performing optimization calculations.
+### NPKOptimizer.Tests
+- [**xUnit**](https://xunit.net/): Framework for unit testing.
+- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
+- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
+- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
+- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
+- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
+
 ## Contact Information:
 - **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
 ## Usage:

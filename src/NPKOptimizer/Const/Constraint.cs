@@ -1,6 +1,6 @@
 namespace NPKOptimizer.Const;
 
-public static class ElementName
+public static class Names
 {
     public const string N = "N";
     public const string P = "P";
@@ -18,4 +18,5 @@ public static class ElementName
     public const string Si = "Si";
     public const string Se = "Se";
     public const string Na = "Na";
+    public const string Liters = "L";
 }

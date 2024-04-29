@@ -40,30 +40,30 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
         {
             if (!idsSet.Add(fertilizer.RefId.Value))
                 throw new InvalidOperationException($"Duplicate fertilizer ID detected: {fertilizer.RefId.Value}.");
-            if (!fertilizerSet.Add(fertilizer))
-                throw new InvalidOperationException($"Duplicate fertilizer attributes detected for ID: {fertilizer.RefId.Value}.");
+            ThrowIf.Duplicate(fertilizerSet, fertilizer);
+            
             string fertilizerIdKey = fertilizer.RefId.Value.ToString();
             problem.Variables[fertilizerIdKey] = 0;
             problem.Objective.Coefficients[fertilizerIdKey] = fertilizer.Price.Value;
         }
         Dictionary<string, (double targetValue, double accuracy)> targetElements = new()
         {
-            { ElementName.N, (target.N.Value / OptimizationSettings.ConversionFactor, settings.Nitrogen.Value) },
-            { ElementName.P, (target.P.Value / OptimizationSettings.ConversionFactor, settings.Phosphorus.Value) },
-            { ElementName.K, (target.K.Value / OptimizationSettings.ConversionFactor, settings.Potassium.Value) },
-            { ElementName.Ca, (target.Ca.Value / OptimizationSettings.ConversionFactor, settings.Calcium.Value) },
-            { ElementName.Mg, (target.Mg.Value / OptimizationSettings.ConversionFactor, settings.Magnesium.Value) },
-            { ElementName.S, (target.S.Value / OptimizationSettings.ConversionFactor, settings.Sulfur.Value) },
-            { ElementName.Fe, (target.Fe.Value / OptimizationSettings.ConversionFactor, settings.Iron.Value) },
-            { ElementName.Cu, (target.Cu.Value / OptimizationSettings.ConversionFactor, settings.Copper.Value) },
-            { ElementName.Mn, (target.Mn.Value / OptimizationSettings.ConversionFactor, settings.Manganese.Value) },
-            { ElementName.Zn, (target.Zn.Value / OptimizationSettings.ConversionFactor, settings.Zinc.Value) },
-            { ElementName.B, (target.B.Value / OptimizationSettings.ConversionFactor, settings.Boron.Value) },
-            { ElementName.Mo, (target.Mo.Value / OptimizationSettings.ConversionFactor, settings.Molybdenum.Value) },
-            { ElementName.Cl, (target.Cl.Value / OptimizationSettings.ConversionFactor, settings.Chlorine.Value) },
-            { ElementName.Si, (target.Si.Value / OptimizationSettings.ConversionFactor, settings.Silicon.Value) },
-            { ElementName.Se, (target.Se.Value / OptimizationSettings.ConversionFactor, settings.Selenium.Value) },
-            { ElementName.Na, (target.Na.Value / OptimizationSettings.ConversionFactor, settings.Sodium.Value) }
+            { Names.N, (target.N.Value / OptimizationSettings.ConversionFactor, settings.Nitrogen.Value) },
+            { Names.P, (target.P.Value / OptimizationSettings.ConversionFactor, settings.Phosphorus.Value) },
+            { Names.K, (target.K.Value / OptimizationSettings.ConversionFactor, settings.Potassium.Value) },
+            { Names.Ca, (target.Ca.Value / OptimizationSettings.ConversionFactor, settings.Calcium.Value) },
+            { Names.Mg, (target.Mg.Value / OptimizationSettings.ConversionFactor, settings.Magnesium.Value) },
+            { Names.S, (target.S.Value / OptimizationSettings.ConversionFactor, settings.Sulfur.Value) },
+            { Names.Fe, (target.Fe.Value / OptimizationSettings.ConversionFactor, settings.Iron.Value) },
+            { Names.Cu, (target.Cu.Value / OptimizationSettings.ConversionFactor, settings.Copper.Value) },
+            { Names.Mn, (target.Mn.Value / OptimizationSettings.ConversionFactor, settings.Manganese.Value) },
+            { Names.Zn, (target.Zn.Value / OptimizationSettings.ConversionFactor, settings.Zinc.Value) },
+            { Names.B, (target.B.Value / OptimizationSettings.ConversionFactor, settings.Boron.Value) },
+            { Names.Mo, (target.Mo.Value / OptimizationSettings.ConversionFactor, settings.Molybdenum.Value) },
+            { Names.Cl, (target.Cl.Value / OptimizationSettings.ConversionFactor, settings.Chlorine.Value) },
+            { Names.Si, (target.Si.Value / OptimizationSettings.ConversionFactor, settings.Silicon.Value) },
+            { Names.Se, (target.Se.Value / OptimizationSettings.ConversionFactor, settings.Selenium.Value) },
+            { Names.Na, (target.Na.Value / OptimizationSettings.ConversionFactor, settings.Sodium.Value) }
         };
         foreach (KeyValuePair<string, (double targetValue, double accuracy)> element in targetElements)
         {
@@ -73,22 +73,22 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
             {
                 double nutrientValue = element.Key switch
                 {
-                    ElementName.N => fertilizer.Nitrogen.Value,
-                    ElementName.P => fertilizer.Phosphorus.Value,
-                    ElementName.K => fertilizer.Potassium.Value,
-                    ElementName.Ca => fertilizer.Calcium.Value,
-                    ElementName.Mg => fertilizer.Magnesium.Value,
-                    ElementName.S => fertilizer.Sulfur.Value,
-                    ElementName.Fe => fertilizer.Iron.Value,
-                    ElementName.Cu => fertilizer.Copper.Value,
-                    ElementName.Mn => fertilizer.Manganese.Value,
-                    ElementName.Zn => fertilizer.Zinc.Value,
-                    ElementName.B => fertilizer.Boron.Value,
-                    ElementName.Mo => fertilizer.Molybdenum.Value,
-                    ElementName.Cl => fertilizer.Chlorine.Value,
-                    ElementName.Si => fertilizer.Silicon.Value,
-                    ElementName.Se => fertilizer.Selenium.Value,
-                    ElementName.Na => fertilizer.Sodium.Value,
+                    Names.N => fertilizer.Nitrogen.Value,
+                    Names.P => fertilizer.Phosphorus.Value,
+                    Names.K => fertilizer.Potassium.Value,
+                    Names.Ca => fertilizer.Calcium.Value,
+                    Names.Mg => fertilizer.Magnesium.Value,
+                    Names.S => fertilizer.Sulfur.Value,
+                    Names.Fe => fertilizer.Iron.Value,
+                    Names.Cu => fertilizer.Copper.Value,
+                    Names.Mn => fertilizer.Manganese.Value,
+                    Names.Zn => fertilizer.Zinc.Value,
+                    Names.B => fertilizer.Boron.Value,
+                    Names.Mo => fertilizer.Molybdenum.Value,
+                    Names.Cl => fertilizer.Chlorine.Value,
+                    Names.Si => fertilizer.Silicon.Value,
+                    Names.Se => fertilizer.Selenium.Value,
+                    Names.Na => fertilizer.Sodium.Value,
                     _ => throw new ArgumentException($"Unknown nutrient: {element.Key}") 
                 };
                 constraintCoefficients[fertilizer.RefId.Value.ToString()] = nutrientValue;

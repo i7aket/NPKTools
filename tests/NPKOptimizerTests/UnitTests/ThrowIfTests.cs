@@ -56,4 +56,25 @@ public class ThrowIfTests
         Assert.Null(exceptionRecord);
     }
     
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Duplicate_WithNewItem_DoesNotThrow()
+    {
+        HashSet<int> set = new HashSet<int> { 1, 2, 3 };
+        int newItem = 4;
+
+        Exception exceptionRecord = Record.Exception(() => ThrowIf.Duplicate(set, newItem));
+        Assert.Null(exceptionRecord);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Duplicate_WithExistingItem_ThrowsInvalidOperationException()
+    {
+        HashSet<int> set = new HashSet<int> { 1, 2, 3 };
+        int duplicateItem = 2;
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => ThrowIf.Duplicate(set, duplicateItem));
+        Assert.StartsWith("Duplicate duplicateItem detected with identical attributes.", exception.Message);
+    }
 }
