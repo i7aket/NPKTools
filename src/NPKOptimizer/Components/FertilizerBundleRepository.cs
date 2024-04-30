@@ -1,18 +1,30 @@
+using NPKOptimizer.Contracts;
 using NPKOptimizer.Domain.Fertilizers;
-using NPKOptimizerCalc.Builders;
-using NPKOptimizerCalc.Contracts;
 
-namespace NPKOptimizerCalc.Components;
-
+namespace NPKOptimizer.Components;
+/// <summary>
+/// Repository for managing collections of fertilizer bundles used in optimization processes. This repository provides
+/// access to predefined sets of macro and micro nutrient fertilizers.
+/// </summary>
 public class FertilizerBundleRepository : IFertilizerBundleRepository
 {
+    /// <summary>
+    /// Gets a collection of macro nutrient fertilizer bundles.
+    /// </summary>
+    /// <returns>A list of lists, each containing models of fertilizers for macro nutrient optimization.</returns>
     public IList<IList<FertilizerOptimizationModel>> Marco() => _marco.Value;
     private readonly Lazy<IList<IList<FertilizerOptimizationModel>>> _marco;
 
+    /// <summary>
+    /// Gets a collection of micro nutrient fertilizer bundles.
+    /// </summary>
+    /// <returns>A list of lists, each containing models of fertilizers for micro nutrient optimization.</returns>
     public IList<IList<FertilizerOptimizationModel>> Micro() => _micro.Value;
     private readonly Lazy<IList<IList<FertilizerOptimizationModel>>> _micro;
 
-
+    /// <summary>
+    /// Constructs a new instance of FertilizerBundleRepository initializing lazy loaders for macro and micro fertilizer collections.
+    /// </summary>
     public FertilizerBundleRepository()
     {
         _marco = new Lazy<IList<IList<FertilizerOptimizationModel>>>(InitializeMarco);
@@ -73,7 +85,6 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
 
     private IList<IList<FertilizerOptimizationModel>> InitializeMicro()
     {
-        // Pre-built micro-nutrient groups
         IList<FertilizerOptimizationModel> baseMicroGroup = new FertilizerCollectionBuilder()
             .BoricAcid()
             .SodiumBorate()

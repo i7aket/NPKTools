@@ -30,11 +30,15 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
 
     /// <summary>
     /// Optimizes the amount of each fertilizer in a collection to meet specified nutrient targets based on the given settings.
+    /// If no optimal solution can be found, the method returns null.
     /// </summary>
     /// <param name="target">The target PPM values for each nutrient, including the volume of water.</param>
     /// <param name="sourceCollection">The collection of fertilizers available for use.</param>
     /// <param name="settings">The settings that influence how the optimization is performed.</param>
-    /// <returns>A <see cref="Solution"/> that specifies the optimized amounts of each fertilizer to meet the nutrient targets.</returns>
+    /// <returns>
+    /// A <see cref="Solution"/> that specifies the optimized amounts of each fertilizer to meet the nutrient targets.
+    /// Returns null if an optimal solution cannot be found.
+    /// </returns>
     public Solution? Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection,
         SolutionFinderSettings settings)
     {
@@ -42,10 +46,7 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
 
         Dictionary<string, double>? result = OptimizationProblemSolver.Solve(problem);
 
-        if (result == null)
-        {
-            return default;
-        }
+        if (result == null) return default;
 
         return Mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
     }

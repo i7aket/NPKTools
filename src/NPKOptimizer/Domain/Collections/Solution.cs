@@ -15,7 +15,4 @@ public class Solution : List<Fertilizer>
     /// that will be applied to crops.
     /// </summary>
     public double WaterLiters { get; set; }
-
-    // Additional properties and methods can be added here to extend functionality,
-    // such as methods to calculate the total nutrient content of the solution, etc.
 }

@@ -1,4 +1,4 @@
-namespace NPKOptimizer.Domain.PartsPerMillion;
+namespace NPKOptimizer.Domain.PartsPerMillion.ValueObjects;
 
 public record WaterVolumeLitersPpm
 {

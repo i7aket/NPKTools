@@ -14,8 +14,10 @@ Fertilizer Optimizer is a tool developed on the .NET platform that helps adjust 
 - Key Functions:
 Nutrient Calculation: It computes the ppm concentrations of major and minor plant nutrients including nitrogen (in forms of nitrate, ammonium, and amine), phosphorus, potassium, magnesium, sulfur, calcium, and trace elements such as iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium, and sodium.
 Flexible Dilution: Users can specify the volume of water in liters for the dilution process. This flexibility allows for accurate adjustment of nutrient concentrations based on different watering needs or systems.
-### Fertilizer Optimizer
-- The FertilizerOptimizer receives a nutrient target in NPK values, a list of available fertilizers for blending, and specific precision settings. These inputs enable it to calculate the optimal mix of fertilizers that meets the desired nutrient levels as closely as possible according to the specified accuracy requirements.
+### Fertilizer Optimizer Preconfigured
+- FertilizerOptimizationService is an adapted version of the FertilizerOptimizer tool. It includes 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process.
+- Additionally, there are 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated.
+- During the selection of macronutrient fertilizers, the service conducts two searches: in the first, sulfur is accounted for as specified, while the second search excludes sulfur coefficients to expand the possible options.
 ## Developers
 This tool was developed by **Anatoliy Yermakov**.
 - **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
@@ -53,18 +55,14 @@ This project is licensed under the MIT License - see the [License](LICENSE) file
 The project maintains a high standard of code quality with 99% unit test coverage, ensuring that the features perform as expected and are reliable under various scenarios.
 
 ## Roadmap:
-### Optimal Fertilizer Ratio Finder: ✔ Completed - Currently in final testing phase.
+### Optimal Fertilizer Ratio Finder: ✔ Completed.
 Description: This feature calculates the best combination of fertilizers from a provided collection based on fertilizer attributes and the desired ppm (parts per million) profile. This process optimizes nutrient delivery for specific agricultural needs.
-### PPM Calculation for Fertilizer Mixtures: ✔ Completed - Currently in final testing phase.
+### PPM Calculation for Fertilizer Mixtures: ✔ Completed.
 Description: This function computes the PPM (parts per million) of nutrients in a given mixture of fertilizers, taking into account the weights of the fertilizers and the volume of liquid in which they will be dissolved. This is crucial for ensuring the accuracy of nutrient delivery according to the specified agricultural requirements.
-### Atom Repository and Fertilizer Composition: ✔ In final stages of development.
-Description: A comprehensive atom directory that allows for the formulation of fertilizer compositions and the calculation of NPK values based on their atomic compositions. A representation of fertilizer as a composition of atoms, enabling precise data on the percentage of each element present.
-### NPKOptimizer Preconfigured: ✔ In final stages of development.
+### NPKOptimizer Preconfigured: ✔ Completed.
 Description: A preconfigured version featuring over 40 fertilizers, built using Fertilizer Composition, and more than 20 fertilizer blending scenarios.
 ### GreenSecrets Telegram Bot: ✔ In final stages of development.
 Description: A demo version of the final NPKOptimizer Preconfigured as a Telegram bot.
-### Fertilizer Composition Extended: In design phase.
-Description: An advanced model of fertilizer composition that includes molecular ions and more, providing a deeper level of detail and customization for nutrient optimization.
 
 ## Dependencies
 ### NPKOptimizer

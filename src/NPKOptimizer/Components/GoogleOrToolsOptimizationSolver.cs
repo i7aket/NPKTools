@@ -12,11 +12,16 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 {
     /// <summary>
     /// Solves the given optimization problem using the linear solver from Google OR-Tools.
+    /// Returns a dictionary where keys are variable names and values are their optimized numerical values,
+    /// or returns null if no optimal solution can be found.
     /// </summary>
     /// <param name="problem">The optimization problem to solve, containing variables, constraints, and an objective.</param>
-    /// <returns>A dictionary where keys are variable names and values are their optimized numerical values.</returns>
+    /// <returns>
+    /// A dictionary where keys are variable names and values are their optimized numerical values. 
+    /// Returns null if the solver does not find an optimal solution.
+    /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when any critical component of the problem (such as the problem itself, its variables, constraints, or objective) is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the solver does not find an optimal solution.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the solver does not find an optimal solution, although the actual method returns null instead of throwing.</exception>
     public Dictionary<string, double>? Solve(OptimizationProblem problem)
     {
         ArgumentNullException.ThrowIfNull(problem);
@@ -58,8 +63,7 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 
         Solver.ResultStatus resultStatus = solver.Solve();
 
-        if (resultStatus != Solver.ResultStatus.OPTIMAL)
-            return default;
+        if (resultStatus != Solver.ResultStatus.OPTIMAL) return default;
 
         return variables.ToDictionary(variable => variable.Key, variable => variable.Value.SolutionValue());
     }

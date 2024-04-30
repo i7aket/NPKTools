@@ -1,11 +1,15 @@
 using System.Globalization;
 using NPKOptimizer.Const;
+using NPKOptimizer.Contracts;
 using NPKOptimizer.Domain.PpmTarget;
 using NPKOptimizer.Domain.PpmTarget.ValueObjects;
-using NPKOptimizerCalc.Contracts;
 
-namespace NPKOptimizerCalc.Components;
-
+namespace NPKOptimizer.Components;
+/// <summary>
+/// Parses a string containing elements and their corresponding values in parts per million (ppm)
+/// into a PpmTarget object. This parser supports a predefined set of elements and ensures that
+/// the input format is correctly followed.
+/// </summary>
 public class PpmTargetParser : IPpmTargetParser
 {
     private const string ErrorParsePair = "Unable to parse '{0}' as an element=value pair.";
@@ -18,6 +22,15 @@ public class PpmTargetParser : IPpmTargetParser
         Names.Mn, Names.Zn, Names.B, Names.Mo, Names.Cl, Names.Si, Names.Se, Names.Liters
     };
     
+    /// <summary>
+    /// Parses the provided string input into a PpmTarget object. Each pair in the input string
+    /// should be in the format "element=value". The method checks for correct formatting, 
+    /// validates elements against a set list, and handles duplicates appropriately.
+    /// </summary>
+    /// <param name="input">The input string containing the element-value pairs.</param>
+    /// <returns>A PpmTarget object populated based on the input string.</returns>
+    /// <exception cref="ArgumentException">Thrown if the input string is null or whitespace.</exception>
+    /// <exception cref="FormatException">Thrown if the input string has incorrect formatting, an unrecognized element, or duplicate elements.</exception>
     public PpmTarget Parse(string input)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(input);

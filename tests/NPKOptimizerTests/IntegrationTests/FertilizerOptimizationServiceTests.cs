@@ -4,11 +4,9 @@ using NPKOptimizer.Domain.Collections;
 using NPKOptimizer.Domain.PartsPerMillion;
 using NPKOptimizer.Domain.PpmTarget;
 using NPKOptimizer.Domain.PpmTarget.Builder;
-using NPKOptimizerCalc.Components;
-using NPKOptimizerCalc.Contracts;
 using Xunit;
 
-namespace NPKOptimizerCalc.Tests.IntegrationTests;
+namespace NPKOptimizer.Tests.IntegrationTests;
 
 public class FertilizerOptimizationServiceTests
 {
@@ -140,6 +138,7 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Molybdenum.Value, target.Mo.Value - tolerance, target.Mo.Value + tolerance);
             Assert.InRange(solutionPpm.Silicon.Value, target.Si.Value - tolerance, target.Si.Value + tolerance);
             Assert.InRange(solutionPpm.Selenium.Value, target.Se.Value - tolerance, target.Se.Value + tolerance);
+            Assert.InRange(solutionPpm.Chlorine.Value, target.Cl.Value - tolerance, target.Cl.Value + tolerance);
         }
     }
 }

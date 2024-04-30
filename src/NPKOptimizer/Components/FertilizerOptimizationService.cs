@@ -5,15 +5,24 @@ using NPKOptimizer.Domain.Fertilizers;
 using NPKOptimizer.Domain.PpmTarget;
 using NPKOptimizer.Domain.SolutionsFinderSettings;
 using NPKOptimizer.Domain.SolutionsFinderSettings.Builder;
-using NPKOptimizerCalc.Contracts;
 
-namespace NPKOptimizerCalc.Components;
+namespace NPKOptimizer.Components;
 
+/// <summary>
+/// Provides services for optimizing fertilizer combinations based on target ppm values
+/// for various elements. This service supports finding solutions for both macro and micro
+/// nutrient requirements.
+/// </summary>
 public class FertilizerOptimizationService : IFertilizerOptimizationsService
 {
     private readonly IFertilizerOptimizer _fertilizerOptimizer;
     private readonly IFertilizerBundleRepository _fertilizerBundleRepository;
-    
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FertilizerOptimizationService"/> class.
+    /// </summary>
+    /// <param name="fertilizerOptimizer">The optimizer used to find optimal fertilizer solutions.</param>
+    /// <param name="fertilizerBundleRepository">The repository to access bundles of fertilizers.</param>
     public FertilizerOptimizationService(IFertilizerOptimizer fertilizerOptimizer,
         IFertilizerBundleRepository fertilizerBundleRepository)
     {
@@ -24,6 +33,11 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         _fertilizerBundleRepository = fertilizerBundleRepository;
     }
     
+    /// <summary>
+    /// Finds optimization solutions for macro nutrients based on the given target ppm values.
+    /// </summary>
+    /// <param name="target">The target ppm values for macro nutrients.</param>
+    /// <returns>A collection of solutions without duplicates.</returns>
     public Solutions FindMacroSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -58,6 +72,11 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         return RemoveDuplicates(solutions);
     }
 
+    /// <summary>
+    /// Finds optimization solutions for micro nutrients based on the given target ppm values.
+    /// </summary>
+    /// <param name="target">The target ppm values for micro nutrients.</param>
+    /// <returns>A collection of solutions without duplicates.</returns>
     public Solutions FindMicroSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -73,6 +92,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
             .AddMo(1)
             .AddSi(1)
             .AddSe(1)
+            .AddCl(1)
             .Build();
 
         Solutions solutions = FindSolutions(bundle, settings, target);
@@ -80,6 +100,11 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         return RemoveDuplicates(solutions);    
     }
 
+    /// <summary>
+    /// Finds optimization solutions for both macro and micro nutrients based on the given target ppm values.
+    /// </summary>
+    /// <param name="target">The target ppm values for nutrients.</param>
+    /// <returns>A tuple containing collections of solutions for macro and micro nutrients without duplicates.</returns>
     public (Solutions Macro, Solutions Micro) FindSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target, nameof(target));

@@ -1,8 +1,8 @@
+using NPKOptimizer.Components;
 using NPKOptimizer.Domain.Fertilizers;
-using NPKOptimizerCalc.Components;
 using Xunit;
 
-namespace NPKOptimizerCalc.Tests.UnitTests;
+namespace NPKOptimizer.Tests.UnitTests;
 
 public class FertilizerBundleRepositoryTests
 {

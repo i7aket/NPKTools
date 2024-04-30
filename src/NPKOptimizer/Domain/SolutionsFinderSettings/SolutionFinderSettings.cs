@@ -2,24 +2,94 @@ using NPKOptimizer.Domain.SolutionsFinderSettings.ValueObjects;
 
 namespace NPKOptimizer.Domain.SolutionsFinderSettings;
 
+/// <summary>
+/// Encapsulates all settings used to find optimized solutions for fertilizer applications, including settings for each specific nutrient.
+/// </summary>
 public class SolutionFinderSettings
 {
+    /// <summary>
+    /// Gets or sets the range factor settings which might include tolerances and other factors that influence the overall optimization constraints.
+    /// </summary>
     public RangeFactorSettings RangeFactor { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for nitrogen optimization.
+    /// </summary>
     public NitrogenSettings Nitrogen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for phosphorus optimization.
+    /// </summary>
     public PhosphorusSettings Phosphorus { get; set; }
-    public PotassiumSettings Potassium { get;  set;}
-    public CalciumSettings Calcium { get;  set;}
-    public MagnesiumSettings Magnesium { get;  set;}
-    public SulfurSettings Sulfur { get;  set;}
-    public ChlorineSettings Chlorine { get;  set;}
-    public IronSettings Iron { get;  set;}
-    public CopperSettings Copper { get;  set;}
-    public ManganeseSettings Manganese { get;  set;}
-    public ZincSettings Zinc { get;  set;}
+
+    /// <summary>
+    /// Gets or sets the settings for potassium optimization.
+    /// </summary>
+    public PotassiumSettings Potassium { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for calcium optimization.
+    /// </summary>
+    public CalciumSettings Calcium { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for magnesium optimization.
+    /// </summary>
+    public MagnesiumSettings Magnesium { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for sulfur optimization.
+    /// </summary>
+    public SulfurSettings Sulfur { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for chlorine optimization.
+    /// </summary>
+    public ChlorineSettings Chlorine { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for iron optimization.
+    /// </summary>
+    public IronSettings Iron { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for copper optimization.
+    /// </summary>
+    public CopperSettings Copper { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for manganese optimization.
+    /// </summary>
+    public ManganeseSettings Manganese { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for zinc optimization.
+    /// </summary>
+    public ZincSettings Zinc { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for boron optimization.
+    /// </summary>
     public BoronSettings Boron { get; set; }
-    public MolybdenumSettings Molybdenum { get;  set;}
-    public SiliconSettings Silicon { get;  set;}
-    public SeleniumSettings Selenium { get;  set;}
+
+    /// <summary>
+    /// Gets or sets the settings for molybdenum optimization.
+    /// </summary>
+    public MolybdenumSettings Molybdenum { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for silicon optimization.
+    /// </summary>
+    public SiliconSettings Silicon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for selenium optimization.
+    /// </summary>
+    public SeleniumSettings Selenium { get; set; }
+
+    /// <summary>
+    /// Gets or sets the settings for sodium optimization.
+    /// </summary>
     public SodiumSettings Sodium { get; set; }
     public SolutionFinderSettings(){} 
     public SolutionFinderSettings(RangeFactorSettings rangeFactor, NitrogenSettings nitrogen, PhosphorusSettings phosphorus, PotassiumSettings potassium, CalciumSettings calcium,
