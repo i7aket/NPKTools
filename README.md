@@ -15,8 +15,9 @@ Fertilizer Optimizer is a tool developed on the .NET platform that helps adjust 
 Nutrient Calculation: It computes the ppm concentrations of major and minor plant nutrients including nitrogen (in forms of nitrate, ammonium, and amine), phosphorus, potassium, magnesium, sulfur, calcium, and trace elements such as iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium, and sodium.
 Flexible Dilution: Users can specify the volume of water in liters for the dilution process. This flexibility allows for accurate adjustment of nutrient concentrations based on different watering needs or systems.
 ### Fertilizer Optimizer Preconfigured
-- FertilizerOptimizationService is an adapted version of the FertilizerOptimizer tool. It includes 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process.
-- Additionally, there are 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated.
+- FertilizerOptimizationService is an preconfigured version of the FertilizerOptimizer. It includes:
+- 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process.
+- 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated.
 - During the selection of macronutrient fertilizers, the service conducts two searches: in the first, sulfur is accounted for as specified, while the second search excludes sulfur coefficients to expand the possible options.
 ## Developers
 This tool was developed by **Anatoliy Yermakov**.
