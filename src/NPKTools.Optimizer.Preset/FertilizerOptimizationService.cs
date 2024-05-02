@@ -120,7 +120,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         SolutionFinderSettings settings,
         PpmTarget target)
     {
-        Solutions solutions = new ();
+        Solutions solutions = [];
 
         foreach (IList<FertilizerOptimizationModel> collection in bundle)
         {
@@ -134,7 +134,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         return solutions;
     }
     
-    private Solutions RemoveDuplicates(Solutions solutions)
+    private static Solutions RemoveDuplicates(Solutions solutions)
     {
         Dictionary<string, Solution> uniqueSolutions = new Dictionary<string, Solution>();
 

@@ -62,8 +62,8 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 
         Solver.ResultStatus resultStatus = solver.Solve();
 
-        if (resultStatus != Solver.ResultStatus.OPTIMAL) return default;
-
-        return variables.ToDictionary(variable => variable.Key, variable => variable.Value.SolutionValue());
+        return resultStatus != Solver.ResultStatus.OPTIMAL 
+            ? default 
+            : variables.ToDictionary(variable => variable.Key, variable => variable.Value.SolutionValue());
     }
 }

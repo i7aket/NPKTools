@@ -46,8 +46,8 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
 
         Dictionary<string, double>? result = OptimizationProblemSolver.Solve(problem);
 
-        if (result == null) return default;
-
-        return Mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
+        return result == null 
+            ? default 
+            : Mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
     }
 }

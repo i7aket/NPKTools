@@ -1,5 +1,3 @@
 namespace NPKTools.Core.Domain.PartsPerMillion.Builder;
 
-public sealed class PpmBuilder : PpmBuilderBase<PpmBuilder>
-{
-}
+public sealed class PpmBuilder : PpmBuilderBase<PpmBuilder>;

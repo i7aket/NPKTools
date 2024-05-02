@@ -12,7 +12,7 @@ public abstract class BuilderBase<TBuilder> where TBuilder : BuilderBase<TBuilde
     /// Maintains a set of property names that have been set. This helps in ensuring
     /// that each property can only be set once, enforcing immutability after initial set.
     /// </summary>
-    protected readonly HashSet<string> PropertiesSet = new();
+    protected readonly HashSet<string> PropertiesSet = [];
 
     /// <summary>
     /// Provides derived classes with access to the concrete builder instance.
@@ -33,13 +33,11 @@ public abstract class BuilderBase<TBuilder> where TBuilder : BuilderBase<TBuilde
     /// <exception cref="InvalidOperationException">Thrown when attempting to set a property that has already been set.</exception>
     protected TBuilder SetValue<T>(ref T field, T value, string propertyName)
     {
-        if (PropertiesSet.Add(propertyName))
-        {
-            field = value;
-            return Self;
-        }
+        if (!PropertiesSet.Add(propertyName))
+            throw new InvalidOperationException($"Property {propertyName} has already been set.");
+        field = value;
+        return Self;
 
-        throw new InvalidOperationException($"Property {propertyName} has already been set.");
     }
 
     /// <summary>

@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\NPKTools.Core\NPKTools.Core.csproj" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
         <None Include="../../assets/icon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 

@@ -8,4 +8,4 @@ public record WaterVolumeLitersPpmTarget
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
         Value = value;
     }
-};
+}

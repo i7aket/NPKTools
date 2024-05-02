@@ -1,5 +1,3 @@
 namespace NPKTools.Core.Domain.PpmTarget.Builder;
 
-public sealed class PpmTargetBuilder : PpmTargetBuilderBase<PpmTargetBuilder>
-{
-}
+public sealed class PpmTargetBuilder : PpmTargetBuilderBase<PpmTargetBuilder>;

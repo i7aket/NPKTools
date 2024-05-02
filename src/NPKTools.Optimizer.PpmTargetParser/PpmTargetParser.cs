@@ -20,7 +20,8 @@ public class PpmTargetParser : IPpmTargetParser
         Names.N, Names.P, Names.K, Names.Ca, Names.Mg, Names.S, Names.Fe, Names.Cu, 
         Names.Mn, Names.Zn, Names.B, Names.Mo, Names.Cl, Names.Si, Names.Se, Names.Liters
     };
-    
+    private static readonly char[] Separator = [' ', ','];
+
     /// <summary>
     /// Parses the provided string input into a PpmTarget object. Each pair in the input string
     /// should be in the format "element=value". The method checks for correct formatting, 
@@ -35,7 +36,7 @@ public class PpmTargetParser : IPpmTargetParser
         ArgumentException.ThrowIfNullOrWhiteSpace(input);
 
         Dictionary<string, double> values = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        string[] pairs = input.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        string[] pairs = input.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string pair in pairs)
         {

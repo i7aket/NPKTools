@@ -25,6 +25,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <param name="target">The target nutrient levels to be achieved.</param>
     /// <param name="sourceCollection">The collection of fertilizers available for use.</param>
     /// <param name="settings">Settings that influence the optimization process, such as tolerance levels and cost considerations.</param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns>An OptimizationProblem object configured with all necessary variables and constraints.</returns>
     public OptimizationProblem CreateOptimizationProblem(PpmTarget target,
         IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings)
@@ -35,7 +36,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
         
         OptimizationProblem problem = new();
         HashSet<FertilizerOptimizationModel> fertilizerSet = new HashSet<FertilizerOptimizationModel>(new FertilizerAttributesComparer());  
-        HashSet<Guid> idsSet = new HashSet<Guid>();
+        HashSet<Guid> idsSet = [];
         foreach (FertilizerOptimizationModel fertilizer in sourceCollection)
         {
             if (!idsSet.Add(fertilizer.RefId.Value))
