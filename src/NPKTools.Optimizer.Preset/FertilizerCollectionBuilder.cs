@@ -2,16 +2,17 @@ using NPKTools.Core.Common;
 using NPKTools.Core.Domain.Collections;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.Builders;
+using NPKTools.Core.Domain.Fertilizers.Enums;
 
 namespace NPKTools.Optimizer.Preset;
 
 /// <summary>
-/// Builds a collection of fertilizer optimization models. This builder allows for the creation of complex
+/// Builds a collection of fertilizers. This builder allows for the creation of complex
 /// fertilizer mixes by adding predefined or custom fertilizers.
 /// </summary>
 public class FertilizerCollectionBuilder
 {
-    private readonly HashSet<FertilizerOptimizationModel> _selectedFertilizer = new (new FertilizerAttributesComparer());
+    private readonly HashSet<Fertilizer> _selectedFertilizer = new (new FertilizerAttributesComparer());
     
     /// <summary>
     /// Adds a fertilizer optimization model to the collection.
@@ -19,7 +20,7 @@ public class FertilizerCollectionBuilder
     /// <param name="fertilizer">The fertilizer model to add.</param>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     /// <exception cref="ArgumentException">Thrown if a duplicate fertilizer is attempted to be added.</exception>
-    public FertilizerCollectionBuilder Add(FertilizerOptimizationModel fertilizer)
+    public FertilizerCollectionBuilder Add(Fertilizer fertilizer)
     {
         ThrowIf.Duplicate(_selectedFertilizer, fertilizer);
         return this;
@@ -30,6 +31,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder CalciumNitrate() => Add(new FertilizerBuilder()
+        .AddName("Calcium Nitrate Tetrahydrate")
+        .AddFormula("Ca(NO3)2*4H2O")
+        .AddType(ConcentrateType.A)
         .AddCaNonChelated(16.972)
         .AddNo3(11.863).Build());
 
@@ -38,6 +42,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder K() => Add(new FertilizerBuilder()
+        .AddName("Potassium Nitrate")
+        .AddFormula("KNO3")
+        .AddType(ConcentrateType.A)
         .AddNo3(13.854)
         .AddK(38.672).Build());
 
@@ -46,6 +53,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Mgs() => Add(new FertilizerBuilder()
+        .AddName("Magnesium Sulfate Heptahydrate (MGS)")
+        .AddFormula("MgSO4*7H2O")
+        .AddType(ConcentrateType.B)
         .AddMgNonChelated(9.861)
         .AddS(13.008).Build());
 
@@ -54,6 +64,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Mkp() => Add(new FertilizerBuilder()
+        .AddName("Potassium Dihydrogen Phosphate (MKP)")
+        .AddFormula("KH2PO4")
+        .AddType(ConcentrateType.B)
         .AddP(22.761)
         .AddK(28.731).Build());
     
@@ -62,6 +75,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Calc() => Add(new FertilizerBuilder()
+        .AddName("Calcium Chloride Hexahydrate (CALC)")
+        .AddFormula("CaCl2*6H2O")
+        .AddType(ConcentrateType.A)
         .AddCaNonChelated(18.295)
         .AddCl(32.364).Build());
 
@@ -70,6 +86,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Sop() => Add(new FertilizerBuilder()
+        .AddName("Potassium Sulfate (SOP)")
+        .AddFormula("K2SO4")
+        .AddType(ConcentrateType.B)
         .AddK(44.875)
         .AddS(18.399).Build());
 
@@ -78,6 +97,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Dkp() => Add(new FertilizerBuilder()
+        .AddName("Potassium Dibasic Phosphate")
+        .AddFormula("K2HPO4")
+        .AddType(ConcentrateType.B)
         .AddP(17.783)
         .AddK(44.896).Build());
 
@@ -86,6 +108,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Mag() => Add(new FertilizerBuilder()
+        .AddName("Magnesium Nitrate Hexahydrate (MAG)")
+        .AddFormula("Mg(NO3)2*6H2O")
+        .AddType(ConcentrateType.A)
         .AddMgNonChelated(9.479)
         .AddNo3(10.926).Build());
 
@@ -94,6 +119,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder AmmoniumNitrate() => Add(new FertilizerBuilder()
+        .AddName("Ammonium Nitrate")
+        .AddFormula("NH4NO3")
+        .AddType(ConcentrateType.A)
         .AddNh4(17.499)
         .AddNo3(17.499).Build());
 
@@ -102,6 +130,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Urea() => Add(new FertilizerBuilder()
+        .AddName("Urea")
+        .AddFormula("CO(NH2)2")
+        .AddType(ConcentrateType.A)
         .AddNh2(46.646).Build());
 
     /// <summary>
@@ -109,6 +140,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder UreaPhosphate() => Add(new FertilizerBuilder()
+        .AddName("Urea Phosphate (UP)")
+        .AddFormula("CO(NH2)2*H3PO4")
+        .AddType(ConcentrateType.B)
         .AddNh2(17.725)
         .AddP(19.597).Build());
 
@@ -117,6 +151,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Map() => Add(new FertilizerBuilder()
+        .AddName("Monoammonium Phosphate")
+        .AddFormula("NH4H2PO4")
+        .AddType(ConcentrateType.B)
         .AddNh4(12.177)
         .AddP(26.928).Build());
 
@@ -125,6 +162,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder Mop() => Add(new FertilizerBuilder()
+        .AddName("Potassium Chloride")
+        .AddFormula("KCl")
+        .AddType(ConcentrateType.A)
         .AddK(52.447)
         .AddCl(47.553).Build());
 
@@ -133,6 +173,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder AmmoniumChloride() => Add(new FertilizerBuilder()
+        .AddName("Ammonium Chloride")
+        .AddFormula("NH4Cl")
+        .AddType(ConcentrateType.A)
         .AddNh4(26.187)
         .AddCl(66.275).Build());
 
@@ -141,6 +184,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder AmmoniumSulfate() => Add(new FertilizerBuilder()
+        .AddName("Ammonium Sulfate")
+        .AddFormula("(NH4)2SO4")
+        .AddType(ConcentrateType.B)
         .AddNh4(21.201)
         .AddS(24.263).Build());
 
@@ -149,6 +195,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder PhosphoricAcid() => Add(new FertilizerBuilder()
+        .AddName("Phosphoric Acid")
+        .AddFormula("H3PO4")
+        .AddType(ConcentrateType.B)
         .AddP(31.608).Build());
 
     /// <summary>
@@ -156,6 +205,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder CalciumMonobasicPhosphate() => Add(new FertilizerBuilder()
+        .AddName("Calcium Monobasic Phosphate")
+        .AddFormula("Ca(H2PO4)2*H2O")
+        .AddType(ConcentrateType.B)
         .AddCaNonChelated(15.9)
         .AddP(24.576).Build());
 
@@ -164,6 +216,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder BoricAcid() => Add(new FertilizerBuilder()
+        .AddName("Boric Acid")
+        .AddFormula("H3BO3")
+        .AddType(ConcentrateType.B)
         .AddB(17.483).Build());
 
     /// <summary>
@@ -171,6 +226,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder SodiumBorate() => Add(new FertilizerBuilder()
+        .AddName("Sodium Borate Decahydrate")
+        .AddFormula("Na2B4O7*10H2O")
+        .AddType(ConcentrateType.B)
         .AddB(11.338)
         .AddNa(12.057).Build());
 
@@ -179,6 +237,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder SodiumMolybdate() => Add(new FertilizerBuilder()
+        .AddName("Sodium Molybdate Dihydrate")
+        .AddFormula("Na2MoO4*2H2O")
+        .AddType(ConcentrateType.B)
         .AddMo(39.656)
         .AddNa(19.003).Build());
 
@@ -187,6 +248,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder SodiumSilicate() => Add(new FertilizerBuilder()
+        .AddName("Sodium Silicate")
+        .AddFormula("Na2SiO3")
+        .AddType(ConcentrateType.B)
         .AddSi(23.009)
         .AddNa(37.669).Build());
 
@@ -195,6 +259,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder SodiumSelenate() => Add(new FertilizerBuilder()
+        .AddName("Sodium Selenate")
+        .AddFormula("Na2SeO4")
+        .AddType(ConcentrateType.B)
         .AddSe(41.795)
         .AddNa(24.335).Build());
 
@@ -203,6 +270,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder IronSulfate() => Add(new FertilizerBuilder()
+        .AddName("Iron(II) Sulfate Heptahydrate")
+        .AddFormula("FeSO4*7H2O")
+        .AddType(ConcentrateType.B)
         .AddFeNonChelated(20.088)
         .AddS(11.532).Build());
 
@@ -211,6 +281,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder CopperSulfate() => Add(new FertilizerBuilder()
+        .AddName("Copper Sulfate Pentahydrate")
+        .AddFormula("CuSO4*5H2O")
+        .AddType(ConcentrateType.B)
         .AddCuNonChelated(25.451)
         .AddS(12.841).Build());
 
@@ -219,6 +292,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ManganeseSulfate() => Add(new FertilizerBuilder()
+        .AddName("Manganese Sulfate Monohydrate")
+        .AddFormula("MnSO4*H2O")
+        .AddType(ConcentrateType.B)
         .AddMnNonChelated(32.506)
         .AddS(18.969).Build());
 
@@ -227,6 +303,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ZincSulfate() => Add(new FertilizerBuilder()
+        .AddName("Zinc Sulfate Monohydrate")
+        .AddFormula("ZnSO4*H2O")
+        .AddType(ConcentrateType.B)
         .AddZnNonChelated(36.433)
         .AddS(17.866).Build());
 
@@ -235,6 +314,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder CopperNitrate() => Add(new FertilizerBuilder()
+        .AddName("Copper Nitrate Hexahydrate")
+        .AddFormula("Cu(NO3)2*6H2O")
+        .AddType(ConcentrateType.A)
         .AddCuNonChelated(21.494)
         .AddNo3(9.476).Build());
 
@@ -243,6 +325,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ZincNitrate() => Add(new FertilizerBuilder()
+        .AddName("Zinc Nitrate Hexahydrate")
+        .AddFormula("Zn(NO3)2*6H2O")
+        .AddType(ConcentrateType.A)
         .AddZnNonChelated(21.978)
         .AddNo3(9.417).Build());
 
@@ -251,6 +336,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder IronNitrate() => Add(new FertilizerBuilder()
+        .AddName("Iron(III) Nitrate Nonahydrate")
+        .AddFormula("Fe(NO3)3*9H2O")
+        .AddType(ConcentrateType.A)
         .AddFeNonChelated(13.823)
         .AddNo3(10.401).Build());
 
@@ -259,6 +347,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ManganeseNitrate() => Add(new FertilizerBuilder()
+        .AddName("Manganese Nitrate")
+        .AddFormula("Mn(NO3)2")
+        .AddType(ConcentrateType.A)
         .AddMnNonChelated(30.701)
         .AddNo3(15.655).Build());
 
@@ -267,6 +358,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder CopperEdta() => Add(new FertilizerBuilder()
+        .AddName("Ethylenediaminetetraacetic acid cupric disodium complex EDTA Cu15%")
+        .AddFormula("C10H12CuN2Na2O8*2H2O")
+        .AddType(ConcentrateType.B)
         .AddCuEdta(14.65).Build());
 
     /// <summary>
@@ -274,6 +368,8 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ManganeseEdta() => Add(new FertilizerBuilder()
+        .AddName("Ethylenediaminetetraacetic acid manganic disodium complex EDTA Mn13%")
+        .AddFormula("C10H12N2O8Na2Mn*2H2O")
         .AddMnEdta(12.922).Build());
 
     /// <summary>
@@ -281,6 +377,9 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder ZincEdta() => Add(new FertilizerBuilder()
+        .AddName("Ethylenediaminetetraacetic acid zinc disodium complex EDTA Zn15%")
+        .AddFormula("C10H12N2O8Na2Zn*2H2O")
+        .AddType(ConcentrateType.B)
         .AddZnEdta(15.009).Build());
 
     /// <summary>
@@ -288,11 +387,14 @@ public class FertilizerCollectionBuilder
     /// </summary>
     /// <returns>The same FertilizerCollectionBuilder instance to allow for method chaining.</returns>
     public FertilizerCollectionBuilder IronEdta() => Add(new FertilizerBuilder()
+        .AddName("Ethylenediaminetetraacetic acid ferric-sodium complex EDTA Fe13%")
+        .AddFormula("C10H12N2O8NaFe*3H2O")
+        .AddType(ConcentrateType.B)
         .AddFeEdta(13.262).Build());
     
     /// <summary>
     /// Finalizes the building process and returns the complete collection of fertilizers.
     /// </summary>
     /// <returns>A list of FertilizerOptimizationModel instances, representing the complete set of fertilizers added to the builder.</returns>
-    public IList<FertilizerOptimizationModel> Build() => _selectedFertilizer.ToList();
+    public IList<Fertilizer> Build() => _selectedFertilizer.ToList();
 }

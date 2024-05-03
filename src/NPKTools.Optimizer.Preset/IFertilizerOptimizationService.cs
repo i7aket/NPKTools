@@ -6,7 +6,7 @@ namespace NPKTools.Optimizer.Preset;
 /// <summary>
 /// Defines a service for optimizing fertilizer usage based on target PPM values for macro and micro nutrients.
 /// </summary>
-public interface IFertilizerOptimizationsService
+public interface IFertilizerOptimizationService
 {
     /// <summary>
     /// Finds optimization solutions for macro nutrients based on the specified target ppm values.

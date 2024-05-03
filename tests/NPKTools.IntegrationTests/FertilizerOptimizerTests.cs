@@ -30,7 +30,7 @@ public class FertilizerOptimizerTests
     public void Optimize_WithValidInputMacro_ReturnCorrectCollection()
     {
         //Arrange
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
@@ -316,7 +316,7 @@ public class FertilizerOptimizerTests
         Guid id1 = Guid.Parse(firstId);
         Guid id2 = Guid.Parse(secondId);
 
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(id1)
@@ -350,7 +350,7 @@ public class FertilizerOptimizerTests
     public void Optimize_WithPricePriority_SelectsLeastExpensiveOption()
     {
         // Arrange
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))

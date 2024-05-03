@@ -13,8 +13,8 @@ public class FertilizerBundleRepositoryTests
         FertilizerBundleRepository repository = new FertilizerBundleRepository();
 
         // Act
-        IList<IList<FertilizerOptimizationModel>> firstCallResult = repository.Marco();
-        IList<IList<FertilizerOptimizationModel>> secondCallResult = repository.Marco();
+        IList<IList<Fertilizer>> firstCallResult = repository.Marco();
+        IList<IList<Fertilizer>> secondCallResult = repository.Marco();
 
         // Assert
         Assert.NotNull(firstCallResult);
@@ -30,7 +30,7 @@ public class FertilizerBundleRepositoryTests
         FertilizerBundleRepository repository = new FertilizerBundleRepository();
 
         // Act
-        IList<IList<FertilizerOptimizationModel>> result = repository.Marco();
+        IList<IList<Fertilizer>> result = repository.Marco();
 
         // Assert
         Assert.NotEmpty(result);

@@ -12,15 +12,15 @@ public class FertilizerCollectionBuilderTests
     {
         // Arrange
         FertilizerCollectionBuilder builder = new FertilizerCollectionBuilder();
-        Fertilizer fertilizer = new FertilizerBuilder().AddK(38.672).AddNo3(13.854).Build();
+        Fertilizer fertilizerResultModel = new FertilizerBuilder().AddK(38.672).AddNo3(13.854).Build();
 
         // Act
-        builder.Add(fertilizer);
-        IList<FertilizerOptimizationModel> result = builder.Build();
+        builder.Add(fertilizerResultModel);
+        IList<Fertilizer> result = builder.Build();
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(fertilizer, result.First());
+        Assert.Equal(fertilizerResultModel, result.First());
     }
 
     [Fact]
@@ -29,11 +29,11 @@ public class FertilizerCollectionBuilderTests
     {
         // Arrange
         FertilizerCollectionBuilder builder = new FertilizerCollectionBuilder();
-        Fertilizer fertilizer = new FertilizerBuilder().AddK(38.672).AddNo3(13.854).Build();
-        builder.Add(fertilizer);  
+        Fertilizer fertilizerResultModel = new FertilizerBuilder().AddK(38.672).AddNo3(13.854).Build();
+        builder.Add(fertilizerResultModel);  
 
         // Act 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => builder.Add(fertilizer));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => builder.Add(fertilizerResultModel));
     
         //Assert
         Assert.Equal("Duplicate fertilizer detected with identical attributes.", ex.Message);
@@ -50,7 +50,7 @@ public class FertilizerCollectionBuilderTests
 
         // Act
         builder.Add(fert1).Add(fert2);
-        IList<FertilizerOptimizationModel> result = builder.Build();
+        IList<Fertilizer> result = builder.Build();
 
         // Assert
         Assert.Equal(2, result.Count);

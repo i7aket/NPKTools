@@ -1,4 +1,5 @@
 using NPKTools.Core.Common;
+using NPKTools.Core.Domain.Fertilizers.Enums;
 using NPKTools.Core.Domain.Fertilizers.ValueObjects;
 
 namespace NPKTools.Core.Domain.Fertilizers.Builders;
@@ -6,6 +7,9 @@ namespace NPKTools.Core.Domain.Fertilizers.Builders;
 public class FertilizerBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : FertilizerBuilderBase<TBuilder>
 {
     protected Guid Id = Guid.NewGuid();
+    protected string Name = "not provided";
+    protected string Formula = "not provided";
+    protected ConcentrateType Type;
     protected double Weight;
     protected double Price  = 1;
     protected double No3, Nh4, Nh2, P, K;
@@ -18,6 +22,9 @@ public class FertilizerBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuil
     public override Fertilizer Build()
     {
         return new Fertilizer(
+            new FertilizerName(Name),
+            new FertilizerFormula (Formula),
+            Type,
             new FertilizerReferenceId(Id),
             new FertilizerWeight(Weight),
             new FertilizerPrice(Price),
@@ -39,7 +46,9 @@ public class FertilizerBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuil
             new FertilizerSodium(Na)
         );
     }
-
+    public TBuilder AddName(string value) => SetValue(ref Name, value, nameof(Name));
+    public TBuilder AddFormula(string value) => SetValue(ref Formula, value, nameof(Formula));
+    public TBuilder AddType(ConcentrateType value) => SetValue(ref Type, value, nameof(Type));
     public TBuilder AddId(Guid value) => SetValue(ref Id, value, nameof(Id));
     public TBuilder AddPrice(double value) => SetValue(ref Price, value, nameof(Price));
     public TBuilder AddNo3(double value) => SetValue(ref No3, value, nameof(No3));

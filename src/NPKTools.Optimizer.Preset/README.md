@@ -28,7 +28,7 @@ To manually instantiate the components without using DI, use the following examp
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
         IFertilizerBundleRepository bundles = new FertilizerBundleRepository();        
-        IFertilizerOptimizationsService = new FertilizerOptimizationService(optimizer, bundles);
+        IFertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
 ```
 Using Dependency Injection
 For integrating these components into a project that supports Dependency Injection, such as an ASP.NET Core application, configure your services in the Startup.cs or a similar configuration file as follows:
@@ -51,7 +51,7 @@ IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
 IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
 IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
 IFertilizerBundleRepository bundles = new FertilizerBundleRepository();
-IFertilizerOptimizationsService fertilizerOptimizationsService = new FertilizerOptimizationService(optimizer, bundles);
+IFertilizerOptimizationService fertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
 
 // Define your PPM target for optimization
 PpmTarget target = new PpmTargetBuilder()
@@ -75,7 +75,7 @@ SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
     .Build();
 
 // Finding macro solutions based on the specified target
-Solutions macroSolutions = fertilizerOptimizationsService.FindMacroSolutions(target);
+Solutions macroSolutions = fertilizerOptimizationService.FindMacroSolutions(target);
 
 // Finding micro solutions with a different target
 PpmTarget microTarget = new PpmTargetBuilder()
@@ -89,10 +89,10 @@ PpmTarget microTarget = new PpmTargetBuilder()
     .AddSe(0.01)
     .Build();
 
-Solutions microSolutions = fertilizerOptimizationsService.FindMicroSolutions(microTarget);
+Solutions microSolutions = fertilizerOptimizationService.FindMicroSolutions(microTarget);
 
 // Combine both macro and micro nutrient optimizations
-(Solutions Macro, Solutions Micro) results = fertilizerOptimizationsService.FindSolutions(new PpmTargetBuilder()
+(Solutions Macro, Solutions Micro) results = fertilizerOptimizationService.FindSolutions(new PpmTargetBuilder()
     .AddN(150)
     .AddP(50)
     .AddK(200)

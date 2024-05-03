@@ -20,5 +20,5 @@ public interface IFertilizerOptimizer
     /// A solution detailing the optimized quantities of each fertilizer to meet the nutrient targets.
     /// Returns null if an optimal solution cannot be found.
     /// </returns>
-    Solution? Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings);
+    Solution? Optimize(PpmTarget target, IList<Fertilizer> sourceCollection, SolutionFinderSettings settings);
 }

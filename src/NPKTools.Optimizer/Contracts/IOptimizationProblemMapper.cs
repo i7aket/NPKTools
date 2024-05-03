@@ -17,7 +17,7 @@ public interface IOptimizationProblemMapper
     /// <param name="sourceCollection">A list of available fertilizers for the optimization.</param>
     /// <param name="settings">Settings that influence the optimization process.</param>
     /// <returns>An <see cref="OptimizationProblem"/> that represents the formulated optimization problem.</returns>
-    OptimizationProblem CreateOptimizationProblem(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings);
+    OptimizationProblem CreateOptimizationProblem(PpmTarget target, IList<Fertilizer> sourceCollection, SolutionFinderSettings settings);
 
     /// <summary>
     /// Creates a solution from the given solution values and the original source collection of fertilizers.
@@ -26,5 +26,5 @@ public interface IOptimizationProblemMapper
     /// <param name="originalSourceCollection">The original collection of fertilizers used in the optimization problem.</param>
     /// <param name="waterLiters">The amount of water in liters to be used with the fertilizers.</param>
     /// <returns>A <see cref="Solution"/> containing the optimized amounts of each fertilizer.</returns>
-    Solution CreateSolution(Dictionary<string, double> solutionValues, IList<FertilizerOptimizationModel> originalSourceCollection, double waterLiters = 1);
+    Solution CreateSolution(Dictionary<string, double> solutionValues, IList<Fertilizer> originalSourceCollection, double waterLiters = 1);
 }

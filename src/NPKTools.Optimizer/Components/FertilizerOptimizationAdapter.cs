@@ -39,7 +39,7 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
     /// A <see cref="Solution"/> that specifies the optimized amounts of each fertilizer to meet the nutrient targets.
     /// Returns null if an optimal solution cannot be found.
     /// </returns>
-    public Solution? Optimize(PpmTarget target, IList<FertilizerOptimizationModel> sourceCollection,
+    public Solution? Optimize(PpmTarget target, IList<Fertilizer> sourceCollection,
         SolutionFinderSettings settings)
     {
         OptimizationProblem problem = Mapper.CreateOptimizationProblem(target, sourceCollection, settings);

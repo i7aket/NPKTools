@@ -11,43 +11,43 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
     /// Gets a collection of macro nutrient fertilizer bundles.
     /// </summary>
     /// <returns>A list of lists, each containing models of fertilizers for macro nutrient optimization.</returns>
-    public IList<IList<FertilizerOptimizationModel>> Marco() => _marco.Value;
-    private readonly Lazy<IList<IList<FertilizerOptimizationModel>>> _marco;
+    public IList<IList<Fertilizer>> Marco() => _marco.Value;
+    private readonly Lazy<IList<IList<Fertilizer>>> _marco;
 
     /// <summary>
     /// Gets a collection of micro nutrient fertilizer bundles.
     /// </summary>
     /// <returns>A list of lists, each containing models of fertilizers for micro nutrient optimization.</returns>
-    public IList<IList<FertilizerOptimizationModel>> Micro() => _micro.Value;
-    private readonly Lazy<IList<IList<FertilizerOptimizationModel>>> _micro;
+    public IList<IList<Fertilizer>> Micro() => _micro.Value;
+    private readonly Lazy<IList<IList<Fertilizer>>> _micro;
 
     /// <summary>
     /// Constructs a new instance of FertilizerBundleRepository initializing lazy loaders for macro and micro fertilizer collections.
     /// </summary>
     public FertilizerBundleRepository()
     {
-        _marco = new Lazy<IList<IList<FertilizerOptimizationModel>>>(InitializeMarco);
-        _micro = new Lazy<IList<IList<FertilizerOptimizationModel>>>(InitializeMicro);
+        _marco = new Lazy<IList<IList<Fertilizer>>>(InitializeMarco);
+        _micro = new Lazy<IList<IList<Fertilizer>>>(InitializeMicro);
     }
 
-    private IList<IList<FertilizerOptimizationModel>> InitializeMarco()
+    private IList<IList<Fertilizer>> InitializeMarco()
     {
-        IList<FertilizerOptimizationModel> baseMacroGroup = new FertilizerCollectionBuilder()
+        IList<Fertilizer> baseMacroGroup = new FertilizerCollectionBuilder()
             .CalciumNitrate()
             .K()
             .Mgs()
             .Calc().Build();
-        IList<FertilizerOptimizationModel> mkp = new FertilizerCollectionBuilder()
+        IList<Fertilizer> mkp = new FertilizerCollectionBuilder()
             .Mkp().Build();
-        IList<FertilizerOptimizationModel> mag = new FertilizerCollectionBuilder()
+        IList<Fertilizer> mag = new FertilizerCollectionBuilder()
             .Mag().Build();
-        IList<FertilizerOptimizationModel> sop = new FertilizerCollectionBuilder()
+        IList<Fertilizer> sop = new FertilizerCollectionBuilder()
             .Sop().Build();
-        IList<FertilizerOptimizationModel> dkp = new FertilizerCollectionBuilder()
+        IList<Fertilizer> dkp = new FertilizerCollectionBuilder()
             .Dkp().Build();
-        IList<FertilizerOptimizationModel> ammoniumNitrate = new FertilizerCollectionBuilder()
+        IList<Fertilizer> ammoniumNitrate = new FertilizerCollectionBuilder()
             .AmmoniumNitrate().Build();
-        IList<FertilizerOptimizationModel> extendedMacroGroup = new FertilizerCollectionBuilder()
+        IList<Fertilizer> extendedMacroGroup = new FertilizerCollectionBuilder()
             .Urea()
             .UreaPhosphate()
             .Map()
@@ -57,7 +57,7 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
             .PhosphoricAcid()
             .CalciumMonobasicPhosphate().Build();
 
-        return new List<IList<FertilizerOptimizationModel>>
+        return new List<IList<Fertilizer>>
         {
             baseMacroGroup,
             CombineGroups(baseMacroGroup, mkp),
@@ -82,30 +82,30 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
         };
     }
 
-    private IList<IList<FertilizerOptimizationModel>> InitializeMicro()
+    private IList<IList<Fertilizer>> InitializeMicro()
     {
-        IList<FertilizerOptimizationModel> baseMicroGroup = new FertilizerCollectionBuilder()
+        IList<Fertilizer> baseMicroGroup = new FertilizerCollectionBuilder()
             .BoricAcid()
             .SodiumBorate()
             .SodiumMolybdate()
             .SodiumSilicate()
             .SodiumSelenate().Build();
-        IList<FertilizerOptimizationModel> sulfateMicroGroup = new FertilizerCollectionBuilder()
+        IList<Fertilizer> sulfateMicroGroup = new FertilizerCollectionBuilder()
             .IronSulfate()
             .CopperSulfate()
             .ManganeseSulfate()
             .ZincSulfate().Build();
-        IList<FertilizerOptimizationModel> nitrateMicroGroup = new FertilizerCollectionBuilder()
+        IList<Fertilizer> nitrateMicroGroup = new FertilizerCollectionBuilder()
             .CopperNitrate()
             .ZincNitrate()
             .IronNitrate()
             .ManganeseNitrate().Build();
-        IList<FertilizerOptimizationModel> chelateMicroGroup = new FertilizerCollectionBuilder().CopperEdta()
+        IList<Fertilizer> chelateMicroGroup = new FertilizerCollectionBuilder().CopperEdta()
             .ManganeseEdta()
             .ZincEdta()
             .IronEdta().Build();
 
-        return new List<IList<FertilizerOptimizationModel>>
+        return new List<IList<Fertilizer>>
         {
             baseMicroGroup,
             CombineGroups(baseMicroGroup, sulfateMicroGroup),
@@ -114,10 +114,10 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
         };
     }
     
-    private IList<FertilizerOptimizationModel> CombineGroups(params IList<FertilizerOptimizationModel>[] groups)
+    private IList<Fertilizer> CombineGroups(params IList<Fertilizer>[] groups)
     {
-        List<FertilizerOptimizationModel> combined = new List<FertilizerOptimizationModel>();
-        foreach (IList<FertilizerOptimizationModel> group in groups)
+        List<Fertilizer> combined = new List<Fertilizer>();
+        foreach (IList<Fertilizer> group in groups)
         {
             combined.AddRange(group);
         }

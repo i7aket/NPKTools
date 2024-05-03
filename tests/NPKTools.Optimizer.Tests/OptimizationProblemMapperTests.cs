@@ -25,7 +25,7 @@ public class OptimizationProblemMapperTests
     public void CreateOptimizationProblem_ShouldCorrectlyMapInputsToOptimizationProblem()
     {
         //Arrange
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
@@ -672,7 +672,7 @@ public class OptimizationProblemMapperTests
             { "2e7b59c1-b44b-4e82-a408-a6cb7d9db2cb", 2.3926306974518482E-05 }
         };
 
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
@@ -937,7 +937,7 @@ public class OptimizationProblemMapperTests
     public void CreateOptimizationProblem_WithDuplicateFertilizerIds_ThrowsInvalidOperationException()
     {
         // Arrange
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5"))
@@ -965,7 +965,7 @@ public class OptimizationProblemMapperTests
             { "72f90e90-804c-4955-9e51-8e7b921836c5", -0.1 }
         };
 
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5"))
@@ -986,7 +986,7 @@ public class OptimizationProblemMapperTests
             { "72f90e90-804c-4955-9e51-8e7b921836c5", 0.5 }
         };
 
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>();
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>();
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => Mapper.CreateSolution(solution, sourceCollection));
@@ -997,7 +997,7 @@ public class OptimizationProblemMapperTests
     public void CreateOptimizationProblem_WithDuplicateFertilizerAttributes_ThrowsInvalidOperationException()
     {
         // Arrange
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>()
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder().AddId(Guid.NewGuid()).AddNo3(11).AddCaNonChelated(16).Build(),
             new FertilizerBuilder().AddId(Guid.NewGuid()).AddNo3(11).AddCaNonChelated(16).Build()
@@ -1016,7 +1016,7 @@ public class OptimizationProblemMapperTests
     public void CreateOptimizationProblem_IncludesSodiumInCalculations()
     {
         // Arrange
-        List<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
+        List<Fertilizer> sourceCollection = new List<Fertilizer>
         {
             new FertilizerBuilder()
                 .AddId(Guid.NewGuid())
@@ -1046,8 +1046,8 @@ public class OptimizationProblemMapperTests
         // Arrange
         OptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Dictionary<string, double> nullSolutionValues = null;
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
-            { new FertilizerOptimizationModel() };
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>
+            { new () };
         double waterLiters = 1.0;
 
         // Act & Assert
@@ -1061,8 +1061,8 @@ public class OptimizationProblemMapperTests
         // Arrange
         OptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Dictionary<string, double> emptySolutionValues = new Dictionary<string, double>();
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
-            { new FertilizerOptimizationModel() };
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>
+            { new () };
         double waterLiters = 1.0;
 
         // Act & Assert
@@ -1076,7 +1076,7 @@ public class OptimizationProblemMapperTests
         // Arrange
         OptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
-        IList<FertilizerOptimizationModel> nullSourceCollection = null;
+        IList<Fertilizer> nullSourceCollection = null;
         double waterLiters = 1.0;
 
         // Act & Assert
@@ -1090,7 +1090,7 @@ public class OptimizationProblemMapperTests
         // Arrange
         OptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
-        IList<FertilizerOptimizationModel> emptySourceCollection = new List<FertilizerOptimizationModel>();
+        IList<Fertilizer> emptySourceCollection = new List<Fertilizer>();
         double waterLiters = 1.0;
 
         // Act & Assert
@@ -1107,8 +1107,8 @@ public class OptimizationProblemMapperTests
         // Arrange
         OptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Dictionary<string, double> solutionValues = new Dictionary<string, double> { { "key", 1.0 } };
-        IList<FertilizerOptimizationModel> sourceCollection = new List<FertilizerOptimizationModel>
-            { new FertilizerOptimizationModel() };
+        IList<Fertilizer> sourceCollection = new List<Fertilizer>
+            { new () };
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => mapper.CreateSolution(solutionValues, sourceCollection, waterLiters));

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.Builders;
+using NPKTools.Core.Domain.Fertilizers.Enums;
 using Xunit;
 
 namespace NPKTools.Core.Tests
@@ -14,6 +15,9 @@ namespace NPKTools.Core.Tests
             // Arrange
             FertilizerBuilder builder = new FertilizerBuilder();
             Guid id = Guid.NewGuid();
+            string name = "name";
+            string formula = "formula";
+            ConcentrateType type = ConcentrateType.B;
             double weight = 50.0;
             double price = 100.0;
             double no3 = 10.0;
@@ -46,7 +50,10 @@ namespace NPKTools.Core.Tests
             double na = 0.01;
 
             // Act
-            Fertilizer fertilizer = builder
+            Fertilizer fertilizerResultModel = builder
+                .AddName(name)
+                .AddFormula(formula)
+                .AddType(type)
                 .AddId(id)
                 .AddWeight(weight)
                 .AddPrice(price)
@@ -81,44 +88,47 @@ namespace NPKTools.Core.Tests
                 .Build();
 
             // Assert
-            Assert.Equal(id, fertilizer.RefId.Value);
-            Assert.Equal(weight, fertilizer.Weight.Value);
-            Assert.Equal(price, fertilizer.Price.Value);
-            Assert.Equal(no3+nh4+nh2, fertilizer.Nitrogen.Value);
-            Assert.Equal(no3, fertilizer.Nitrogen.Nitrate);
-            Assert.Equal(nh4, fertilizer.Nitrogen.Ammonium);
-            Assert.Equal(nh2, fertilizer.Nitrogen.Amine);
-            Assert.Equal(p, fertilizer.Phosphorus.Value);
-            Assert.Equal(k, fertilizer.Potassium.Value);
-            Assert.Equal(caNonChelated+caEdta, fertilizer.Calcium.Value);
-            Assert.Equal(caNonChelated, fertilizer.Calcium.CaNonChelated);
-            Assert.Equal(caEdta, fertilizer.Calcium.CaEdta);
-            Assert.Equal(mgNonChelated+mgEdta, fertilizer.Magnesium.Value);
-            Assert.Equal(mgNonChelated, fertilizer.Magnesium.MgNonChelated);
-            Assert.Equal(mgEdta, fertilizer.Magnesium.MgEdta);
-            Assert.Equal(s, fertilizer.Sulfur.Value);
-            Assert.Equal(feNonChelated+feEdta+feDtpa+feEddha+feHbed, fertilizer.Iron.Value);
-            Assert.Equal(feNonChelated, fertilizer.Iron.FeNonChelated);
-            Assert.Equal(feEdta, fertilizer.Iron.FeEdta);
-            Assert.Equal(feDtpa, fertilizer.Iron.FeDtpa);
-            Assert.Equal(feEddha, fertilizer.Iron.FeEddha);
-            Assert.Equal(feHbed, fertilizer.Iron.FeHbed);
-            Assert.Equal(feOrthoPart, fertilizer.Iron.FeOrthoPart);
-            Assert.Equal(cuNonChelated+cuEdta, fertilizer.Copper.Value);
-            Assert.Equal(cuNonChelated, fertilizer.Copper.CuNonChelated);
-            Assert.Equal(cuEdta, fertilizer.Copper.CuEdta);
-            Assert.Equal(mnNonChelated+mnEdta, fertilizer.Manganese.Value);
-            Assert.Equal(mnNonChelated, fertilizer.Manganese.MnNonChelated);
-            Assert.Equal(mnEdta, fertilizer.Manganese.MnEdta);
-            Assert.Equal(znNonChelated+znEdta, fertilizer.Zinc.Value);
-            Assert.Equal(znNonChelated, fertilizer.Zinc.ZnNonChelated);
-            Assert.Equal(znEdta, fertilizer.Zinc.ZnEdta);
-            Assert.Equal(b, fertilizer.Boron.Value);
-            Assert.Equal(mo, fertilizer.Molybdenum.Value);
-            Assert.Equal(cl, fertilizer.Chlorine.Value);
-            Assert.Equal(si, fertilizer.Silicon.Value);
-            Assert.Equal(se, fertilizer.Selenium.Value);
-            Assert.Equal(na, fertilizer.Sodium.Value);
+            Assert.Equal(name, fertilizerResultModel.Name.Value);
+            Assert.Equal(formula, fertilizerResultModel.Formula.Value);
+            Assert.Equal(type, fertilizerResultModel.Type);
+            Assert.Equal(id, fertilizerResultModel.RefId.Value);
+            Assert.Equal(weight, fertilizerResultModel.Weight.Value);
+            Assert.Equal(price, fertilizerResultModel.Price.Value);
+            Assert.Equal(no3+nh4+nh2, fertilizerResultModel.Nitrogen.Value);
+            Assert.Equal(no3, fertilizerResultModel.Nitrogen.Nitrate);
+            Assert.Equal(nh4, fertilizerResultModel.Nitrogen.Ammonium);
+            Assert.Equal(nh2, fertilizerResultModel.Nitrogen.Amine);
+            Assert.Equal(p, fertilizerResultModel.Phosphorus.Value);
+            Assert.Equal(k, fertilizerResultModel.Potassium.Value);
+            Assert.Equal(caNonChelated+caEdta, fertilizerResultModel.Calcium.Value);
+            Assert.Equal(caNonChelated, fertilizerResultModel.Calcium.CaNonChelated);
+            Assert.Equal(caEdta, fertilizerResultModel.Calcium.CaEdta);
+            Assert.Equal(mgNonChelated+mgEdta, fertilizerResultModel.Magnesium.Value);
+            Assert.Equal(mgNonChelated, fertilizerResultModel.Magnesium.MgNonChelated);
+            Assert.Equal(mgEdta, fertilizerResultModel.Magnesium.MgEdta);
+            Assert.Equal(s, fertilizerResultModel.Sulfur.Value);
+            Assert.Equal(feNonChelated+feEdta+feDtpa+feEddha+feHbed, fertilizerResultModel.Iron.Value);
+            Assert.Equal(feNonChelated, fertilizerResultModel.Iron.FeNonChelated);
+            Assert.Equal(feEdta, fertilizerResultModel.Iron.FeEdta);
+            Assert.Equal(feDtpa, fertilizerResultModel.Iron.FeDtpa);
+            Assert.Equal(feEddha, fertilizerResultModel.Iron.FeEddha);
+            Assert.Equal(feHbed, fertilizerResultModel.Iron.FeHbed);
+            Assert.Equal(feOrthoPart, fertilizerResultModel.Iron.FeOrthoPart);
+            Assert.Equal(cuNonChelated+cuEdta, fertilizerResultModel.Copper.Value);
+            Assert.Equal(cuNonChelated, fertilizerResultModel.Copper.CuNonChelated);
+            Assert.Equal(cuEdta, fertilizerResultModel.Copper.CuEdta);
+            Assert.Equal(mnNonChelated+mnEdta, fertilizerResultModel.Manganese.Value);
+            Assert.Equal(mnNonChelated, fertilizerResultModel.Manganese.MnNonChelated);
+            Assert.Equal(mnEdta, fertilizerResultModel.Manganese.MnEdta);
+            Assert.Equal(znNonChelated+znEdta, fertilizerResultModel.Zinc.Value);
+            Assert.Equal(znNonChelated, fertilizerResultModel.Zinc.ZnNonChelated);
+            Assert.Equal(znEdta, fertilizerResultModel.Zinc.ZnEdta);
+            Assert.Equal(b, fertilizerResultModel.Boron.Value);
+            Assert.Equal(mo, fertilizerResultModel.Molybdenum.Value);
+            Assert.Equal(cl, fertilizerResultModel.Chlorine.Value);
+            Assert.Equal(si, fertilizerResultModel.Silicon.Value);
+            Assert.Equal(se, fertilizerResultModel.Selenium.Value);
+            Assert.Equal(na, fertilizerResultModel.Sodium.Value);
         }
         
         [Fact]

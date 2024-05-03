@@ -13,7 +13,7 @@ namespace NPKTools.Optimizer.Preset;
 /// for various elements. This service supports finding solutions for both macro and micro
 /// nutrient requirements.
 /// </summary>
-public class FertilizerOptimizationService : IFertilizerOptimizationsService
+public class FertilizerOptimizationService : IFertilizerOptimizationService
 {
     private readonly IFertilizerOptimizer _fertilizerOptimizer;
     private readonly IFertilizerBundleRepository _fertilizerBundleRepository;
@@ -42,7 +42,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
     {
         ArgumentNullException.ThrowIfNull(target);
 
-        IList<IList<FertilizerOptimizationModel>> bundle = _fertilizerBundleRepository.Marco();
+        IList<IList<Fertilizer>> bundle = _fertilizerBundleRepository.Marco();
         
         SolutionFinderSettings settingsPrecise = new SolutionFinderSettingsBuilder()
             .AddN(1)
@@ -81,7 +81,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
     {
         ArgumentNullException.ThrowIfNull(target);
 
-        IList<IList<FertilizerOptimizationModel>> bundle = _fertilizerBundleRepository.Micro();
+        IList<IList<Fertilizer>> bundle = _fertilizerBundleRepository.Micro();
         
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
             .AddFe(1)
@@ -116,13 +116,13 @@ public class FertilizerOptimizationService : IFertilizerOptimizationsService
         return (macroSolutions, microSolutions);
     }
     
-    private Solutions FindSolutions (IList<IList<FertilizerOptimizationModel>> bundle,
+    private Solutions FindSolutions (IList<IList<Fertilizer>> bundle,
         SolutionFinderSettings settings,
         PpmTarget target)
     {
         Solutions solutions = [];
 
-        foreach (IList<FertilizerOptimizationModel> collection in bundle)
+        foreach (IList<Fertilizer> collection in bundle)
         {
             Solution? solution = _fertilizerOptimizer.Optimize(target, collection, settings);
             if (solution != null)

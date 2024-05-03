@@ -12,11 +12,11 @@ public interface IFertilizerBundleRepository
     /// Retrieves collections of fertilizer models optimized for macro nutrient needs.
     /// </summary>
     /// <returns>A list of lists, each representing a group of fertilizers for macro nutrient optimization.</returns>
-    IList<IList<FertilizerOptimizationModel>> Marco();
+    IList<IList<Fertilizer>> Marco();
 
     /// <summary>
     /// Retrieves collections of fertilizer models optimized for micro nutrient needs.
     /// </summary>
     /// <returns>A list of lists, each representing a group of fertilizers for micro nutrient optimization.</returns>
-    IList<IList<FertilizerOptimizationModel>> Micro();
+    IList<IList<Fertilizer>> Micro();
 }

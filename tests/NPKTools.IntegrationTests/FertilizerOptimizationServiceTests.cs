@@ -12,7 +12,7 @@ namespace NPKTools.IntegrationTests;
 
 public class FertilizerOptimizationServiceTests
 {
-    protected IFertilizerOptimizationsService FertilizerOptimizationsService;
+    protected IFertilizerOptimizationService FertilizerOptimizationService;
     protected IPpmCalculationService Calc;
 
     public FertilizerOptimizationServiceTests()
@@ -21,7 +21,7 @@ public class FertilizerOptimizationServiceTests
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
         IFertilizerBundleRepository bundles = new FertilizerBundleRepository();        
-        FertilizerOptimizationsService = new FertilizerOptimizationService(optimizer, bundles);
+        FertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
         
         Calc = new PpmCalculationService();
     }
@@ -39,7 +39,7 @@ public class FertilizerOptimizationServiceTests
             .AddS(80)
             .Build();
 
-        Solutions result = FertilizerOptimizationsService.FindMacroSolutions(target);
+        Solutions result = FertilizerOptimizationService.FindMacroSolutions(target);
 
         const double tolerance = 0.00001;
         
@@ -72,7 +72,7 @@ public class FertilizerOptimizationServiceTests
             .AddSe(0.01)
             .Build();
 
-        Solutions result = FertilizerOptimizationsService.FindMicroSolutions(target);
+        Solutions result = FertilizerOptimizationService.FindMicroSolutions(target);
 
         const double tolerance = 0.00001;
         
@@ -115,7 +115,7 @@ public class FertilizerOptimizationServiceTests
             .AddSe(0.01)
             .Build();
 
-        (Solutions Macro, Solutions Micro) result = FertilizerOptimizationsService.FindSolutions(target);
+        (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
 
         const double tolerance = 0.00001;
         

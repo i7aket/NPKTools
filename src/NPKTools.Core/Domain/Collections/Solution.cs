@@ -3,7 +3,7 @@ using NPKTools.Core.Domain.Fertilizers;
 namespace NPKTools.Core.Domain.Collections;
 
 /// <summary>
-/// Represents a collection of <see cref="Fertilizer"/> objects used in a fertilization solution,
+/// Represents a collection of <see cref="FertilizerResultModel"/> objects used in a fertilization solution,
 /// with the additional property of water liters to indicate the volume of water in which the fertilizers will be dissolved.
 /// This class is designed to store the final solution of the fertilizer optimization process.
 /// </summary>

@@ -28,25 +28,26 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns>An OptimizationProblem object configured with all necessary variables and constraints.</returns>
     public OptimizationProblem CreateOptimizationProblem(PpmTarget target,
-        IList<FertilizerOptimizationModel> sourceCollection, SolutionFinderSettings settings)
+        IList<Fertilizer> sourceCollection, SolutionFinderSettings settings)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(settings);
         ThrowIf.NullOrEmpty(sourceCollection);
-        
+
         OptimizationProblem problem = new();
-        HashSet<FertilizerOptimizationModel> fertilizerSet = new HashSet<FertilizerOptimizationModel>(new FertilizerAttributesComparer());  
+        HashSet<Fertilizer> fertilizerSet = new HashSet<Fertilizer>(new FertilizerAttributesComparer());
         HashSet<Guid> idsSet = [];
-        foreach (FertilizerOptimizationModel fertilizer in sourceCollection)
+        foreach (Fertilizer fertilizer in sourceCollection)
         {
             if (!idsSet.Add(fertilizer.RefId.Value))
                 throw new InvalidOperationException($"Duplicate fertilizer ID detected: {fertilizer.RefId.Value}.");
             ThrowIf.Duplicate(fertilizerSet, fertilizer);
-            
+
             string fertilizerIdKey = fertilizer.RefId.Value.ToString();
             problem.Variables[fertilizerIdKey] = 0;
             problem.Objective.Coefficients[fertilizerIdKey] = fertilizer.Price.Value;
         }
+
         Dictionary<string, (double targetValue, double accuracy)> targetElements = new()
         {
             { Names.N, (target.N.Value / OptimizationSettings.ConversionFactor, settings.Nitrogen.Value) },
@@ -70,7 +71,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
         {
             if (element.Value.accuracy == 0) continue;
             Dictionary<string, double> constraintCoefficients = new();
-            foreach (FertilizerOptimizationModel fertilizer in sourceCollection)
+            foreach (Fertilizer fertilizer in sourceCollection)
             {
                 double nutrientValue = element.Key switch
                 {
@@ -94,6 +95,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
                 };
                 constraintCoefficients[fertilizer.RefId.Value.ToString()] = nutrientValue;
             }
+
             double rangeFactor = element.Value.targetValue *
                                  (1 - Math.Min(settings.RangeFactor.Value, element.Value.accuracy));
             problem.Constraints.Add(new OptimizationProblem.OptimizationConstraint
@@ -104,9 +106,10 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
                 Coefficients = constraintCoefficients
             });
         }
+
         return problem;
     }
-    
+
     /// <summary>
     /// Creates a solution based on the optimization results, mapping the calculated values back to
     /// real-world quantities of fertilizers to be used, adjusted by the volume of water specified.
@@ -116,7 +119,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <param name="waterLiters">The amount of water to be used with the fertilizers, affecting the final solution concentrations.</param>
     /// <returns>A Solution object detailing the types and quantities of fertilizers to be used.</returns>
     public Solution CreateSolution(Dictionary<string, double> solutionValues,
-        IList<FertilizerOptimizationModel> originalSourceCollection, double waterLiters = 1)
+        IList<Fertilizer> originalSourceCollection, double waterLiters = 1)
     {
         ThrowIf.NullOrEmpty(solutionValues);
         ThrowIf.NullOrEmpty(originalSourceCollection);
@@ -128,38 +131,21 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
         foreach (KeyValuePair<string, double> item in solutionValues)
         {
             Guid itemId = Guid.Parse(item.Key);
-            
-            FertilizerOptimizationModel? fertilizerOptimizationModel =
+
+            Fertilizer? fertilizerOptimizationModel =
                 originalSourceCollection.FirstOrDefault(f => f.RefId.Value == itemId);
-            
+
             ArgumentNullException.ThrowIfNull(fertilizerOptimizationModel);
             ArgumentOutOfRangeException.ThrowIfNegative(item.Value);
             if (item.Value == 0) continue;
-            
-            FertilizerWeight weight = new FertilizerWeight(Math.Round(item.Value, OptimizationSettings.RoundingPrecision));
-            Fertilizer fertilizer = new Fertilizer(
-                fertilizerOptimizationModel.RefId,
-                new FertilizerWeight(weight.Value * waterLiters),
-                fertilizerOptimizationModel.Price,
-                fertilizerOptimizationModel.Nitrogen,
-                fertilizerOptimizationModel.Phosphorus,
-                fertilizerOptimizationModel.Potassium,
-                fertilizerOptimizationModel.Calcium,
-                fertilizerOptimizationModel.Magnesium,
-                fertilizerOptimizationModel.Sulfur,
-                fertilizerOptimizationModel.Iron,
-                fertilizerOptimizationModel.Copper,
-                fertilizerOptimizationModel.Manganese,
-                fertilizerOptimizationModel.Zinc,
-                fertilizerOptimizationModel.Boron,
-                fertilizerOptimizationModel.Molybdenum,
-                fertilizerOptimizationModel.Chlorine,
-                fertilizerOptimizationModel.Silicon,
-                fertilizerOptimizationModel.Selenium,
-                fertilizerOptimizationModel.Sodium
-            );
-            solutionCollection.Add(fertilizer);
+
+            FertilizerWeight weight =
+                new FertilizerWeight(Math.Round(item.Value, OptimizationSettings.RoundingPrecision));
+            Fertilizer fertilizerResultModel =
+                fertilizerOptimizationModel.With(new FertilizerWeight(weight.Value * waterLiters));
+            solutionCollection.Add(fertilizerResultModel);
         }
+
         return solutionCollection;
     }
 }
