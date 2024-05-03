@@ -26,5 +26,5 @@ public interface IOptimizationProblemMapper
     /// <param name="originalSourceCollection">The original collection of fertilizers used in the optimization problem.</param>
     /// <param name="waterLiters">The amount of water in liters to be used with the fertilizers.</param>
     /// <returns>A <see cref="Solution"/> containing the optimized amounts of each fertilizer.</returns>
-    Solution CreateSolution(Dictionary<string, double> solutionValues, IList<Fertilizer> originalSourceCollection, double waterLiters = 1);
+    Solution? CreateSolution(Dictionary<string, double> solutionValues, IList<Fertilizer> originalSourceCollection, double waterLiters = 1);
 }

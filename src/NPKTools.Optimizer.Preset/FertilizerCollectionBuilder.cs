@@ -370,6 +370,7 @@ public class FertilizerCollectionBuilder
     public FertilizerCollectionBuilder ManganeseEdta() => Add(new FertilizerBuilder()
         .AddName("Ethylenediaminetetraacetic acid manganic disodium complex EDTA Mn13%")
         .AddFormula("C10H12N2O8Na2Mn*2H2O")
+        .AddType(ConcentrateType.B)
         .AddMnEdta(12.922).Build());
 
     /// <summary>

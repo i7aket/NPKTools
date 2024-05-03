@@ -127,6 +127,7 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Potassium.Value, target.K.Value - tolerance, target.K.Value + tolerance);
             Assert.InRange(solutionPpm.Magnesium.Value, target.Mg.Value - tolerance, target.Mg.Value + tolerance);
             Assert.InRange(solutionPpm.Calcium.Value, target.Ca.Value - tolerance, target.Ca.Value + tolerance);
+            Assert.InRange(solutionPpm.Chlorine.Value, target.Cl.Value - tolerance, target.Cl.Value + tolerance);
         }
         
         foreach (Solution solution in result.Micro)
@@ -140,7 +141,6 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Molybdenum.Value, target.Mo.Value - tolerance, target.Mo.Value + tolerance);
             Assert.InRange(solutionPpm.Silicon.Value, target.Si.Value - tolerance, target.Si.Value + tolerance);
             Assert.InRange(solutionPpm.Selenium.Value, target.Se.Value - tolerance, target.Se.Value + tolerance);
-            Assert.InRange(solutionPpm.Chlorine.Value, target.Cl.Value - tolerance, target.Cl.Value + tolerance);
         }
     }
 }

@@ -118,7 +118,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <param name="originalSourceCollection">The original collection of fertilizers used in the optimization.</param>
     /// <param name="waterLiters">The amount of water to be used with the fertilizers, affecting the final solution concentrations.</param>
     /// <returns>A Solution object detailing the types and quantities of fertilizers to be used.</returns>
-    public Solution CreateSolution(Dictionary<string, double> solutionValues,
+    public Solution? CreateSolution(Dictionary<string, double> solutionValues,
         IList<Fertilizer> originalSourceCollection, double waterLiters = 1)
     {
         ThrowIf.NullOrEmpty(solutionValues);
@@ -146,6 +146,11 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
             solutionCollection.Add(fertilizerResultModel);
         }
 
+        if (!solutionCollection.Any())
+        {
+            return default;
+        }
+        
         return solutionCollection;
     }
 }

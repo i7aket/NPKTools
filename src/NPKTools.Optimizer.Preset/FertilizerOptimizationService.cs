@@ -38,7 +38,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
     /// </summary>
     /// <param name="target">The target ppm values for macro nutrients.</param>
     /// <returns>A collection of solutions without duplicates.</returns>
-    public Solutions FindMacroSolutions(PpmTarget target)
+    public Solutions? FindMacroSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
 
@@ -54,7 +54,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
             .AddCl(1)
             .Build();
         
-        Solutions solutions = FindSolutions(bundle, settingsPrecise, target);
+        Solutions? solutions = FindSolutions(bundle, settingsPrecise, target);
         
         SolutionFinderSettings settingsNoSulfur = new SolutionFinderSettingsBuilder()
             .AddN(1)
@@ -65,11 +65,26 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
             .AddCl(1)
             .Build();
 
-        Solutions solutionsNoSulfur = FindSolutions(bundle, settingsNoSulfur, target);
+        Solutions? solutionsNoSulfur = FindSolutions(bundle, settingsNoSulfur, target);
 
-        solutions.AddRange(solutionsNoSulfur);
+        Solutions solutionsToReturn = new ();
+
+        if (solutions != null)
+        {
+            solutionsToReturn.AddRange(solutions);
+        }
+         
+        if (solutionsNoSulfur != null)
+        {
+            solutionsToReturn.AddRange(solutionsNoSulfur);
+        }
+
+        if (!solutionsToReturn.Any())
+        {
+            return default;
+        }
         
-        return RemoveDuplicates(solutions);
+        return RemoveDuplicates(solutionsToReturn);
     }
 
     /// <summary>
@@ -77,7 +92,7 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
     /// </summary>
     /// <param name="target">The target ppm values for micro nutrients.</param>
     /// <returns>A collection of solutions without duplicates.</returns>
-    public Solutions FindMicroSolutions(PpmTarget target)
+    public Solutions? FindMicroSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
 
@@ -92,11 +107,15 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
             .AddMo(1)
             .AddSi(1)
             .AddSe(1)
-            .AddCl(1)
             .Build();
 
-        Solutions solutions = FindSolutions(bundle, settings, target);
+        Solutions? solutions = FindSolutions(bundle, settings, target);
 
+        if (solutions == null)
+        {
+            return default;
+        }
+        
         return RemoveDuplicates(solutions);    
     }
 
@@ -105,18 +124,18 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
     /// </summary>
     /// <param name="target">The target ppm values for nutrients.</param>
     /// <returns>A tuple containing collections of solutions for macro and micro nutrients without duplicates.</returns>
-    public (Solutions Macro, Solutions Micro) FindSolutions(PpmTarget target)
+    public (Solutions? Macro, Solutions? Micro) FindSolutions(PpmTarget target)
     {
         ArgumentNullException.ThrowIfNull(target, nameof(target));
 
-        Solutions macroSolutions = FindMacroSolutions(target);
+        Solutions? macroSolutions = FindMacroSolutions(target);
     
-        Solutions microSolutions = FindMicroSolutions(target);
+        Solutions? microSolutions = FindMicroSolutions(target);
 
         return (macroSolutions, microSolutions);
     }
     
-    private Solutions FindSolutions (IList<IList<Fertilizer>> bundle,
+    private Solutions? FindSolutions (IList<IList<Fertilizer>> bundle,
         SolutionFinderSettings settings,
         PpmTarget target)
     {
@@ -131,6 +150,11 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
             }
         }
 
+        if (!solutions.Any())
+        {
+            return default;
+        }
+        
         return solutions;
     }
     

@@ -1,3 +1,4 @@
+using NPKTools.Core.Common;
 using NPKTools.Core.Domain.Collections;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.PpmTarget;
@@ -42,6 +43,10 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
     public Solution? Optimize(PpmTarget target, IList<Fertilizer> sourceCollection,
         SolutionFinderSettings settings)
     {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(settings);
+        ThrowIf.NullOrEmpty(sourceCollection);
+        
         OptimizationProblem problem = Mapper.CreateOptimizationProblem(target, sourceCollection, settings);
 
         Dictionary<string, double>? result = OptimizationProblemSolver.Solve(problem);

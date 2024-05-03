@@ -13,19 +13,19 @@ public interface IFertilizerOptimizationService
     /// </summary>
     /// <param name="target">The target PPM values for macro nutrients.</param>
     /// <returns>A collection of optimized solutions.</returns>
-    Solutions FindMacroSolutions(PpmTarget target);
+    Solutions? FindMacroSolutions(PpmTarget target);
 
     /// <summary>
     /// Finds optimization solutions for micro nutrients based on the specified target ppm values.
     /// </summary>
     /// <param name="target">The target PPM values for micro nutrients.</param>
     /// <returns>A collection of optimized solutions.</returns>
-    Solutions FindMicroSolutions(PpmTarget target);
+    Solutions? FindMicroSolutions(PpmTarget target);
 
     /// <summary>
     /// Finds optimization solutions for both macro and micro nutrients based on the specified target ppm values.
     /// </summary>
     /// <param name="target">The target PPM values for nutrients.</param>
     /// <returns>A tuple containing collections of solutions for macro and micro nutrients.</returns>
-    (Solutions Macro, Solutions Micro) FindSolutions(PpmTarget target);
+    (Solutions? Macro, Solutions? Micro) FindSolutions(PpmTarget target);
 }

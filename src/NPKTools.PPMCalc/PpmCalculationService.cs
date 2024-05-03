@@ -15,21 +15,21 @@ public class PpmCalculationService : IPpmCalculationService
     /// <summary>
     /// Calculates ppm concentrations for a collection of fertilizers diluted in a specified amount of water.
     /// </summary>
-    /// <param name="sourceCollection">A list of fertilizers to calculate ppm values from.</param>
+    /// <param name="collection">A list of fertilizers to calculate ppm values from.</param>
     /// <param name="waterLiters">The volume of water in liters used for dilution. Must be greater than 0.</param>
     /// <returns>A <see cref="Ppm"/> object containing the ppm values for all relevant nutrients.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceCollection"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="sourceCollection"/> is empty or if <paramref name="waterLiters"/> is less than or equal to zero.</exception>
-    public Ppm CalculatePpm(IList<Fertilizer> sourceCollection, double waterLiters = 1)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="collection"/> is empty or if <paramref name="waterLiters"/> is less than or equal to zero.</exception>
+    public Ppm CalculatePpm(IList<Fertilizer> collection, double waterLiters = 1)
     {
-        ThrowIf.NullOrEmpty(sourceCollection);
+        ThrowIf.NullOrEmpty(collection);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);
         
         double totalNo3 = 0, totalNh4 = 0, totalNh2 = 0, totalP = 0, totalK = 0, totalMg = 0, totalS = 0, totalCa = 0;
         double totalFe = 0, totalCu = 0, totalMn = 0, totalZn = 0, totalB = 0, totalMo = 0, totalCl = 0;
         double totalSi = 0, totalSe = 0, totalNa = 0;
 
-        foreach (Fertilizer fertilizer in sourceCollection)
+        foreach (Fertilizer fertilizer in collection)
         {
             totalNo3 += fertilizer.Nitrogen.Nitrate * fertilizer.Weight.Value;
             totalNh4 += fertilizer.Nitrogen.Ammonium * fertilizer.Weight.Value;
