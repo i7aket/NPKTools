@@ -68,23 +68,14 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
         Solutions? solutionsNoSulfur = FindSolutions(bundle, settingsNoSulfur, target);
 
         Solutions solutionsToReturn = new ();
-
-        if (solutions != null)
-        {
-            solutionsToReturn.AddRange(solutions);
-        }
-         
-        if (solutionsNoSulfur != null)
-        {
-            solutionsToReturn.AddRange(solutionsNoSulfur);
-        }
-
-        if (!solutionsToReturn.Any())
-        {
-            return default;
-        }
         
-        return RemoveDuplicates(solutionsToReturn);
+        solutionsToReturn.AddRange(solutions ?? Enumerable.Empty<Solution>());
+        
+        solutionsToReturn.AddRange(solutionsNoSulfur ?? Enumerable.Empty<Solution>());
+
+        return solutionsToReturn.Any() 
+            ? RemoveDuplicates(solutionsToReturn) 
+            : default;
     }
 
     /// <summary>
@@ -111,12 +102,10 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
 
         Solutions? solutions = FindSolutions(bundle, settings, target);
 
-        if (solutions == null)
-        {
-            return default;
-        }
-        
-        return RemoveDuplicates(solutions);    
+        return solutions == null 
+            ? default 
+            : RemoveDuplicates(solutions);
+ 
     }
 
     /// <summary>
@@ -150,12 +139,10 @@ public class FertilizerOptimizationService : IFertilizerOptimizationService
             }
         }
 
-        if (!solutions.Any())
-        {
-            return default;
-        }
-        
-        return solutions;
+        return solutions.Any() 
+            ? solutions
+            : default;
+
     }
     
     private static Solutions RemoveDuplicates(Solutions solutions)

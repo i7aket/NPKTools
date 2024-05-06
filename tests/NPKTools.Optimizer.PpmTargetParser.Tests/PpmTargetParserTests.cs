@@ -11,6 +11,34 @@ public class PpmTargetParserTests
     {
         _parser = new PpmTargetParser();
     }
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Parse_LowercaseElements_ReturnsCorrectPpmTarget()
+    {
+        // Arrange
+        string input = "n=150, p=100, k=250, ca=400, mg=50, s=30, fe=10, cu=5, mn=7, zn=8, b=3, mo=2, cl=45, si=20, se=1, l=1000";
+
+        // Act
+        PpmTarget result = _parser.Parse(input);
+
+        // Assert
+        Assert.Equal(150, result.N.Value);
+        Assert.Equal(100, result.P.Value);
+        Assert.Equal(250, result.K.Value);
+        Assert.Equal(400, result.Ca.Value);
+        Assert.Equal(50, result.Mg.Value);
+        Assert.Equal(30, result.S.Value);
+        Assert.Equal(10, result.Fe.Value);
+        Assert.Equal(5, result.Cu.Value);
+        Assert.Equal(7, result.Mn.Value);
+        Assert.Equal(8, result.Zn.Value);
+        Assert.Equal(3, result.B.Value);
+        Assert.Equal(2, result.Mo.Value);
+        Assert.Equal(45, result.Cl.Value);
+        Assert.Equal(20, result.Si.Value);
+        Assert.Equal(1, result.Se.Value);
+        Assert.Equal(1000, result.Liters.Value);
+    }
     
     [Fact]
     [Trait("Category", "Unit")]

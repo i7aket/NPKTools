@@ -20,7 +20,7 @@ public class PpmTargetParser : IPpmTargetParser
         Names.N, Names.P, Names.K, Names.Ca, Names.Mg, Names.S, Names.Fe, Names.Cu, 
         Names.Mn, Names.Zn, Names.B, Names.Mo, Names.Cl, Names.Si, Names.Se, Names.Liters
     };
-    private static readonly char[] Separator = [' ', ','];
+    private static readonly char[] Separator = { ' ', ',' };
 
     /// <summary>
     /// Parses the provided string input into a PpmTarget object. Each pair in the input string
@@ -46,10 +46,10 @@ public class PpmTargetParser : IPpmTargetParser
                 throw new FormatException(string.Format(ErrorParsePair, pair));
             }
 
-            string elementKey = parts[0].ToUpper();
+            string elementKey = parts[0];
             if (!ValidElements.Contains(elementKey))
             {
-                throw new FormatException(string.Format(ErrorElementNotRecognized, pair));
+                throw new FormatException(string.Format(ErrorElementNotRecognized, elementKey));
             }
             
             if (!values.TryAdd(elementKey, value))

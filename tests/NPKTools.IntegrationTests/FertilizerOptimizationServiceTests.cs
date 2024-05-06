@@ -143,4 +143,52 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Selenium.Value, target.Se.Value - tolerance, target.Se.Value + tolerance);
         }
     }
+    
+    [Fact]
+    [Trait("Category", "Integration")]
+    public void FindSolutions_WithTargetCu_EqualsOne_ReturnsSolutions()
+    {
+        PpmTarget target = new PpmTargetBuilder()
+            .AddCu(1)
+            .Build();
+
+        (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
+
+        const double tolerance = 0.01; 
+
+        Assert.Null(result.Macro);
+        Assert.NotNull(result.Micro);
+        Assert.NotEmpty(result.Micro); 
+
+        foreach (Solution solution in result.Micro)
+        {
+            Ppm solutionPpm = Calc.CalculatePpm(solution);
+            Assert.InRange(solutionPpm.Copper.Value, target.Cu.Value - tolerance, target.Cu.Value + tolerance);
+        }
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public void FindSolutions_WithTargetN_EqualsOne_ReturnsSolutions()
+    {
+        PpmTarget target = new PpmTargetBuilder()
+            .AddN(1) 
+            .Build();
+
+        (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
+
+        const double tolerance = 0.01; 
+
+        Assert.NotNull(result.Macro);
+        Assert.Null(result.Micro);
+        Assert.NotEmpty(result.Macro); 
+
+        foreach (Solution solution in result.Macro)
+        {
+            Ppm solutionPpm = Calc.CalculatePpm(solution);
+            Assert.InRange(solutionPpm.Nitrogen.Value, target.N.Value - tolerance, target.N.Value + tolerance);
+        }
+    }
+
+
 }
