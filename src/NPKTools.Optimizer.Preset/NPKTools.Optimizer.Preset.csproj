@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <!-- Package metadata -->
         <PackageId>NPKTools.Optimizer.Preset</PackageId>
-        <PackageVersion>1.1.2</PackageVersion>
+        <PackageVersion>1.1.3</PackageVersion>
         <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
         <Description>NPKTools.Optimizer.Preset is an preconfigured version of the NPKTools.Optimizer. It includes: 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process. 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated. During the selection of macronutrient fertilizers, the service conducts two searches: in the first, sulfur is accounted for as specified, while the second search excludes sulfur coefficients to expand the possible options.</Description>
         <PackageProjectUrl>https://github.com/i7aket/NPKTools/wiki</PackageProjectUrl>
