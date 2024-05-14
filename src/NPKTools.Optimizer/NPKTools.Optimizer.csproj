@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <!-- Package metadata -->
         <PackageId>NPKTools.Optimizer</PackageId>
-        <PackageVersion>1.1.1</PackageVersion>
+        <PackageVersion>1.1.2</PackageVersion>
         <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
         <Description>NPKTools.Optimizer helps adjust the ratio of each fertilizer to achieve the desired PPM (parts per million) profile. Additionally, it is capable of calculating the PPM of a mixture of fertilizers.</Description>
         <PackageProjectUrl>https://github.com/i7aket/NPKTools/wiki</PackageProjectUrl>
@@ -14,10 +14,9 @@
         <RepositoryUrl>https://github.com/i7aket/NPKTools</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>FertilizerOptimization; Nutrient Management; NPK Calculator; PPM Calculator; Fertilizer Calculator; Fertilizer Mixing; Hydroponics; Gardening Tools; Agriculture; Horticulture; Fertilizer Tools</PackageTags>
-        <PackageReleaseNotes>
-            - HotFix return empty solution and solutions
-        </PackageReleaseNotes>
+        <PackageReleaseNotes>GitHub workflows integration</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>

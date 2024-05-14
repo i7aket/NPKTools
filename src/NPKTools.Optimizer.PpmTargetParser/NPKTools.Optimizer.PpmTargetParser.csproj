@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <!-- Package metadata -->
         <PackageId>NPKTools.Optimizer.PpmTargetParser</PackageId>
-        <PackageVersion>1.0.2</PackageVersion>
+        <PackageVersion>1.0.3</PackageVersion>
         <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
         <Description>This project primarily focuses on parsing strings that represent the concentration of various elements in parts per million (ppm) and converting them into structured PpmTarget objects which can be further processed or analyzed within the system. The NPKTools.Optimizer.PpmTargetParser project is designed as a specialized component within the NPKTools suite, aimed at interpreting and transforming user input into actionable data models. </Description>
         <PackageProjectUrl>https://github.com/i7aket/NPKTools/wiki</PackageProjectUrl>
@@ -14,10 +14,9 @@
         <RepositoryUrl>https://github.com/i7aket/NPKTools</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>FertilizerOptimization; Nutrient Management; NPK Calculator; PPM Calculator; Fertilizer Calculator; Fertilizer Mixing; Hydroponics; Gardening Tools; Agriculture; Horticulture; Fertilizer Tools</PackageTags>
-        <PackageReleaseNotes>            
-            - Add Faster Case Insensitivity Support to Element Parsing
-        </PackageReleaseNotes> 
+        <PackageReleaseNotes>GitHub workflows integration</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
