@@ -89,21 +89,26 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
             .SodiumBorate()
             .SodiumMolybdate()
             .SodiumSilicate()
-            .SodiumSelenate().Build();
+            .SodiumSelenate()
+            .Build();
         IList<Fertilizer> sulfateMicroGroup = new FertilizerCollectionBuilder()
             .IronSulfate()
             .CopperSulfate()
             .ManganeseSulfate()
-            .ZincSulfate().Build();
+            .ZincSulfate()
+            .Build();
         IList<Fertilizer> nitrateMicroGroup = new FertilizerCollectionBuilder()
             .CopperNitrate()
             .ZincNitrate()
             .IronNitrate()
-            .ManganeseNitrate().Build();
-        IList<Fertilizer> chelateMicroGroup = new FertilizerCollectionBuilder().CopperEdta()
+            .ManganeseNitrate()
+            .Build();
+        IList<Fertilizer> chelateMicroGroup = new FertilizerCollectionBuilder()
+            .CopperEdta()
             .ManganeseEdta()
             .ZincEdta()
-            .IronEdta().Build();
+            .IronEdta()
+            .Build();
 
         return new List<IList<Fertilizer>>
         {

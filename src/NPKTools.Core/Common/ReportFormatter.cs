@@ -19,13 +19,11 @@ public static class ReportFormatter
     public static void AppendLineIfNonZero(StringBuilder stringBuilder, string label, double value,
         int decimalPlaces = 3)
     {
-        if (value > 0)
-        {
-            string formattedValue =
-                decimalPlaces < 0
-                    ? Math.Round(value).ToString(CultureInfo.InvariantCulture)
-                    : value.ToString($"F{decimalPlaces}");
-            stringBuilder.AppendLine($"{label}: {formattedValue}");
-        }
+        if (value <= 0) return;
+        string formattedValue =
+            decimalPlaces < 0
+                ? Math.Round(value).ToString(CultureInfo.InvariantCulture)
+                : value.ToString($"F{decimalPlaces}");
+        stringBuilder.AppendLine($"{label}: {formattedValue}");
     }
 }

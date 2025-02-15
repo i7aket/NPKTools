@@ -3,6 +3,7 @@ using NPKTools.Core.Common;
 using NPKTools.Core.Const;
 using NPKTools.Core.Domain.Fertilizers.Enums;
 using NPKTools.Core.Domain.Fertilizers.ValueObjects;
+using static NPKTools.Core.Const.Labels;
 
 namespace NPKTools.Core.Domain.Fertilizers;
 
@@ -45,44 +46,5 @@ public class Fertilizer : FertilizerAttributes
     {
         return new Fertilizer(Name, Formula, Type, RefId, newWeight, Price, Nitrogen, Phosphorus, Potassium, Calcium,
             Magnesium, Sulfur, Iron, Copper, Manganese, Zinc, Boron, Molybdenum, Chlorine, Silicon, Selenium, Sodium);
-    }
-    
-    public string Report()
-    {
-        StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine($"{Labels.Name}: {Name.Value}");
-        stringBuilder.AppendLine($"{Labels.Formula}: {Formula.Value}");
-        stringBuilder.AppendLine($"{Labels.ConcentrateType}: {Type}");
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Weight, Weight.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Nitrogen, Nitrogen.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.NitrateNo3}", Nitrogen.Nitrate);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.AmmoniumNh4}", Nitrogen.Ammonium);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.AmineNh2}", Nitrogen.Amine);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Phosphorus, Phosphorus.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Potassium, Potassium.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Calcium, Calcium.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Calcium.CaEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Magnesium, Magnesium.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Magnesium.MgEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Sulfur, Sulfur.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Chlorine, Chlorine.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Iron, Iron.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Iron.FeEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Dtpa}", Iron.FeDtpa);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Eddha}", Iron.FeEddha);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Hbed}", Iron.FeHbed);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.OrthoOrtho}", Iron.FeOrthoPart);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Copper, Copper.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Copper.CuEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Manganese, Manganese.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Manganese.MnEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Zinc, Zinc.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, $"{Labels.SubItemPrefix}{Labels.Edta}", Zinc.ZnEdta);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Boron, Boron.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Molybdenum, Molybdenum.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Silicon, Silicon.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Selenium, Selenium.Value);
-        ReportFormatter.AppendLineIfNonZero(stringBuilder, Labels.Sodium, Sodium.Value);
-        return stringBuilder.ToString();
     }
 }

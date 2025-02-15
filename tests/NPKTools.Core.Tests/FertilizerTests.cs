@@ -2,6 +2,7 @@ using System.Text;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.Builders;
 using NPKTools.Core.Domain.Fertilizers.Enums;
+using NPKTools.Core.Domain.Fertilizers.Extensions;
 using Xunit;
 
 namespace NPKTools.Core.Tests;
@@ -59,34 +60,34 @@ public class FertilizerTests
             .AppendLine("Concentrate Type: A")  
             .AppendLine("Weight: 100,000")
             .AppendLine("Nitrogen: 30,000")
-            .AppendLine("\u2514Nitrate (NO3): 15,000")
-            .AppendLine("\u2514Ammonium (NH4): 10,000")
-            .AppendLine("\u2514Amine (NH2): 5,000")
-            .AppendLine("Phosphorus (P): 10,000")
-            .AppendLine("Potassium (K): 20,000")
-            .AppendLine("Calcium (Ca): 7,000")
+            .AppendLine("\u2514Nitrate NO\u2083: 15,000")
+            .AppendLine("\u2514Ammonium NH\u2084: 10,000")
+            .AppendLine("\u2514Amine NH\u2082: 5,000")
+            .AppendLine("Phosphorus P: 10,000")
+            .AppendLine("Potassium K: 20,000")
+            .AppendLine("Calcium Ca: 7,000")
             .AppendLine("\u2514EDTA: 2,000")
-            .AppendLine("Magnesium (Mg): 4,000")
+            .AppendLine("Magnesium Mg: 4,000")
             .AppendLine("\u2514EDTA: 1,000")
-            .AppendLine("Sulfur (S): 4,000")
-            .AppendLine("Chlorine (Cl): 0,100")
-            .AppendLine("Iron (Fe): 2,100")
+            .AppendLine("Sulfur S: 4,000")
+            .AppendLine("Chlorine Cl: 0,100")
+            .AppendLine("Iron Fe: 2,100")
             .AppendLine("\u2514EDTA: 0,500")
             .AppendLine("\u2514DTPA: 0,300")
             .AppendLine("\u2514FeEDDHA: 0,200")
             .AppendLine("\u2514FeHBED: 0,100")
             .AppendLine("\u2514Ortho-ortho: 0,050")
-            .AppendLine("Copper (Cu): 0,750")
+            .AppendLine("Copper Cu: 0,750")
             .AppendLine("\u2514EDTA: 0,250")
-            .AppendLine("Manganese (Mn): 1,050")
+            .AppendLine("Manganese Mn: 1,050")
             .AppendLine("\u2514EDTA: 0,350")
-            .AppendLine("Zinc (Zn): 0,600")
+            .AppendLine("Zinc Zn: 0,600")
             .AppendLine("\u2514EDTA: 0,200")
-            .AppendLine("Boron (B): 0,300")
-            .AppendLine("Molybdenum (Mo): 0,100")
-            .AppendLine("Silicon (Si): 0,500")
-            .AppendLine("Selenium (Se): 0,050")
-            .AppendLine("Sodium (Na): 0,200")
+            .AppendLine("Boron B: 0,300")
+            .AppendLine("Molybdenum Mo: 0,100")
+            .AppendLine("Silicon Si: 0,500")
+            .AppendLine("Selenium Se: 0,050")
+            .AppendLine("Sodium Na: 0,200")
             .ToString();
 
 
