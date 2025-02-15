@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <!-- Package metadata -->
         <PackageId>NPKTools.Optimizer.PPMCalc</PackageId>
-        <PackageVersion>1.0.3</PackageVersion>
+        <PackageVersion>1.0.4</PackageVersion>
         <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
         <Description>NPKTools.Optimizer.PPMCalc calculates the concentration of various nutrients in parts per million (ppm) when a specified collection of fertilizers is diluted in a given volume of water.</Description>
         <PackageProjectUrl>https://github.com/i7aket/NPKTools/wiki</PackageProjectUrl>
