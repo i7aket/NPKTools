@@ -11,90 +11,110 @@ public class FertilizerAttributes
     /// <summary>
     /// Represents the monetary price of the fertilizer.
     /// </summary>
-    public FertilizerPrice Price { get; set; }
+    public FertilizerPrice Price { get; }
 
     /// <summary>
     /// Represents the nitrogen (N) content in the fertilizer.
     /// </summary>
-    public FertilizerNitrogen Nitrogen { get; set; }
+    public FertilizerNitrogen Nitrogen { get; }
 
     /// <summary>
     /// Represents the phosphorus (P) content in the fertilizer.
     /// </summary>
-    public FertilizerPhosphorus Phosphorus { get; set; }
+    public FertilizerPhosphorus Phosphorus { get; }
 
     /// <summary>
     /// Represents the potassium (K) content in the fertilizer.
     /// </summary>
-    public FertilizerPotassium Potassium { get; set; }
+    public FertilizerPotassium Potassium { get; }
 
     /// <summary>
     /// Represents the calcium (Ca) content in the fertilizer.
     /// </summary>
-    public FertilizerCalcium Calcium { get; set; }
+    public FertilizerCalcium Calcium { get; }
 
     /// <summary>
     /// Represents the magnesium (Mg) content in the fertilizer.
     /// </summary>
-    public FertilizerMagnesium Magnesium { get; set; }
+    public FertilizerMagnesium Magnesium { get; }
 
     /// <summary>
     /// Represents the sulfur (S) content in the fertilizer.
     /// </summary>
-    public FertilizerSulfur Sulfur { get; set; }
+    public FertilizerSulfur Sulfur { get; }
 
     /// <summary>
     /// Represents the iron (Fe) content in the fertilizer.
     /// </summary>
-    public FertilizerIron Iron { get; set; }
+    public FertilizerIron Iron { get; }
 
     /// <summary>
     /// Represents the copper (Cu) content in the fertilizer.
     /// </summary>
-    public FertilizerCopper Copper { get; set; }
+    public FertilizerCopper Copper { get; }
 
     /// <summary>
     /// Represents the manganese (Mn) content in the fertilizer.
     /// </summary>
-    public FertilizerManganese Manganese { get; set; }
+    public FertilizerManganese Manganese { get; }
 
     /// <summary>
     /// Represents the zinc (Zn) content in the fertilizer.
     /// </summary>
-    public FertilizerZinc Zinc { get; set; }
+    public FertilizerZinc Zinc { get; }
 
     /// <summary>
     /// Represents the boron (B) content in the fertilizer.
     /// </summary>
-    public FertilizerBoron Boron { get; set; }
+    public FertilizerBoron Boron { get; }
 
     /// <summary>
     /// Represents the molybdenum (Mo) content in the fertilizer.
     /// </summary>
-    public FertilizerMolybdenum Molybdenum { get; set; }
+    public FertilizerMolybdenum Molybdenum { get; }
 
     /// <summary>
     /// Represents the chlorine (Cl) content in the fertilizer.
     /// </summary>
-    public FertilizerChlorine Chlorine { get; set; }
+    public FertilizerChlorine Chlorine { get; }
 
     /// <summary>
     /// Represents the silicon (Si) content in the fertilizer.
     /// </summary>
-    public FertilizerSilicon Silicon { get; set; }
+    public FertilizerSilicon Silicon { get; }
 
     /// <summary>
     /// Represents the selenium (Se) content in the fertilizer.
     /// </summary>
-    public FertilizerSelenium Selenium { get; set; }
+    public FertilizerSelenium Selenium { get; }
 
     /// <summary>
     /// Represents the sodium (Na) content in the fertilizer.
     /// </summary>
-    public FertilizerSodium Sodium { get; set; }
+    public FertilizerSodium Sodium { get; }
     
-    public FertilizerAttributes(){}
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FertilizerAttributes"/> class.
+    /// </summary>
+    /// <param name="price">The monetary price of the fertilizer, used as the optimizer's cost objective.</param>
+    /// <param name="nitrogen">Nitrogen content, split into nitrate, ammonium and amine forms.</param>
+    /// <param name="phosphorus">Phosphorus (P) content.</param>
+    /// <param name="potassium">Potassium (K) content.</param>
+    /// <param name="calcium">Calcium (Ca) content, chelated and non-chelated.</param>
+    /// <param name="magnesium">Magnesium (Mg) content, chelated and non-chelated.</param>
+    /// <param name="sulfur">Sulfur (S) content.</param>
+    /// <param name="iron">Iron (Fe) content, by chelation form.</param>
+    /// <param name="copper">Copper (Cu) content, chelated and non-chelated.</param>
+    /// <param name="manganese">Manganese (Mn) content, chelated and non-chelated.</param>
+    /// <param name="zinc">Zinc (Zn) content, chelated and non-chelated.</param>
+    /// <param name="boron">Boron (B) content.</param>
+    /// <param name="molybdenum">Molybdenum (Mo) content.</param>
+    /// <param name="chlorine">Chlorine (Cl) content.</param>
+    /// <param name="silicon">Silicon (Si) content.</param>
+    /// <param name="selenium">Selenium (Se) content.</param>
+    /// <param name="sodium">Sodium (Na) content.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any argument is null.</exception>
     public FertilizerAttributes(
         FertilizerPrice price,
         FertilizerNitrogen nitrogen,

@@ -1,0 +1,79 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.{csproj,props,targets}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+indent_size = 4
+max_line_length = 140
+
+# This codebase spells out types instead of using var. Keep it that way.
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Modern C# constructs the codebase already relies on.
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_prefer_braces = when_multiline:suggestion
+csharp_style_prefer_primary_constructors = false:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+
+# Naming
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+# Unused usings are noise; surface them as warnings.
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Public API surface must stay documented — CS1591 catches missing XML docs.
+dotnet_diagnostic.CS1591.severity = warning
+
+# Every value object is documented at the type level. Their members are a `Value` accessor and
+# constructor parameters whose names already say what they hold, so per-member docs add noise.
+[src/NPKTools.Core/Domain/*/ValueObjects/*.cs]
+dotnet_diagnostic.CS1591.severity = none
+
+# Constants tables: the value of each constant is its meaning.
+[src/NPKTools.Core/Constants/*.cs]
+dotnet_diagnostic.CS1591.severity = none
+
+# The builders expose one Add* method per nutrient, named after the element it sets.
+[src/NPKTools.Core/Domain/*/Builder*/*.cs]
+dotnet_diagnostic.CS1591.severity = none
+
+# The builder hierarchy accumulates state in protected fields because BuilderBase.SetValue
+# takes them by `ref`, which properties cannot provide. CA1051 does not apply here.
+[src/NPKTools.Core/Common/BuilderBase.cs]
+dotnet_diagnostic.CA1051.severity = none
+
+[src/NPKTools.Core/Domain/*/Builder*/*.cs]
+dotnet_diagnostic.CA1051.severity = none
+
+[tests/**/*.cs]
+# Tests intentionally exercise null arguments and do not need XML docs.
+dotnet_diagnostic.CS1591.severity = none

@@ -12,8 +12,8 @@ namespace NPKTools.Optimizer.Components;
 /// </summary>
 public class FertilizerOptimizationAdapter : IFertilizerOptimizer
 {
-    protected readonly IOptimizationProblemSolver OptimizationProblemSolver;
-    protected readonly IOptimizationProblemMapper Mapper;
+    private readonly IOptimizationProblemSolver _optimizationProblemSolver;
+    private readonly IOptimizationProblemMapper _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FertilizerOptimizationAdapter"/> class.
@@ -25,8 +25,8 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
     {
         ArgumentNullException.ThrowIfNull(optimizationProblemSolver);
         ArgumentNullException.ThrowIfNull(mapper);
-        OptimizationProblemSolver = optimizationProblemSolver;
-        Mapper = mapper;
+        _optimizationProblemSolver = optimizationProblemSolver;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -40,19 +40,19 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
     /// A <see cref="Solution"/> that specifies the optimized amounts of each fertilizer to meet the nutrient targets.
     /// Returns null if an optimal solution cannot be found.
     /// </returns>
-    public Solution? Optimize(PpmTarget target, IList<Fertilizer> sourceCollection,
+    public Solution? Optimize(PpmTarget target, IReadOnlyList<Fertilizer> sourceCollection,
         SolutionFinderSettings settings)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(settings);
         ThrowIf.NullOrEmpty(sourceCollection);
         
-        OptimizationProblem problem = Mapper.CreateOptimizationProblem(target, sourceCollection, settings);
+        OptimizationProblem problem = _mapper.CreateOptimizationProblem(target, sourceCollection, settings);
 
-        Dictionary<string, double>? result = OptimizationProblemSolver.Solve(problem);
+        Dictionary<string, double>? result = _optimizationProblemSolver.Solve(problem);
 
         return result == null 
             ? default 
-            : Mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
+            : _mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
     }
 }

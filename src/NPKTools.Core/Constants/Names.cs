@@ -1,5 +1,9 @@
-namespace NPKTools.Core.Const;
+namespace NPKTools.Core.Constants;
 
+/// <summary>
+/// Chemical symbols used as dictionary keys and as the element names accepted by the ppm target
+/// parser. <see cref="Liters"/> is not an element; it denotes the water volume.
+/// </summary>
 public static class Names
 {
     public const string N = "N";

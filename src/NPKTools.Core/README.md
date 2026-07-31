@@ -1,27 +1,79 @@
 # NPKTools.Core
-The NPKTools.Core project serves as the central component of the system, containing domain models and other shared resources essential for the correct functioning of other projects within the system. It acts as a foundational layer that provides core functionalities and structures, ensuring that all other projects operate consistently and efficiently based on a unified set of principles and data definitions.
+
+The foundation of the [NPKTools](https://github.com/i7aket/NPKTools) suite. It contains the domain
+model every other NPKTools package builds on, and has no dependencies of its own.
+
+Targets **.NET 10**.
+
+## What's inside
+
+| Type | Purpose |
+| --- | --- |
+| `Fertilizer` | A fertilizer's identity (name, formula, concentrate type) and its full nutrient composition |
+| `Ppm` | Measured nutrient concentrations in parts per million, for a given water volume |
+| `PpmTarget` | The nutrient concentrations an optimization should hit |
+| `SolutionFinderSettings` | Per-element precision and the global range factor that bound the search |
+| `Solution` / `Solutions` | An optimizer result — fertilizers with weights plus the water volume — and a set of such results |
+
+Each nutrient is a small value object (`FertilizerNitrogen`, `IronPpm`, `CalciumPpmTarget`, …) that
+validates its own range on construction, so a negative nutrient value cannot be represented.
+Nitrogen is split into nitrate, ammonium and amine; iron and the other chelatable elements track
+each chelation form (EDTA, DTPA, EDDHA, HBED) separately.
+
+## Building domain objects
+
+The domain types are immutable and have no parameterless constructor. Use the builders, which reject
+setting the same property twice:
+
+```csharp
+using NPKTools.Core.Domain.Fertilizers;
+using NPKTools.Core.Domain.Fertilizers.Builders;
+using NPKTools.Core.Domain.Fertilizers.Enums;
+using NPKTools.Core.Domain.PpmTarget;
+using NPKTools.Core.Domain.PpmTarget.Builder;
+
+Fertilizer calciumNitrate = new FertilizerBuilder()
+    .AddName("Calcium Nitrate Tetrahydrate")
+    .AddFormula("Ca(NO₃)2*4H₂O")
+    .AddType(ConcentrateType.A)
+    .AddNo3(11.863)
+    .AddCaNonChelated(16.972)
+    .Build();
+
+PpmTarget target = new PpmTargetBuilder()
+    .AddN(150)
+    .AddP(50)
+    .AddK(200)
+    .Build();
+```
+
+`PpmBuilder` and `SolutionFinderSettingsBuilder` work the same way.
+
+## Reports
+
+`Fertilizer.Report()`, `Fertilizer.GetNutrientSummary()` and `Ppm.Report()` render human-readable
+output listing only the non-zero nutrients. All three use the invariant culture, so output does not
+change with the machine's regional settings.
+
+```csharp
+Console.WriteLine(calciumNitrate.GetNutrientSummary()); // N 11.86 | Ca 16.97
+```
+
+## Breaking changes in 2.0.0
+
+The parameterless constructors and property setters on `Fertilizer`, `FertilizerAttributes`, `Ppm`,
+`PpmTarget` and `SolutionFinderSettings` are gone, `Solution`/`Solutions` no longer derive from
+`List<T>`, and the `NPKTools.Core.Const` namespace is now `NPKTools.Core.Constants`. See the
+[changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md) for the full migration table.
 
 ## Developers
-This tool was developed by **Anatoliy Yermakov**.
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
-- **GitHub**: [i7aket](https://github.com/i7aket)
 
-Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
-- **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
-- **GitHub**: [AqueGen](https://github.com/AqueGen)
+Developed by **Anatoliy Yermakov** ([LinkedIn](https://www.linkedin.com/in/anatoliyyermakov),
+[GitHub](https://github.com/i7aket)).
 
-## License:
-This project is licensed under the MIT License.
+Special thanks to **Artem Frolov** ([LinkedIn](https://www.linkedin.com/in/artfrolov/),
+[GitHub](https://github.com/AqueGen)) for his invaluable assistance and guidance.
 
-## Dependencies
+## License
 
-### NPKTools.Core.Tests
-- [**xUnit**](https://xunit.net/): Framework for unit testing.
-- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
-- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
-- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
-- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
-- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
-
-## Contact Information:
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+MIT.

@@ -1,0 +1,42 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Package metadata shared by every shipped library. -->
+  <PropertyGroup>
+    <Version>2.0.0</Version>
+    <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
+    <Company>NPKTools</Company>
+    <Copyright>Copyright (c) Anatoliy Yermakov</Copyright>
+    <PackageProjectUrl>https://github.com/i7aket/NPKTools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/i7aket/NPKTools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>fertilizer-optimization;nutrient-management;npk-calculator;ppm-calculator;fertilizer-calculator;hydroponics;agriculture;horticulture;linear-programming</PackageTags>
+    <PackageReleaseNotes>See https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <!-- Packing is an explicit `dotnet pack` step, not a side effect of every local build. -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <!-- Ship the XML docs so consumers get IntelliSense. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Debugging support: SourceLink ships in the SDK, so no PackageReference is needed. -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)../assets/icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

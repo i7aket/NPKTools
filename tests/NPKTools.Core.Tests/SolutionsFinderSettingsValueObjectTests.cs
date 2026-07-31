@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using NPKTools.Core.Domain.SolutionsFinderSettings.ValueObjects;
 using Xunit;
 

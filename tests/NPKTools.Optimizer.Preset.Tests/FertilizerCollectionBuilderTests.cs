@@ -16,11 +16,11 @@ public class FertilizerCollectionBuilderTests
 
         // Act
         builder.Add(fertilizerResultModel);
-        IList<Fertilizer> result = builder.Build();
+        IReadOnlyList<Fertilizer> result = builder.Build();
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(fertilizerResultModel, result.First());
+        Assert.Equal(fertilizerResultModel, result[0]);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class FertilizerCollectionBuilderTests
 
         // Act
         builder.Add(fert1).Add(fert2);
-        IList<Fertilizer> result = builder.Build();
+        IReadOnlyList<Fertilizer> result = builder.Build();
 
         // Assert
         Assert.Equal(2, result.Count);

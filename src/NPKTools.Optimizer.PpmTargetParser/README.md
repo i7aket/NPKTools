@@ -1,70 +1,81 @@
 # NPKTools.Optimizer.PpmTargetParser
-The NPKTools.Optimizer.PpmTargetParser project is designed as a specialized component within the NPKTools suite, aimed at interpreting and transforming user input into actionable data models. This project primarily focuses on parsing strings that represent the concentration of various elements in parts per million (ppm) and converting them into structured PpmTarget objects which can be further processed or analyzed within the system.
 
+Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. Turns a compact text description of
+a nutrient profile into a `PpmTarget` the rest of the suite can consume — useful for CLI arguments,
+config files and web form input.
 
-## Developers
-This tool was developed by **Anatoliy Yermakov**.
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
-- **GitHub**: [i7aket](https://github.com/i7aket)
+Targets **.NET 10**.
 
-Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
-- **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
-- **GitHub**: [AqueGen](https://github.com/AqueGen)
+## Format
 
-## License:
-This project is licensed under the MIT License.
+`element=value` pairs separated by spaces, commas, or both. Element names are case-insensitive.
 
+```
+N=150 P=50 K=200 Ca=100 Mg=50 L=100
+n=150, p=50, k=200
+```
 
-## Installation and Configuration
+| Accepted | Meaning |
+| --- | --- |
+| `N` `P` `K` `Ca` `Mg` `S` | Macronutrients, ppm |
+| `Fe` `Cu` `Mn` `Zn` `B` `Mo` `Cl` `Si` `Se` `Na` | Micronutrients, ppm |
+| `L` | Water volume in liters (defaults to `1` when omitted) |
 
-This section guides you through setting up and configuring the necessary components for the project using Dependency Injection (DI).
+Any element you leave out defaults to `0`. Values are always parsed with the invariant culture, so
+`1.5` means one and a half no matter what the machine's regional settings are.
 
-### Direct Instantiation
+`Parse` throws `FormatException` for a malformed pair, an unrecognised element, or a duplicated
+element, and `ArgumentException` when the input is null, empty or whitespace.
 
-To manually instantiate the components without using DI, use the following example:
+## Setup
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using NPKTools.Optimizer.PpmTargetParser;
+
+ServiceProvider provider = new ServiceCollection()
+    .AddNpkToolsPpmTargetParser()
+    .BuildServiceProvider();
+
+IPpmTargetParser parser = provider.GetRequiredService<IPpmTargetParser>();
+```
+
+Or just `new PpmTargetParser()` — it is stateless.
+
+## Example
+
+```csharp
 using NPKTools.Core.Domain.PpmTarget;
 
-// Manually creating an instance of PpmTargetParser without DI
-PpmTargetParser ppmTargetParser = new PpmTargetParser();
-```
-Using Dependency Injection
-For integrating these components into a project that supports Dependency Injection, such as an ASP.NET Core application, configure your services in the Startup.cs or a similar configuration file as follows:
-```csharp
-public void ConfigureServices(IServiceCollection services)
+try
 {
-// Registering services in the DI container
-    services.AddSingleton<IPpmTargetParser, PpmTargetParser>();
+    PpmTarget target = parser.Parse("N=150, P=50, K=200, Ca=40, Mg=30, L=100");
+
+    Console.WriteLine($"N {target.N.Value} ppm in {target.Liters.Value} L");
+}
+catch (FormatException ex)
+{
+    // "The element 'Xx' is not recognized as a valid input."
+    // "Unable to parse 'N' as an element=value pair."
+    // "Duplicate element 'N' found in input."
+    Console.WriteLine($"Bad target: {ex.Message}");
 }
 ```
 
-## Example usage
+## Fixed in 2.0.0
 
-```csharp
- string input = "N=150, P=50, K=200, Ca=40, Mg=30";
- try
- {
-    PpmTarget target = ppmTargetParser.Parse(input);
-    Console.WriteLine("Parsing successful! Target values are set.");
- }
- catch (Exception ex)
- {
-    Console.WriteLine($"Error parsing input: {ex.Message}");
- }
-```
+`Na` was missing from the accepted-element list even though `PpmTarget` exposes a sodium target, so
+`"Na=5"` threw `FormatException` and the sodium target was always zero. Sodium now parses correctly.
+See the [changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
 
+## Developers
 
+Developed by **Anatoliy Yermakov** ([LinkedIn](https://www.linkedin.com/in/anatoliyyermakov),
+[GitHub](https://github.com/i7aket)).
 
-## Dependencies
-### NPKTools.Optimizer.PpmTargetParser.Tests
-- [**xUnit**](https://xunit.net/): Framework for unit testing.
-- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
-- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
-- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
-- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
-- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
+Special thanks to **Artem Frolov** ([LinkedIn](https://www.linkedin.com/in/artfrolov/),
+[GitHub](https://github.com/AqueGen)) for his invaluable assistance and guidance.
 
-## Contact Information:
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+## License
+
+MIT.

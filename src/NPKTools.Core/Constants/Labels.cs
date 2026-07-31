@@ -1,5 +1,9 @@
-namespace NPKTools.Core.Const;
+namespace NPKTools.Core.Constants;
 
+/// <summary>
+/// Display labels used when rendering reports, including the Unicode subscripts for ion formulae
+/// and the tree prefix that marks a nutrient's breakdown by chemical form.
+/// </summary>
 public static class Labels
 {
     public const string Name = "Name";

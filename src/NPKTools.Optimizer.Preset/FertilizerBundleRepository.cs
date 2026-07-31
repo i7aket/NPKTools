@@ -7,47 +7,48 @@ namespace NPKTools.Optimizer.Preset;
 /// </summary>
 public class FertilizerBundleRepository : IFertilizerBundleRepository
 {
-    /// <summary>
-    /// Gets a collection of macro nutrient fertilizer bundles.
-    /// </summary>
-    /// <returns>A list of lists, each containing models of fertilizers for macro nutrient optimization.</returns>
-    public IList<IList<Fertilizer>> Marco() => _marco.Value;
-    private readonly Lazy<IList<IList<Fertilizer>>> _marco;
-
-    /// <summary>
-    /// Gets a collection of micro nutrient fertilizer bundles.
-    /// </summary>
-    /// <returns>A list of lists, each containing models of fertilizers for micro nutrient optimization.</returns>
-    public IList<IList<Fertilizer>> Micro() => _micro.Value;
-    private readonly Lazy<IList<IList<Fertilizer>>> _micro;
+    private readonly Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>> _macro;
+    private readonly Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>> _micro;
 
     /// <summary>
     /// Constructs a new instance of FertilizerBundleRepository initializing lazy loaders for macro and micro fertilizer collections.
     /// </summary>
     public FertilizerBundleRepository()
     {
-        _marco = new Lazy<IList<IList<Fertilizer>>>(InitializeMarco);
-        _micro = new Lazy<IList<IList<Fertilizer>>>(InitializeMicro);
+        _macro = new Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>>(InitializeMacro);
+        _micro = new Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>>(InitializeMicro);
     }
 
-    private IList<IList<Fertilizer>> InitializeMarco()
+    /// <summary>
+    /// Gets a collection of macro nutrient fertilizer bundles. Built once and cached.
+    /// </summary>
+    /// <returns>A list of lists, each containing models of fertilizers for macro nutrient optimization.</returns>
+    public IReadOnlyList<IReadOnlyList<Fertilizer>> Macro() => _macro.Value;
+
+    /// <summary>
+    /// Gets a collection of micro nutrient fertilizer bundles. Built once and cached.
+    /// </summary>
+    /// <returns>A list of lists, each containing models of fertilizers for micro nutrient optimization.</returns>
+    public IReadOnlyList<IReadOnlyList<Fertilizer>> Micro() => _micro.Value;
+
+    private static List<IReadOnlyList<Fertilizer>> InitializeMacro()
     {
-        IList<Fertilizer> baseMacroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> baseMacroGroup = new FertilizerCollectionBuilder()
             .CalciumNitrate()
             .K()
             .Mgs()
             .Calc().Build();
-        IList<Fertilizer> mkp = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> mkp = new FertilizerCollectionBuilder()
             .Mkp().Build();
-        IList<Fertilizer> mag = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> mag = new FertilizerCollectionBuilder()
             .Mag().Build();
-        IList<Fertilizer> sop = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> sop = new FertilizerCollectionBuilder()
             .Sop().Build();
-        IList<Fertilizer> dkp = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> dkp = new FertilizerCollectionBuilder()
             .Dkp().Build();
-        IList<Fertilizer> ammoniumNitrate = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> ammoniumNitrate = new FertilizerCollectionBuilder()
             .AmmoniumNitrate().Build();
-        IList<Fertilizer> extendedMacroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> extendedMacroGroup = new FertilizerCollectionBuilder()
             .Urea()
             .UreaPhosphate()
             .Map()
@@ -57,7 +58,7 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
             .PhosphoricAcid()
             .CalciumMonobasicPhosphate().Build();
 
-        return new List<IList<Fertilizer>>
+        return new List<IReadOnlyList<Fertilizer>>
         {
             baseMacroGroup,
             CombineGroups(baseMacroGroup, mkp),
@@ -82,35 +83,35 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
         };
     }
 
-    private IList<IList<Fertilizer>> InitializeMicro()
+    private static List<IReadOnlyList<Fertilizer>> InitializeMicro()
     {
-        IList<Fertilizer> baseMicroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> baseMicroGroup = new FertilizerCollectionBuilder()
             .BoricAcid()
             .SodiumBorate()
             .SodiumMolybdate()
             .SodiumSilicate()
             .SodiumSelenate()
             .Build();
-        IList<Fertilizer> sulfateMicroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> sulfateMicroGroup = new FertilizerCollectionBuilder()
             .IronSulfate()
             .CopperSulfate()
             .ManganeseSulfate()
             .ZincSulfate()
             .Build();
-        IList<Fertilizer> nitrateMicroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> nitrateMicroGroup = new FertilizerCollectionBuilder()
             .CopperNitrate()
             .ZincNitrate()
             .IronNitrate()
             .ManganeseNitrate()
             .Build();
-        IList<Fertilizer> chelateMicroGroup = new FertilizerCollectionBuilder()
+        IReadOnlyList<Fertilizer> chelateMicroGroup = new FertilizerCollectionBuilder()
             .CopperEdta()
             .ManganeseEdta()
             .ZincEdta()
             .IronEdta()
             .Build();
 
-        return new List<IList<Fertilizer>>
+        return new List<IReadOnlyList<Fertilizer>>
         {
             baseMicroGroup,
             CombineGroups(baseMicroGroup, sulfateMicroGroup),
@@ -119,10 +120,10 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
         };
     }
     
-    private IList<Fertilizer> CombineGroups(params IList<Fertilizer>[] groups)
+    private static List<Fertilizer> CombineGroups(params IReadOnlyList<Fertilizer>[] groups)
     {
-        List<Fertilizer> combined = new List<Fertilizer>();
-        foreach (IList<Fertilizer> group in groups)
+        List<Fertilizer> combined = [];
+        foreach (IReadOnlyList<Fertilizer> group in groups)
         {
             combined.AddRange(group);
         }

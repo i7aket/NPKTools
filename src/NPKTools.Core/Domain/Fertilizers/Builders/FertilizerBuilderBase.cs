@@ -4,6 +4,11 @@ using NPKTools.Core.Domain.Fertilizers.ValueObjects;
 
 namespace NPKTools.Core.Domain.Fertilizers.Builders;
 
+/// <summary>
+/// Shared implementation behind <see cref="FertilizerBuilder"/>, generic over the concrete
+/// builder type so that every <c>Add*</c> method returns the derived builder for chaining.
+/// </summary>
+/// <typeparam name="TBuilder">The concrete builder inheriting from this base class.</typeparam>
 public class FertilizerBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : FertilizerBuilderBase<TBuilder>
 {
     protected Guid Id = Guid.NewGuid();

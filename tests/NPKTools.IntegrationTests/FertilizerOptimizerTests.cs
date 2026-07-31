@@ -30,7 +30,7 @@ public class FertilizerOptimizerTests
     public void Optimize_WithValidInputMacro_ReturnCorrectCollection()
     {
         //Arrange
-        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
+        IReadOnlyList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
@@ -144,7 +144,7 @@ public class FertilizerOptimizerTests
             .AddCl(0.01)
             .AddSi(0.01)
             .AddSe(0.01)
-            .AddLitters(1)
+            .AddLiters(1)
             .Build();
 
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
@@ -167,7 +167,7 @@ public class FertilizerOptimizerTests
             .AddNa(0)
             .Build();
 
-        IList<Fertilizer> expectedCollection = new List<Fertilizer>
+        IReadOnlyList<Fertilizer> expectedCollection = new List<Fertilizer>
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5")) //CalciumNitrate
@@ -275,7 +275,7 @@ public class FertilizerOptimizerTests
         };
 
         //Act
-        IList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
+        IReadOnlyList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
 
         //Assert
         Assert.Equal(15, result.Count);
@@ -316,7 +316,7 @@ public class FertilizerOptimizerTests
         Guid id1 = Guid.Parse(firstId);
         Guid id2 = Guid.Parse(secondId);
 
-        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
+        IReadOnlyList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(id1)
@@ -350,7 +350,7 @@ public class FertilizerOptimizerTests
     public void Optimize_WithPricePriority_SelectsLeastExpensiveOption()
     {
         // Arrange
-        IList<Fertilizer> sourceCollection = new List<Fertilizer>()
+        IReadOnlyList<Fertilizer> sourceCollection = new List<Fertilizer>()
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))
@@ -386,11 +386,11 @@ public class FertilizerOptimizerTests
             .Build();
 
         // Act
-        IList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
+        IReadOnlyList<Fertilizer> result = Optimizer.Optimize(target, sourceCollection, settings);
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(expected.RefId.Value, result.First().RefId.Value);
-        Assert.Equal(expected.Weight.Value, result.First().Weight.Value);
+        Assert.Equal(expected.RefId.Value, result[0].RefId.Value);
+        Assert.Equal(expected.Weight.Value, result[0].Weight.Value);
     }
 }

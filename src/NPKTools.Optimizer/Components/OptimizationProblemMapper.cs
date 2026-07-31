@@ -1,5 +1,5 @@
 using NPKTools.Core.Common;
-using NPKTools.Core.Const;
+using NPKTools.Core.Constants;
 using NPKTools.Core.Domain.Collections;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.ValueObjects;
@@ -28,7 +28,7 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns>An OptimizationProblem object configured with all necessary variables and constraints.</returns>
     public OptimizationProblem CreateOptimizationProblem(PpmTarget target,
-        IList<Fertilizer> sourceCollection, SolutionFinderSettings settings)
+        IReadOnlyList<Fertilizer> sourceCollection, SolutionFinderSettings settings)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(settings);
@@ -91,7 +91,8 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
                     Names.Si => fertilizer.Silicon.Value,
                     Names.Se => fertilizer.Selenium.Value,
                     Names.Na => fertilizer.Sodium.Value,
-                    _ => throw new ArgumentOutOfRangeException()
+                    _ => throw new ArgumentOutOfRangeException(nameof(target),
+                        $"Unknown nutrient '{element.Key}'.")
                 };
                 constraintCoefficients[fertilizer.RefId.Value.ToString()] = nutrientValue;
             }
@@ -117,17 +118,18 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
     /// <param name="solutionValues">The calculated quantities of each fertilizer from the optimization.</param>
     /// <param name="originalSourceCollection">The original collection of fertilizers used in the optimization.</param>
     /// <param name="waterLiters">The amount of water to be used with the fertilizers, affecting the final solution concentrations.</param>
-    /// <returns>A Solution object detailing the types and quantities of fertilizers to be used.</returns>
+    /// <returns>
+    /// A Solution object detailing the types and quantities of fertilizers to be used,
+    /// or null when every fertilizer came back with a zero quantity.
+    /// </returns>
     public Solution? CreateSolution(Dictionary<string, double> solutionValues,
-        IList<Fertilizer> originalSourceCollection, double waterLiters = 1)
+        IReadOnlyList<Fertilizer> originalSourceCollection, double waterLiters = 1)
     {
         ThrowIf.NullOrEmpty(solutionValues);
         ThrowIf.NullOrEmpty(originalSourceCollection);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);
-        Solution solutionCollection = new Solution
-        {
-            WaterLiters = waterLiters
-        };
+
+        List<Fertilizer> selected = [];
         foreach (KeyValuePair<string, double> item in solutionValues)
         {
             Guid itemId = Guid.Parse(item.Key);
@@ -141,16 +143,11 @@ public class OptimizationProblemMapper : IOptimizationProblemMapper
 
             FertilizerWeight weight =
                 new FertilizerWeight(Math.Round(item.Value, OptimizationSettings.RoundingPrecision));
-            Fertilizer fertilizerResultModel =
-                fertilizerOptimizationModel.With(new FertilizerWeight(weight.Value * waterLiters));
-            solutionCollection.Add(fertilizerResultModel);
+            selected.Add(fertilizerOptimizationModel.With(new FertilizerWeight(weight.Value * waterLiters)));
         }
 
-        if (!solutionCollection.Any())
-        {
-            return default;
-        }
-        
-        return solutionCollection;
+        return selected.Count == 0
+            ? null
+            : new Solution(selected, waterLiters);
     }
 }

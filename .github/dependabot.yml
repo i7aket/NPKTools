@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  # NuGet versions are centrally managed in Directory.Packages.props, so Dependabot
+  # updates that single file rather than eleven project files.
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      test-dependencies:
+        patterns:
+          - xunit*
+          - AwesomeAssertions
+          - AutoFixture
+          - NSubstitute
+          - Microsoft.NET.Test.Sdk
+          - coverlet.*
+      microsoft-extensions:
+        patterns:
+          - Microsoft.Extensions.*
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

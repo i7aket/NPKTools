@@ -128,48 +128,36 @@ public class FertilizerAttributesComparerTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    public void Equals_WithNullPropertyInOneAttribute_ReturnsFalse()
+    public void Constructor_WithNullNutrient_ThrowsArgumentNullException()
     {
-        // Arrange
-        FertilizerAttributes attributes1 = new FertilizerAttributes
-        {
-            Price = new FertilizerPrice(100),
-            Nitrogen = new FertilizerNitrogen(10, 5, 2),
-            Phosphorus = null 
-        };
-
-        FertilizerAttributes attributes2 = new FertilizerAttributes
-        {
-            Price = new FertilizerPrice(100),
-            Nitrogen = new FertilizerNitrogen(10, 5, 2),
-            Phosphorus = new FertilizerPhosphorus(5) 
-        };
-
-        FertilizerAttributesComparer comparer = new FertilizerAttributesComparer();
-
-        // Act
-        bool isEqual = comparer.Equals(attributes1, attributes2);
-
-        // Assert
-        Assert.False(isEqual);
+        // A FertilizerAttributes with a null nutrient is unreachable from 2.0.0 onwards:
+        // the constructor rejects it, so the comparer never has to handle that state.
+        Assert.Throws<ArgumentNullException>(() => new FertilizerAttributes(
+            new FertilizerPrice(100),
+            nitrogen: null!,
+            new FertilizerPhosphorus(5),
+            new FertilizerPotassium(20),
+            new FertilizerCalcium(5, 1),
+            new FertilizerMagnesium(3, 2),
+            new FertilizerSulfur(4),
+            new FertilizerIron(1, 2, 3, 4, 5, 0.5),
+            new FertilizerCopper(0.5, 0.25),
+            new FertilizerManganese(0.7, 0.3),
+            new FertilizerZinc(0.8, 0.2),
+            new FertilizerBoron(0.1),
+            new FertilizerMolybdenum(0.05),
+            new FertilizerChlorine(1),
+            new FertilizerSilicon(0.5),
+            new FertilizerSelenium(0.02),
+            new FertilizerSodium(0.1)));
     }
-    
     [Fact]
     [Trait("Category", "Unit")]
     public void Equals_WithDifferentNutrientValues_ReturnsFalse()
     {
         // Arrange
-        FertilizerAttributes attributes1 = new FertilizerAttributes
-        {
-            Price = new FertilizerPrice(100),
-            Nitrogen = new FertilizerNitrogen(10, 5, 2)
-        };
-
-        FertilizerAttributes attributes2 = new FertilizerAttributes
-        {
-            Price = new FertilizerPrice(100),
-            Nitrogen = new FertilizerNitrogen(20, 10, 5) // Different nitrogen content
-        };
+        FertilizerAttributes attributes1 = Attributes(nitrogen: new FertilizerNitrogen(10, 5, 2));
+        FertilizerAttributes attributes2 = Attributes(nitrogen: new FertilizerNitrogen(20, 10, 5));
 
         FertilizerAttributesComparer comparer = new FertilizerAttributesComparer();
 
@@ -201,12 +189,7 @@ public class FertilizerAttributesComparerTests
     public void Equals_OneObjectNull_ReturnsFalse()
     {
         // Arrange
-        FertilizerAttributes attributes1 = new FertilizerAttributes
-        {
-            Price = new FertilizerPrice(100),
-            Nitrogen = new FertilizerNitrogen(10, 5, 2),
-            Phosphorus = new FertilizerPhosphorus(5)
-        };
+        FertilizerAttributes attributes1 = Attributes();
         FertilizerAttributes attributes2 = null;
         FertilizerAttributesComparer comparer = new FertilizerAttributesComparer();
 
@@ -219,4 +202,31 @@ public class FertilizerAttributesComparerTests
 
 
     
+
+    /// <summary>
+    /// Builds a fully populated <see cref="FertilizerAttributes"/>, letting a test override only
+    /// the parts it cares about. Before 2.0.0 these tests used object initializers, which relied
+    /// on a parameterless constructor that left the other nutrients null.
+    /// </summary>
+    private static FertilizerAttributes Attributes(
+        FertilizerPrice? price = null,
+        FertilizerNitrogen? nitrogen = null,
+        FertilizerPhosphorus? phosphorus = null) =>
+        new(price ?? new FertilizerPrice(100),
+            nitrogen ?? new FertilizerNitrogen(10, 5, 2),
+            phosphorus ?? new FertilizerPhosphorus(5),
+            new FertilizerPotassium(20),
+            new FertilizerCalcium(5, 1),
+            new FertilizerMagnesium(3, 2),
+            new FertilizerSulfur(4),
+            new FertilizerIron(1, 2, 3, 4, 5, 0.5),
+            new FertilizerCopper(0.5, 0.25),
+            new FertilizerManganese(0.7, 0.3),
+            new FertilizerZinc(0.8, 0.2),
+            new FertilizerBoron(0.1),
+            new FertilizerMolybdenum(0.05),
+            new FertilizerChlorine(1),
+            new FertilizerSilicon(0.5),
+            new FertilizerSelenium(0.02),
+            new FertilizerSodium(0.1));
 }

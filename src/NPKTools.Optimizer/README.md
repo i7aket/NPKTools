@@ -1,104 +1,124 @@
 # NPKTools.Optimizer
-NPKTools.Optimizer is a tool developed on the .NET platform that helps adjust the ratio of each fertilizer to achieve the desired PPM (parts per million) profile. Additionally, it is capable of calculating the PPM of a mixture of fertilizers.
-- The FertilizerOptimizer is composed of three main components: an adapter, a mapper, and a solver. It takes a nutrient target in NPK values, a list of available fertilizers, and specific precision settings as inputs to calculate the optimal fertilizer mix. Here's how the flow works with these components:
-- Mapper: This component converts the high-level nutrient targets and the list of available fertilizers into a structured optimization problem. It translates real-world data about fertilizers and nutrient requirements into mathematical variables, constraints, and objectives suitable for optimization. After the solver processes these, the mapper also translates the optimized mathematical solution back into practical terms, specifying exact quantities of each fertilizer to use.
-- Solver: Once the optimization problem is defined, this component uses mathematical algorithms to find the best combination of fertilizers. The solver processes the variables and constraints set by the mapper to minimize or maximize the objective function, typically focusing on cost efficiency or nutrient precision.
-- Adapter: Acts as the bridge between the domain-specific data (fertilizers and nutrient targets) and the optimization tools. It takes the problem as defined by the mapper, passes it to the solver for optimization, and then interprets the output from the solver back into a practical solution, detailing the specific amounts of each fertilizer to use to achieve the nutrient targets.
-- Together, these components ensure that the FertilizerOptimizer effectively integrates and processes the inputs to produce an optimized fertilizer mix that meets the specified NPK goals with the required precision.
-## Developers
-This tool was developed by **Anatoliy Yermakov**.
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
-- **GitHub**: [i7aket](https://github.com/i7aket)
 
-Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
-- **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
-- **GitHub**: [AqueGen](https://github.com/AqueGen)
+Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. Given a nutrient target, a list of
+available fertilizers and precision settings, it works out how much of each fertilizer to use by
+solving the mix as a linear program.
 
-## License:
-This project is licensed under the MIT License.
+Targets **.NET 10**. Uses [Google OR-Tools](https://developers.google.com/optimization) (GLOP).
 
-## Installation and Configuration
+If you want a ready-made fertilizer catalogue instead of supplying your own, use
+[`NPKTools.Optimizer.Preset`](https://www.nuget.org/packages/NPKTools.Optimizer.Preset/).
 
-This section guides you through setting up and configuring the necessary components for the project using Dependency Injection (DI).
+## How it works
 
-### Direct Instantiation
+Three components in a pipeline:
 
-To manually instantiate the components without using DI, use the following example:
+- **Mapper** (`IOptimizationProblemMapper`) turns the nutrient target and the available fertilizers
+  into a linear program — variables, constraints, objective — and turns the solver's answer back
+  into concrete fertilizer weights.
+- **Solver** (`IOptimizationProblemSolver`) minimises the objective subject to the constraints. The
+  default objective is total cost, taken from each fertilizer's `Price`.
+- **Adapter** (`IFertilizerOptimizer`) drives the two and is the public entry point.
+
+Each element gets a constraint whose width is the smaller of that element's precision setting and
+the global `RangeFactorSettings`. An element with a precision of `0` is left unconstrained entirely.
+
+## Setup
+
+With dependency injection:
 
 ```csharp
-// Creating instances manually without DI
-    IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
-    IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
-    IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
+using Microsoft.Extensions.DependencyInjection;
+using NPKTools.Optimizer;
+
+ServiceProvider provider = new ServiceCollection()
+    .AddNpkToolsOptimizer()
+    .BuildServiceProvider();
+
+IFertilizerOptimizer optimizer = provider.GetRequiredService<IFertilizerOptimizer>();
 ```
-Using Dependency Injection
-For integrating these components into a project that supports Dependency Injection, such as an ASP.NET Core application, configure your services in the Startup.cs or a similar configuration file as follows:
+
+Registrations use `TryAdd`, so registering your own solver first replaces the OR-Tools default:
+
 ```csharp
-public void ConfigureServices(IServiceCollection services)
+new ServiceCollection()
+    .AddSingleton<IOptimizationProblemSolver, MyOwnSolver>()
+    .AddNpkToolsOptimizer();
+```
+
+Or construct the components directly:
+
+```csharp
+IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
+    new GoogleOrToolsOptimizationSolver(),
+    new OptimizationProblemMapper());
+```
+
+## Example
+
+```csharp
+using NPKTools.Core.Domain.Collections;
+using NPKTools.Core.Domain.Fertilizers;
+using NPKTools.Core.Domain.Fertilizers.Builders;
+using NPKTools.Core.Domain.PpmTarget;
+using NPKTools.Core.Domain.PpmTarget.Builder;
+using NPKTools.Core.Domain.SolutionsFinderSettings;
+using NPKTools.Core.Domain.SolutionsFinderSettings.Builder;
+
+// What the finished solution should contain, and in how much water.
+PpmTarget target = new PpmTargetBuilder()
+    .AddN(150).AddP(50).AddK(200).AddMg(60).AddCa(60).AddS(80)
+    .AddLiters(100)
+    .Build();
+
+// How tightly each element must be matched. 1 = exact, 0 = unconstrained.
+SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
+    .AddN(1).AddP(1).AddK(1).AddCa(1).AddMg(1).AddS(1).AddCl(1)
+    .Build();
+
+// The fertilizers you actually have. Values are percentages by weight.
+IReadOnlyList<Fertilizer> available =
+[
+    new FertilizerBuilder().AddName("Calcium Nitrate").AddNo3(11.863).AddCaNonChelated(16.972).Build(),
+    new FertilizerBuilder().AddName("Potassium Nitrate").AddNo3(13.854).AddK(38.672).Build(),
+    new FertilizerBuilder().AddName("Ammonium Nitrate").AddNo3(17.499).AddNh4(17.499).Build(),
+    new FertilizerBuilder().AddName("Magnesium Sulfate").AddMgNonChelated(9.861).AddS(13.008).Build(),
+    new FertilizerBuilder().AddName("MKP").AddP(22.761).AddK(28.731).Build(),
+    new FertilizerBuilder().AddName("SOP").AddS(18.401).AddK(44.874).Build()
+];
+
+Solution? solution = optimizer.Optimize(target, available, settings);
+
+if (solution is null)
 {
-// Registering services in the DI container
-    services.AddSingleton<IOptimizationProblemSolver, GoogleOrToolsOptimizationSolver>();
-    services.AddSingleton<IOptimizationProblemMapper, OptimizationProblemMapper>();
-    services.AddSingleton<FertilizerOptimizationAdapter>();
+    Console.WriteLine("No mix of these fertilizers can hit that target.");
+    return;
+}
+
+foreach (Fertilizer fertilizer in solution)
+{
+    Console.WriteLine($"{fertilizer.Name.Value}: {fertilizer.Weight.Value:F3} g");
 }
 ```
 
-## Example usage
-```csharp
-// Setup the optimizer
-IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
-IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
-IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
+`Optimize` returns `null` when the linear program is infeasible — that is, no combination of the
+supplied fertilizers can reach the target within the given precision. Every fertilizer in
+`available` must have a distinct `RefId` and a distinct nutrient composition; duplicates throw.
 
-// Define your PPM target for optimization
-PpmTarget target = new PpmTargetBuilder()
-    .AddN(150)
-    .AddP(50)
-    .AddK(200)
-    .AddMg(60)
-    .AddCa(60)
-    .AddS(80)
-    .Build();
+## Breaking changes in 2.0.0
 
-// Configure the solution finder settings
-SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
-    .AddN(1)
-    .AddP(1)
-    .AddK(1)
-    .AddCa(1)
-    .AddMg(1)
-    .AddS(1)
-    .AddCl(1)
-    .Build();
+`Optimize` now takes `IReadOnlyList<Fertilizer>` rather than `IList<Fertilizer>`, and `Solution` is
+an `IReadOnlyList<Fertilizer>` instead of deriving from `List<Fertilizer>`. See the
+[changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
 
-// Create a list of fertilizers for optimization
-IList<FertilizerOptimizationModel> collection = new List<FertilizerOptimizationModel>()
-{
-    new FertilizerBuilder().AddNo3(11.863).AddCaNonChelated(16.972).Build(),
-    new FertilizerBuilder().AddNo3(13.854).AddK(38.672).Build(),
-    new FertilizerBuilder().AddNo3(17.499).AddNh4(17.499).Build(),
-    new FertilizerBuilder().AddMgNonChelated(9.861).AddS(13.008).Build(),
-    new FertilizerBuilder().AddP(22.761).AddK(28.731).Build(),
-    new FertilizerBuilder().AddS(18.401).AddK(44.874).Build(),
-    new FertilizerBuilder().AddMgNonChelated(9.479).AddNo3(10.925).Build(),
-    new FertilizerBuilder().AddS(18.969).AddMnNonChelated(32.506).Build()
-};
+## Developers
 
-// Optimize the solution
-Solution solution = optimizer.Optimize(target, collection, settings);
-```
+Developed by **Anatoliy Yermakov** ([LinkedIn](https://www.linkedin.com/in/anatoliyyermakov),
+[GitHub](https://github.com/i7aket)).
 
+Special thanks to **Artem Frolov** ([LinkedIn](https://www.linkedin.com/in/artfrolov/),
+[GitHub](https://github.com/AqueGen)) for his invaluable assistance and guidance.
 
-## Dependencies
-### NPKOptimizer
-- [**Google OR-Tools**](https://developers.google.com/optimization): Used for performing optimization calculations.
-### NPKOptimizer.Tests
-- [**xUnit**](https://xunit.net/): Framework for unit testing.
-- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
-- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
-- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
-- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
-- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
+## License
 
-## Contact Information:
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+MIT.

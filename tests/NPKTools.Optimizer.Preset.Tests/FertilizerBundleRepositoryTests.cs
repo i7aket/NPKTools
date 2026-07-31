@@ -7,14 +7,14 @@ public class FertilizerBundleRepositoryTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    public void Marco_InitializesCorrectly_EnsuresSingleInitialization()
+    public void Macro_InitializesCorrectly_EnsuresSingleInitialization()
     {
         // Arrange
         FertilizerBundleRepository repository = new FertilizerBundleRepository();
 
         // Act
-        IList<IList<Fertilizer>> firstCallResult = repository.Marco();
-        IList<IList<Fertilizer>> secondCallResult = repository.Marco();
+        IReadOnlyList<IReadOnlyList<Fertilizer>> firstCallResult = repository.Macro();
+        IReadOnlyList<IReadOnlyList<Fertilizer>> secondCallResult = repository.Macro();
 
         // Assert
         Assert.NotNull(firstCallResult);
@@ -24,13 +24,13 @@ public class FertilizerBundleRepositoryTests
     
     [Fact]
     [Trait("Category", "Unit")]
-    public void InitializeMarco_CreatesExpectedGroups()
+    public void InitializeMacro_CreatesExpectedGroups()
     {
         // Arrange
         FertilizerBundleRepository repository = new FertilizerBundleRepository();
 
         // Act
-        IList<IList<Fertilizer>> result = repository.Marco();
+        IReadOnlyList<IReadOnlyList<Fertilizer>> result = repository.Macro();
 
         // Assert
         Assert.NotEmpty(result);

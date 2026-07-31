@@ -37,7 +37,7 @@ namespace NPKTools.Core.Tests
                 .AddSi(si)
                 .AddSe(se)
                 .AddNa(na)
-                .AddLitters(liters)
+                .AddLiters(liters)
                 .Build();
 
             // Assert

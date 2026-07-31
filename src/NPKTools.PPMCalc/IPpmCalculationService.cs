@@ -14,5 +14,5 @@ public interface IPpmCalculationService
     /// <param name="collection">The collection of fertilizers to calculate ppm values for.</param>
     /// <param name="waterLiters">The volume of water in liters. Must be greater than 0.</param>
     /// <returns>A <see cref="Ppm"/> object containing calculated ppm values for the fertilizers.</returns>
-    Ppm CalculatePpm(IList<Fertilizer> collection, double waterLiters = 1);
+    Ppm CalculatePpm(IReadOnlyList<Fertilizer> collection, double waterLiters = 1);
 }

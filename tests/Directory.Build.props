@@ -1,0 +1,29 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!--
+      CS86xx: test code deliberately passes nulls to assert on guard clauses.
+      CA1707: xUnit's Method_Scenario_Expectation naming convention requires underscores.
+      CA1861: inline arrays in [InlineData]/test arrangement need no caching.
+      CA1806: Assert.Throws(() => new Xxx(-1)) intentionally discards the instance.
+      CA1051/CA1859: not meaningful for test fixtures and helpers.
+    -->
+    <NoWarn>$(NoWarn);CS8600;CS8602;CS8604;CS8625;CA1707;CA1861;CA1806;CA1051;CA1859</NoWarn>
+  </PropertyGroup>
+
+  <!-- Every test project needs the same harness; declare it once. -->
+  <ItemGroup>
+    <PackageReference Include="AutoFixture" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+</Project>

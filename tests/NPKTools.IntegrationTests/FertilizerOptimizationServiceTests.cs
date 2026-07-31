@@ -156,9 +156,8 @@ public class FertilizerOptimizationServiceTests
 
         const double tolerance = 0.01; 
 
-        Assert.Null(result.Macro);
-        Assert.NotNull(result.Micro);
-        Assert.NotEmpty(result.Micro); 
+        Assert.Empty(result.Macro);
+        Assert.NotEmpty(result.Micro);
 
         foreach (Solution solution in result.Micro)
         {
@@ -179,9 +178,8 @@ public class FertilizerOptimizationServiceTests
 
         const double tolerance = 0.01; 
 
-        Assert.NotNull(result.Macro);
-        Assert.Null(result.Micro);
-        Assert.NotEmpty(result.Macro); 
+        Assert.Empty(result.Micro);
+        Assert.NotEmpty(result.Macro);
 
         foreach (Solution solution in result.Macro)
         {

@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using NPKTools.Optimizer.Components;
 using NPKTools.Optimizer.Contracts;
 using Xunit;
@@ -375,7 +375,7 @@ public class GoogleOrToolsOptimizationSolverTests
         result.Should().HaveCount(16);
         foreach (KeyValuePair<string, double> variable in problem.Variables)
         {
-            result[variable.Key].Should().BeGreaterOrEqualTo(variable.Value);
+            result[variable.Key].Should().BeGreaterThanOrEqualTo(variable.Value);
         }
 
         foreach (KeyValuePair<string, double> expected in expectedSolution)

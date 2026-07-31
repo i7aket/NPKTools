@@ -19,7 +19,7 @@ public class PpmCalculationServiceTests
         // Arrange
         IPpmCalculationService ppmCalculationService = new PpmCalculationService();
 
-        IList<Fertilizer> fertilizers = new List<Fertilizer>
+        IReadOnlyList<Fertilizer> fertilizers = new List<Fertilizer>
         {
             new FertilizerBuilder()
                 .AddId(Guid.Parse("72f90e90-804c-4955-9e51-8e7b921836c5"))

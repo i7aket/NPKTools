@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.Builders;
 using NPKTools.Core.Domain.Fertilizers.Enums;

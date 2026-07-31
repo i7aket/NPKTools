@@ -396,6 +396,6 @@ public class FertilizerCollectionBuilder
     /// <summary>
     /// Finalizes the building process and returns the complete collection of fertilizers.
     /// </summary>
-    /// <returns>A list of FertilizerOptimizationModel instances, representing the complete set of fertilizers added to the builder.</returns>
-    public IList<Fertilizer> Build() => _selectedFertilizer.ToList();
+    /// <returns>A read-only list holding the complete set of fertilizers added to the builder.</returns>
+    public IReadOnlyList<Fertilizer> Build() => [.. _selectedFertilizer];
 }

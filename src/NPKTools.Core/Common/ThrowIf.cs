@@ -2,6 +2,9 @@ using System.Runtime.CompilerServices;
 
 namespace NPKTools.Core.Common;
 
+/// <summary>
+/// Guard clauses for argument checks the BCL does not provide out of the box.
+/// </summary>
 public static class ThrowIf
 {
     /// <summary>

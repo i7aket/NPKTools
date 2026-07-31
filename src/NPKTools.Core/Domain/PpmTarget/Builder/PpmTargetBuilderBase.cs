@@ -3,6 +3,11 @@ using NPKTools.Core.Domain.PpmTarget.ValueObjects;
 
 namespace NPKTools.Core.Domain.PpmTarget.Builder;
 
+/// <summary>
+/// Shared implementation behind <see cref="PpmTargetBuilder"/>, generic over the concrete builder
+/// type so that every <c>Add*</c> method returns the derived builder for chaining.
+/// </summary>
+/// <typeparam name="TBuilder">The concrete builder inheriting from this base class.</typeparam>
 public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
     where TBuilder : PpmTargetBuilderBase<TBuilder>
 {
@@ -49,5 +54,5 @@ public class PpmTargetBuilderBase<TBuilder> : BuilderBase<TBuilder>
     public TBuilder AddSi(double value) => SetValue(ref Si, value, nameof(Si));
     public TBuilder AddSe(double value) => SetValue(ref Se, value, nameof(Se));
     public TBuilder AddNa(double value) => SetValue(ref Na, value, nameof(Na));
-    public TBuilder AddLitters(double value) => SetValue(ref Liters, value, nameof(Liters));
+    public TBuilder AddLiters(double value) => SetValue(ref Liters, value, nameof(Liters));
 }

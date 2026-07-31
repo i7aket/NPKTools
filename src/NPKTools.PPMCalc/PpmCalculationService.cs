@@ -1,5 +1,5 @@
 using NPKTools.Core.Common;
-using NPKTools.Core.Const;
+using NPKTools.Core.Constants;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.PartsPerMillion;
 using NPKTools.Core.Domain.PartsPerMillion.ValueObjects;
@@ -20,7 +20,7 @@ public class PpmCalculationService : IPpmCalculationService
     /// <returns>A <see cref="Ppm"/> object containing the ppm values for all relevant nutrients.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="collection"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="collection"/> is empty or if <paramref name="waterLiters"/> is less than or equal to zero.</exception>
-    public Ppm CalculatePpm(IList<Fertilizer> collection, double waterLiters = 1)
+    public Ppm CalculatePpm(IReadOnlyList<Fertilizer> collection, double waterLiters = 1)
     {
         ThrowIf.NullOrEmpty(collection);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);

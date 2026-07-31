@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using NPKTools.Core.Domain.PartsPerMillion.ValueObjects;
 using Xunit;
 

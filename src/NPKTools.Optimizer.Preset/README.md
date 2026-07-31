@@ -1,129 +1,114 @@
 # NPKTools.Optimizer.Preset
--  NPKTools.Optimizer.Preset is an preconfigured version of the  NPKTools.Optimizer. It includes:
-- 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process.
-- 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated.
-- During the selection of macronutrient fertilizers, the service conducts two searches: in the first, sulfur is accounted for as specified, while the second search excludes sulfur coefficients to expand the possible options.
 
-## Developers
-This tool was developed by **Anatoliy Yermakov**.
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
-- **GitHub**: [i7aket](https://github.com/i7aket)
+Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. A preconfigured
+[`NPKTools.Optimizer`](https://www.nuget.org/packages/NPKTools.Optimizer/) that ships its own
+fertilizer catalogue, so you can go from a nutrient target to a set of workable mixes without
+describing any fertilizers yourself.
 
-Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
-- **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
-- **GitHub**: [AqueGen](https://github.com/AqueGen)
+Targets **.NET 10**.
 
+## What it contains
 
-## Installation and Configuration
+- **17 macronutrient fertilizers** combined into **18 bundles** — calcium nitrate, potassium
+  nitrate, magnesium sulfate, calcium chloride, MKP, MAG, SOP, DKP, MOP, ammonium nitrate,
+  ammonium chloride, ammonium sulfate, urea, urea phosphate, MAP, phosphoric acid and calcium
+  monobasic phosphate.
+- **17 micronutrient fertilizers** in **4 sets** — basic (boric acid, sodium borate, molybdate,
+  silicate, selenate), sulfate, nitrate and chelated (EDTA) forms of iron, copper, manganese and
+  zinc.
+- Macronutrient searches run **twice**: once honouring the sulfur target, and once with sulfur
+  unconstrained to widen the set of feasible mixes. Results that prescribe the same fertilizers at
+  the same weights are collapsed.
 
-This section guides you through setting up and configuring the necessary components for the project using Dependency Injection (DI).
+Bundles are built lazily and cached, so the repository should be a singleton — the DI helper below
+already registers it as one.
 
-### Direct Instantiation
-
-To manually instantiate the components without using DI, use the following example:
+## Setup
 
 ```csharp
-// Creating instances manually without DI
-        IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
-        IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
-        IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
-        IFertilizerBundleRepository bundles = new FertilizerBundleRepository();        
-        IFertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
+using Microsoft.Extensions.DependencyInjection;
+using NPKTools.Optimizer.Preset;
+
+ServiceProvider provider = new ServiceCollection()
+    .AddNpkToolsPreset()   // also registers the underlying optimizer
+    .BuildServiceProvider();
+
+IFertilizerOptimizationService service = provider.GetRequiredService<IFertilizerOptimizationService>();
 ```
-Using Dependency Injection
-For integrating these components into a project that supports Dependency Injection, such as an ASP.NET Core application, configure your services in the Startup.cs or a similar configuration file as follows:
+
+Or construct it directly:
+
 ```csharp
-public void ConfigureServices(IServiceCollection services)
+IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
+    new GoogleOrToolsOptimizationSolver(),
+    new OptimizationProblemMapper());
+
+IFertilizerOptimizationService service =
+    new FertilizerOptimizationService(optimizer, new FertilizerBundleRepository());
+```
+
+## Example
+
+```csharp
+using NPKTools.Core.Domain.Collections;
+using NPKTools.Core.Domain.Fertilizers;
+using NPKTools.Core.Domain.PpmTarget;
+using NPKTools.Core.Domain.PpmTarget.Builder;
+
+PpmTarget target = new PpmTargetBuilder()
+    .AddN(150).AddP(50).AddK(200).AddCa(100).AddMg(50)
+    .AddLiters(100)
+    .Build();
+
+(Solutions Macro, Solutions Micro) result = service.FindSolutions(target);
+
+Console.WriteLine($"{result.Macro.Count} macro and {result.Micro.Count} micro mixes found.");
+
+foreach (Solution solution in result.Macro)
 {
-    // Registering services in the DI container
-    services.AddSingleton<IOptimizationProblemSolver, GoogleOrToolsOptimizationSolver>();
-    services.AddSingleton<IOptimizationProblemMapper, OptimizationProblemMapper>();
-    services.AddSingleton<IFertilizerOptimizer, FertilizerOptimizationAdapter>();
-    services.AddSingleton<IFertilizerBundleRepository, FertilizerBundleRepository>();
-    services.AddSingleton<IFertilizerOptimizationService, FertilizerOptimizationService>();
+    foreach (Fertilizer fertilizer in solution)
+    {
+        Console.WriteLine($"  {fertilizer.Name.Value}: {fertilizer.Weight.Value:F3} g");
+    }
 }
 ```
 
-## Example usage
+`FindMacroSolutions`, `FindMicroSolutions` and `FindSolutions` return `Solutions.Empty` when nothing
+satisfies the target, so you never need a null check before enumerating. A target that only mentions
+micronutrients will legitimately produce an empty macro set, and vice versa.
+
+## Cancellation
+
+A macro search solves 18 linear programs in sequence, which takes noticeable time. Pass a token to
+abandon it:
+
 ```csharp
-// Creating instances manually without DI
-IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
-IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
-IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
-IFertilizerBundleRepository bundles = new FertilizerBundleRepository();
-IFertilizerOptimizationService fertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
+using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
 
-// Define your PPM target for optimization
-PpmTarget target = new PpmTargetBuilder()
-    .AddN(150)
-    .AddP(50)
-    .AddK(200)
-    .AddMg(60)
-    .AddCa(60)
-    .AddS(80)
-    .Build();
-
-// Set the options for matching the macro elements precisely
-SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
-    .AddN(1)
-    .AddP(1)
-    .AddK(1)
-    .AddCa(1)
-    .AddMg(1)
-    .AddS(1)
-    .AddCl(1)
-    .Build();
-
-// Finding macro solutions based on the specified target
-Solutions macroSolutions = fertilizerOptimizationService.FindMacroSolutions(target);
-
-// Finding micro solutions with a different target
-PpmTarget microTarget = new PpmTargetBuilder()
-    .AddFe(2)
-    .AddCu(0.05)
-    .AddMn(0.55)
-    .AddZn(0.33)
-    .AddB(0.28)
-    .AddMo(0.05)
-    .AddSi(0.01)
-    .AddSe(0.01)
-    .Build();
-
-Solutions microSolutions = fertilizerOptimizationService.FindMicroSolutions(microTarget);
-
-// Combine both macro and micro nutrient optimizations
-(Solutions Macro, Solutions Micro) results = fertilizerOptimizationService.FindSolutions(new PpmTargetBuilder()
-    .AddN(150)
-    .AddP(50)
-    .AddK(200)
-    .AddMg(60)
-    .AddCa(100)
-    .AddS(100)
-    .AddFe(2)
-    .AddCu(0.05)
-    .AddMn(0.55)
-    .AddZn(0.33)
-    .AddB(0.28)
-    .AddMo(0.05)
-    .AddCl(0.01)
-    .AddSi(0.01)
-    .AddSe(0.01)
-    .Build());
-
-// You can now access results.Macro and results.Micro for specific optimizations
+try
+{
+    Solutions solutions = service.FindMacroSolutions(target, cts.Token);
+}
+catch (OperationCanceledException)
+{
+    // The search was abandoned between bundles.
+}
 ```
 
-## License:
-This project is licensed under the MIT License.
+## Breaking changes in 2.0.0
 
-## Dependencies
-### NPKTools.Optimizer.Preset.Tests
-- [**xUnit**](https://xunit.net/): Framework for unit testing.
-- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
-- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
-- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
-- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
-- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
+`IFertilizerBundleRepository.Marco()` is now correctly spelled `Macro()`, the `Find*` methods return
+`Solutions` rather than `Solutions?`, and they accept an optional `CancellationToken`. See the
+[changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
 
-## Contact Information:
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+## Developers
+
+Developed by **Anatoliy Yermakov** ([LinkedIn](https://www.linkedin.com/in/anatoliyyermakov),
+[GitHub](https://github.com/i7aket)).
+
+Special thanks to **Artem Frolov** ([LinkedIn](https://www.linkedin.com/in/artfrolov/),
+[GitHub](https://github.com/AqueGen)) for his invaluable assistance and guidance.
+
+## License
+
+MIT.

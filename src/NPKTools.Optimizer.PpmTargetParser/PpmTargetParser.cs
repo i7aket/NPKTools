@@ -1,5 +1,6 @@
 using System.Globalization;
-using NPKTools.Core.Const;
+using System.Text;
+using NPKTools.Core.Constants;
 using NPKTools.Core.Domain.PpmTarget;
 using NPKTools.Core.Domain.PpmTarget.ValueObjects;
 
@@ -11,16 +12,28 @@ namespace NPKTools.Optimizer.PpmTargetParser;
 /// </summary>
 public class PpmTargetParser : IPpmTargetParser
 {
-    private const string ErrorParsePair = "Unable to parse '{0}' as an element=value pair.";
-    private const string ErrorElementNotRecognized = "The element '{0}' is not recognized as a valid input.";
-    private const string ErrorDuplicateElement = "Duplicate element '{0}' found in input.";
-    
+    private static readonly CompositeFormat ErrorParsePair =
+        CompositeFormat.Parse("Unable to parse '{0}' as an element=value pair.");
+
+    private static readonly CompositeFormat ErrorElementNotRecognized =
+        CompositeFormat.Parse("The element '{0}' is not recognized as a valid input.");
+
+    private static readonly CompositeFormat ErrorDuplicateElement =
+        CompositeFormat.Parse("Duplicate element '{0}' found in input.");
+
+
+    /// <summary>
+    /// Every element the parser accepts. Must stay in sync with the <see cref="PpmTarget"/>
+    /// members populated in <see cref="Parse"/>: Na was missing here until 2.0.0, so
+    /// "Na=5" was rejected even though the sodium target was read back below.
+    /// </summary>
     private static readonly HashSet<string> ValidElements = new(StringComparer.OrdinalIgnoreCase)
     {
-        Names.N, Names.P, Names.K, Names.Ca, Names.Mg, Names.S, Names.Fe, Names.Cu, 
-        Names.Mn, Names.Zn, Names.B, Names.Mo, Names.Cl, Names.Si, Names.Se, Names.Liters
+        Names.N, Names.P, Names.K, Names.Ca, Names.Mg, Names.S, Names.Fe, Names.Cu,
+        Names.Mn, Names.Zn, Names.B, Names.Mo, Names.Cl, Names.Si, Names.Se, Names.Na, Names.Liters
     };
-    private static readonly char[] Separator = { ' ', ',' };
+
+    private static readonly char[] Separator = [' ', ','];
 
     /// <summary>
     /// Parses the provided string input into a PpmTarget object. Each pair in the input string
@@ -43,18 +56,18 @@ public class PpmTargetParser : IPpmTargetParser
             string[] parts = pair.Split('=');
             if (parts.Length != 2 || !double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
             {
-                throw new FormatException(string.Format(ErrorParsePair, pair));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, ErrorParsePair, pair));
             }
 
             string elementKey = parts[0];
             if (!ValidElements.Contains(elementKey))
             {
-                throw new FormatException(string.Format(ErrorElementNotRecognized, elementKey));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, ErrorElementNotRecognized, elementKey));
             }
             
             if (!values.TryAdd(elementKey, value))
             {
-                throw new FormatException(string.Format(ErrorDuplicateElement, elementKey));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, ErrorDuplicateElement, elementKey));
             }
         }
 

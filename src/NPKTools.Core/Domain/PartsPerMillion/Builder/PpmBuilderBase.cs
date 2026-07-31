@@ -3,6 +3,11 @@ using NPKTools.Core.Domain.PartsPerMillion.ValueObjects;
 
 namespace NPKTools.Core.Domain.PartsPerMillion.Builder;
 
+/// <summary>
+/// Shared implementation behind <see cref="PpmBuilder"/>, generic over the concrete builder type
+/// so that every <c>Add*</c> method returns the derived builder for chaining.
+/// </summary>
+/// <typeparam name="TBuilder">The concrete builder inheriting from this base class.</typeparam>
 public class PpmBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuilder : PpmBuilderBase<TBuilder>
 {
     protected double Nitrate, Ammonium, Amine, P, K, Ca, Mg, S, Fe, Cu, Mn, Zn, B, Mo, Cl, Si, Se, Na, Liters;

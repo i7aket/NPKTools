@@ -3,6 +3,11 @@ using NPKTools.Core.Domain.SolutionsFinderSettings.ValueObjects;
 
 namespace NPKTools.Core.Domain.SolutionsFinderSettings.Builder;
 
+/// <summary>
+/// Shared implementation behind <see cref="SolutionFinderSettingsBuilder"/>, generic over the
+/// concrete builder type so that every <c>Add*</c> method returns the derived builder for chaining.
+/// </summary>
+/// <typeparam name="TBuilder">The concrete builder inheriting from this base class.</typeparam>
 public class SolutionFinderSettingsBuilderBase<TBuilder> : BuilderBase<TBuilder>
     where TBuilder : SolutionFinderSettingsBuilderBase<TBuilder>
 {

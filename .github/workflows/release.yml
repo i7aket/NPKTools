@@ -1,0 +1,78 @@
+name: Release
+
+# Publishing is driven by a version tag, not by every push to main. Tag a release with
+# `git tag v2.0.0 && git push origin v2.0.0`; the tag name becomes the package version.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish, without the leading v (e.g. 2.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: nuget
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "Publishing version $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release -p:Version=${{ steps.version.outputs.version }}
+
+      # Never publish a release that does not pass its own test suite.
+      - name: Test
+        run: dotnet test --no-build --configuration Release
+
+      - name: Pack
+        run: >
+          dotnet pack --no-build --configuration Release
+          -p:Version=${{ steps.version.outputs.version }}
+          --output ./nupkgs
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs-${{ steps.version.outputs.version }}
+          path: ./nupkgs/*
+
+      - name: Publish to NuGet.org
+        run: >
+          dotnet nuget push "./nupkgs/*.nupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Publish to GitHub Packages
+        run: >
+          dotnet nuget push "./nupkgs/*.nupkg"
+          --api-key ${{ secrets.GITHUB_TOKEN }}
+          --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+          --skip-duplicate

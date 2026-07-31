@@ -44,7 +44,7 @@ public record OptimizationProblem
         /// <summary>
         /// Gets the name of the constraint.
         /// </summary>
-        public required string Name;
+        public required string Name { get; init; }
 
         /// <summary>
         /// Gets the lower bound for the constraint.
