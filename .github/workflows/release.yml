@@ -4,7 +4,10 @@ name: Release
 # `git tag v2.0.0 && git push origin v2.0.0`; the tag name becomes the package version.
 on:
   push:
-    tags: ['v*.*.*']
+    # Deliberately 'v*' rather than 'v*.*.*'. A prerelease tag such as v1.0.0-preview.1 has a
+    # fourth dot-separated part, so 'v*.*.*' only matches it by letting the last wildcard swallow
+    # "0-preview.1" — true, but not something a reader should have to work out about a release trigger.
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
