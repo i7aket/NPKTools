@@ -30,15 +30,15 @@ public class FertilizerCollectionBuilderTests
         // Arrange
         FertilizerCollectionBuilder builder = new FertilizerCollectionBuilder();
         Fertilizer fertilizerResultModel = new FertilizerBuilder().AddK(38.672).AddNo3(13.854).Build();
-        builder.Add(fertilizerResultModel);  
+        builder.Add(fertilizerResultModel);
 
         // Act 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => builder.Add(fertilizerResultModel));
-    
+
         //Assert
         Assert.Equal("Duplicate fertilizer detected with identical attributes.", ex.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Build_MultipleFertilizers_BuildsCorrectCollection()

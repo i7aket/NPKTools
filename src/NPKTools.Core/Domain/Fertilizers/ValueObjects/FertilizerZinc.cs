@@ -6,7 +6,7 @@ namespace NPKTools.Core.Domain.Fertilizers.ValueObjects;
 /// <summary>
 /// Represents the zinc content in the fertilizer, differentiated by non-chelated and EDTA forms.
 /// </summary>
-public record FertilizerZinc 
+public record FertilizerZinc
 {
     public double ZnNonChelated { get; }
     public double ZnEdta { get; }

@@ -167,7 +167,7 @@ public class FertilizerAttributesComparerTests
         // Assert
         Assert.False(isEqual);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Equals_BothObjectsNull_ReturnsTrue()
@@ -201,7 +201,7 @@ public class FertilizerAttributesComparerTests
     }
 
 
-    
+
 
     /// <summary>
     /// Builds a fully populated <see cref="FertilizerAttributes"/>, letting a test override only

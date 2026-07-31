@@ -39,7 +39,7 @@ public class PpmTargetParserTests
         Assert.Equal(1, result.Se.Value);
         Assert.Equal(1000, result.Liters.Value);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_AllValidElements_ReturnsCorrectPpmTarget()
@@ -68,7 +68,7 @@ public class PpmTargetParserTests
         Assert.Equal(1, result.Se.Value);
         Assert.Equal(1000, result.Liters.Value);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_ValidInput_ReturnsCorrectPpmTarget()
@@ -86,7 +86,7 @@ public class PpmTargetParserTests
         Assert.Equal(400, result.Ca.Value);
         Assert.Equal(50, result.Mg.Value);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_InvalidElement_ThrowsFormatException()
@@ -96,11 +96,11 @@ public class PpmTargetParserTests
 
         // Act  
         FormatException ex = Assert.Throws<FormatException>(() => _parser.Parse(input));
-        
+
         //Assert
         Assert.Contains("not recognized", ex.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_InvalidFormat_ThrowsFormatException()
@@ -110,11 +110,11 @@ public class PpmTargetParserTests
 
         // Act 
         FormatException ex = Assert.Throws<FormatException>(() => _parser.Parse(input));
-        
+
         //Assert
         Assert.Contains("Unable to parse", ex.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_MissingValue_ThrowsFormatException()
@@ -124,11 +124,11 @@ public class PpmTargetParserTests
 
         // Act 
         FormatException ex = Assert.Throws<FormatException>(() => _parser.Parse(input));
-        
+
         //Assert
         Assert.Contains("Unable to parse", ex.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_DuplicateElements_ThrowsArgumentException()
@@ -138,11 +138,11 @@ public class PpmTargetParserTests
 
         // Act  
         FormatException ex = Assert.Throws<FormatException>(() => _parser.Parse(input));
-        
+
         //Assert
         Assert.Contains("Duplicate element", ex.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Parse_EmptyInput_ThrowsArgumentException()
@@ -152,7 +152,7 @@ public class PpmTargetParserTests
 
         // Act
         ArgumentException ex = Assert.Throws<ArgumentException>(() => _parser.Parse(input));
-        
+
         // Assert
         Assert.Contains("The value cannot be an empty string or co", ex.Message);
     }

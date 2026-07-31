@@ -7,7 +7,7 @@ namespace NPKTools.Core.Domain.Collections;
 /// This comparer is useful in contexts where fertilizers need to be distinguished or grouped
 /// based on their attribute values rather than their reference identity.
 /// </summary>
-public class FertilizerAttributesComparer : IEqualityComparer<FertilizerAttributes>
+public sealed class FertilizerAttributesComparer : IEqualityComparer<FertilizerAttributes>
 {
     /// <summary>
     /// Determines whether the specified fertilizer attributes are equal by comparing each nutrient content and price.

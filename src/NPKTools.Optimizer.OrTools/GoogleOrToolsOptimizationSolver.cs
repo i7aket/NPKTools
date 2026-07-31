@@ -13,7 +13,7 @@ namespace NPKTools.Optimizer.OrTools;
 /// specifically want GLOP; note that OR-Tools ships native binaries only for linux-x64/arm64,
 /// osx-x64/arm64 and win-x64, so it cannot run under WebAssembly.
 /// </remarks>
-public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
+public sealed class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 {
     /// <summary>
     /// Solves the given optimization problem using the linear solver from Google OR-Tools.
@@ -36,7 +36,7 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
         ThrowIf.NullOrEmpty(problem.Constraints);
 
         Solver solver = Solver.CreateSolver("GLOP");
-        
+
         Dictionary<string, Variable> variables = problem.Variables.ToDictionary(
             name => name.Key,
             name => solver.MakeNumVar(0, double.PositiveInfinity, name.Key)
@@ -60,7 +60,7 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
         foreach (OptimizationProblem.OptimizationConstraint constraint in problem.Constraints)
         {
             Constraint solverConstraint = solver.MakeConstraint(constraint.LowerBound, constraint.UpperBound, constraint.Name);
-            foreach (KeyValuePair<string, double> coefficient in constraint.Coefficients) 
+            foreach (KeyValuePair<string, double> coefficient in constraint.Coefficients)
             {
                 solverConstraint.SetCoefficient(variables[coefficient.Key], coefficient.Value);
             }
@@ -68,8 +68,8 @@ public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 
         Solver.ResultStatus resultStatus = solver.Solve();
 
-        return resultStatus != Solver.ResultStatus.OPTIMAL 
-            ? default 
+        return resultStatus != Solver.ResultStatus.OPTIMAL
+            ? default
             : variables.ToDictionary(variable => variable.Key, variable => variable.Value.SolutionValue());
     }
 }

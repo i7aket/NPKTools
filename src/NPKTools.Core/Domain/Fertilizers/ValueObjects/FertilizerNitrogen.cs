@@ -2,7 +2,7 @@ namespace NPKTools.Core.Domain.Fertilizers.ValueObjects;
 /// <summary>
 /// Represents the nitrogen content in the fertilizer, differentiated by nitrate, ammonium, and amine forms.
 /// </summary>
-public record FertilizerNitrogen 
+public record FertilizerNitrogen
 {
     public double Nitrate { get; }
     public double Ammonium { get; }

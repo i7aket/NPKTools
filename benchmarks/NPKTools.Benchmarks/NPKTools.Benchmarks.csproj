@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NPKTools.Optimizer.OrTools\NPKTools.Optimizer.OrTools.csproj" />
+    <ProjectReference Include="..\..\src\NPKTools.Optimizer.Preset\NPKTools.Optimizer.Preset.csproj" />
+    <ProjectReference Include="..\..\src\NPKTools.Optimizer.PpmTargetParser\NPKTools.Optimizer.PpmTargetParser.csproj" />
+    <ProjectReference Include="..\..\src\NPKTools.PPMCalc\NPKTools.PPMCalc.csproj" />
+  </ItemGroup>
+
+</Project>

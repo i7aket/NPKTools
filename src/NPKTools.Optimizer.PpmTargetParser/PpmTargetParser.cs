@@ -10,7 +10,7 @@ namespace NPKTools.Optimizer.PpmTargetParser;
 /// into a PpmTarget object. This parser supports a predefined set of elements and ensures that
 /// the input format is correctly followed.
 /// </summary>
-public class PpmTargetParser : IPpmTargetParser
+public sealed class PpmTargetParser : IPpmTargetParser
 {
     private static readonly CompositeFormat ErrorParsePair =
         CompositeFormat.Parse("Unable to parse '{0}' as an element=value pair.");
@@ -64,7 +64,7 @@ public class PpmTargetParser : IPpmTargetParser
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, ErrorElementNotRecognized, elementKey));
             }
-            
+
             if (!values.TryAdd(elementKey, value))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, ErrorDuplicateElement, elementKey));
@@ -90,7 +90,7 @@ public class PpmTargetParser : IPpmTargetParser
             new SodiumPpmTarget(values.GetValueOrDefault(Names.Na, 0)),
             new WaterVolumeLitersPpmTarget(values.GetValueOrDefault(Names.Liters, 1))
         );
-            
+
         return ppmTarget;
     }
 }

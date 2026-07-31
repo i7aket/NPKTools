@@ -16,19 +16,19 @@ public class FertilizerBuilderBase<TBuilder> : BuilderBase<TBuilder> where TBuil
     protected string Formula = "not provided";
     protected ConcentrateType Type;
     protected double Weight;
-    protected double Price  = 1;
+    protected double Price = 1;
     protected double No3, Nh4, Nh2, P, K;
     protected double CaNonChelated, CaEdta, MgNonChelated, MgEdta, S;
     protected double FeNonChelated, FeEdta, FeDtpa, FeEddha, FeHbed, FeOrthoPart;
     protected double CuNonChelated, CuEdta, MnNonChelated, MnEdta, ZnNonChelated, ZnEdta;
     protected double B, Mo, Cl, Si, Se, Na;
-    
+
     protected override TBuilder Self => (TBuilder)this;
     public override Fertilizer Build()
     {
         return new Fertilizer(
             new FertilizerName(Name),
-            new FertilizerFormula (Formula),
+            new FertilizerFormula(Formula),
             Type,
             new FertilizerReferenceId(Id),
             new FertilizerWeight(Weight),

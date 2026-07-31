@@ -298,8 +298,8 @@ public class PartsPerMillionValueObjectTests
     {
         double invalidValue = -2.0;
         Assert.Throws<ArgumentOutOfRangeException>(() => new ZincPpm(invalidValue));
-    }    
-    
+    }
+
     [Fact]
     [Trait("Category", "Unit")]
     public void NitrogenPpm_ShouldCorrectlyCalculateTotalValue()
@@ -316,7 +316,7 @@ public class PartsPerMillionValueObjectTests
         // Assert
         nitrogen.Value.Should().Be(expectedTotal);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void WaterVolumeLitersPpm_ShouldInitialize_WithPositiveValue()

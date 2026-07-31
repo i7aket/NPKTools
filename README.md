@@ -44,6 +44,16 @@ objective values, non-negativity and constraint satisfaction. Where an optimum i
 solvers may report different vertices, so the assertions compare optimal cost rather than exact
 weights.
 
+At this problem size the managed solver is also the faster of the two, because GLOP's per-solve setup
+dominates. Measured with `benchmarks/NPKTools.Benchmarks` on a full macro-plus-micro search:
+
+| Solver | Full search | Allocated |
+| --- | --- | --- |
+| Managed simplex | **0.67 ms** | 939 KB |
+| OR-Tools GLOP | 3.67 ms | 913 KB |
+
+Reproduce with `dotnet run -c Release --project benchmarks/NPKTools.Benchmarks`.
+
 If you want GLOP anyway — on a server, or to cross-check results — add the optional package and
 register it first:
 
@@ -188,7 +198,14 @@ attribute.
 ## Testing
 
 368 tests across seven projects, run on Linux, Windows and macOS in CI. Coverage is collected on
-every run via coverlet and uploaded as a build artifact.
+every run via coverlet and uploaded as a build artifact. CI also verifies formatting
+(`dotnet format --verify-no-changes`) and runs CodeQL.
+
+## Benchmarks
+
+```bash
+dotnet run -c Release --project benchmarks/NPKTools.Benchmarks
+```
 
 ## Releasing
 

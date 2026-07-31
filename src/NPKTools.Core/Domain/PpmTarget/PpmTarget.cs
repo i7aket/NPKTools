@@ -7,7 +7,7 @@ namespace NPKTools.Core.Domain.PpmTarget;
 /// along with the target volume of water in which these nutrients should be dissolved.
 /// This class is essential for specifying the nutrient requirements that the optimization process aims to achieve.
 /// </summary>
-public class PpmTarget
+public sealed class PpmTarget
 {
     /// <summary>
     /// Gets or sets the target ppm for nitrogen.
@@ -181,7 +181,7 @@ public class PpmTarget
 
         ArgumentNullException.ThrowIfNull(na);
         Na = na;
-        
+
         ArgumentNullException.ThrowIfNull(liters);
         Liters = liters;
     }

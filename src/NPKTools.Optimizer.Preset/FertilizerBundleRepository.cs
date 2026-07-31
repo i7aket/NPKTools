@@ -5,7 +5,7 @@ namespace NPKTools.Optimizer.Preset;
 /// Repository for managing collections of fertilizer bundles used in optimization processes. This repository provides
 /// access to predefined sets of macro and micro nutrient fertilizers.
 /// </summary>
-public class FertilizerBundleRepository : IFertilizerBundleRepository
+public sealed class FertilizerBundleRepository : IFertilizerBundleRepository
 {
     private readonly Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>> _macro;
     private readonly Lazy<IReadOnlyList<IReadOnlyList<Fertilizer>>> _micro;
@@ -119,7 +119,7 @@ public class FertilizerBundleRepository : IFertilizerBundleRepository
             CombineGroups(baseMicroGroup, chelateMicroGroup)
         };
     }
-    
+
     private static List<Fertilizer> CombineGroups(params IReadOnlyList<Fertilizer>[] groups)
     {
         List<Fertilizer> combined = [];

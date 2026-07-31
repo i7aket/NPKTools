@@ -10,7 +10,7 @@ namespace NPKTools.Optimizer.Components;
 /// <summary>
 /// Provides an implementation of <see cref="IFertilizerOptimizer"/> using a specific optimization problem solver and mapper.
 /// </summary>
-public class FertilizerOptimizationAdapter : IFertilizerOptimizer
+public sealed class FertilizerOptimizationAdapter : IFertilizerOptimizer
 {
     private readonly IOptimizationProblemSolver _optimizationProblemSolver;
     private readonly IOptimizationProblemMapper _mapper;
@@ -46,13 +46,13 @@ public class FertilizerOptimizationAdapter : IFertilizerOptimizer
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(settings);
         ThrowIf.NullOrEmpty(sourceCollection);
-        
+
         OptimizationProblem problem = _mapper.CreateOptimizationProblem(target, sourceCollection, settings);
 
         Dictionary<string, double>? result = _optimizationProblemSolver.Solve(problem);
 
-        return result == null 
-            ? default 
+        return result == null
+            ? default
             : _mapper.CreateSolution(result, sourceCollection, target.Liters.Value);
     }
 }

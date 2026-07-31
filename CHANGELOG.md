@@ -55,7 +55,8 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 - **Dependency injection helpers**, so consumers no longer wire four objects together by hand:
   `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()` and
   `AddNpkToolsPpmTargetParser()`. All use `TryAdd`, so registering your own
-  `IOptimizationProblemSolver` first replaces the OR-Tools default.
+  `IOptimizationProblemSolver` first replaces the managed default — which is how
+  `AddNpkToolsOrToolsSolver()` substitutes the GLOP backend.
 - **`CancellationToken` support** on `IFertilizerOptimizationService`. A macro search solves 18
   linear programs in sequence and previously could not be interrupted.
 - XML documentation is now shipped in the packages (`GenerateDocumentationFile`), along with
@@ -81,6 +82,27 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 - CI runs build, test and pack on Linux, Windows and macOS for every push and pull request.
   Publishing is triggered by a `v*.*.*` tag rather than every push to `main`, and runs the test
   suite before pushing packages.
+
+### Quality
+
+- Sealed the 13 leaf types and interface-backed implementations that were never designed for
+  inheritance (`Fertilizer`, `Ppm`, `PpmTarget`, `SolutionFinderSettings`, the services, the mapper,
+  the adapter, the repository, the comparer). `FertilizerAttributes` and the `*BuilderBase<TBuilder>`
+  types stay open because they exist to be inherited. Extend behaviour through the interfaces or
+  composition.
+- `ThrowIf.NullOrEmpty` no longer enumerates to decide emptiness. It read the count via `Any()`,
+  which starts enumerating; it now reads `Count` from `IReadOnlyCollection<T>` or `ICollection<T>`
+  and only falls back to enumeration for a genuinely lazy sequence. `Enumerable.TryGetNonEnumeratedCount`
+  alone was not sufficient — it does not recognise `IReadOnlyCollection<T>`, which is what the
+  library's own `Solution` and `Solutions` are.
+- `dotnet format` applied across the repository (123 files: unused usings removed, missing final
+  newlines added) and wired into CI as `--verify-no-changes`, so formatting cannot drift again.
+- Added `benchmarks/NPKTools.Benchmarks` (BenchmarkDotNet). It records that the managed solver is
+  about 5.5× faster than GLOP on a full preset search (0.67 ms against 3.67 ms), which keeps the
+  choice of default solver an evidence-based one.
+- Added a CodeQL workflow (`security-and-quality` queries, weekly plus per-PR) and `SECURITY.md`
+  describing the actual threat surface — these libraries perform no I/O, so it is essentially input
+  handling and bounded solve time.
 
 ### Removed
 

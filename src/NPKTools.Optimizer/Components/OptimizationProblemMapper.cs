@@ -15,7 +15,7 @@ namespace NPKTools.Optimizer.Components;
 /// This class translates user-defined nutrient targets and fertilizer data
 /// into an optimization problem that can be solved algorithmically.
 /// </summary>
-public class OptimizationProblemMapper : IOptimizationProblemMapper
+public sealed class OptimizationProblemMapper : IOptimizationProblemMapper
 {
     /// <summary>
     /// Creates an optimization problem from given nutrient targets, a collection of fertilizers,

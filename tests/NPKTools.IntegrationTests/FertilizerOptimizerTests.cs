@@ -357,7 +357,7 @@ public class FertilizerOptimizerTests
             new FertilizerBuilder()
                 .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))
                 .AddNo3(10)
-                .AddPrice(1.0) 
+                .AddPrice(1.0)
                 .Build(),
 
             new FertilizerBuilder()
@@ -369,21 +369,21 @@ public class FertilizerOptimizerTests
             new FertilizerBuilder()
                 .AddId(Guid.Parse("00000000-0000-0000-0000-000000000003"))
                 .AddNo3(5)
-                .AddPrice(0.8) 
+                .AddPrice(0.8)
                 .Build(),
         };
 
         PpmTarget target = new PpmTargetBuilder()
-            .AddN(10) 
+            .AddN(10)
             .Build();
 
         SolutionFinderSettings settings = new SolutionFinderSettingsBuilder()
-            .AddN(1) 
+            .AddN(1)
             .Build();
 
         Fertilizer expected = new FertilizerBuilder()
             .AddId(Guid.Parse("00000000-0000-0000-0000-000000000001"))
-            .AddWeight(0.1) 
+            .AddWeight(0.1)
             .AddNo3(10)
             .Build();
 

@@ -9,7 +9,7 @@ public record FertilizerMagnesium
     public double Value => MgNonChelated + MgEdta;
 
 
-    public FertilizerMagnesium(double mgNonChelated = 0, double mgEdta = 0) 
+    public FertilizerMagnesium(double mgNonChelated = 0, double mgEdta = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(mgNonChelated);
         ArgumentOutOfRangeException.ThrowIfNegative(mgEdta);

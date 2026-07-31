@@ -16,7 +16,7 @@ namespace NPKTools.Core.Tests
             double p = 80.0, k = 120.0, ca = 60.0, mg = 40.0, s = 30.0;
             double fe = 15.0, cu = 7.0, mn = 3.0, zn = 5.0, b = 1.0, mo = 0.5;
             double cl = 10.0, si = 8.0, se = 0.2, na = 2.0, liters = 2;
-    
+
             double expectedTotalValue = nitrate + ammonium + amine + p + k + ca + mg + s + fe +
                                         cu + mn + zn + b + mo + cl + si + se + na;
 
@@ -44,7 +44,7 @@ namespace NPKTools.Core.Tests
                 .Build();
 
             // Assert
-            Assert.Equal(nitrate+ammonium+amine, ppm.Nitrogen.Value);
+            Assert.Equal(nitrate + ammonium + amine, ppm.Nitrogen.Value);
             Assert.Equal(nitrate, ppm.Nitrogen.Nitrate);
             Assert.Equal(ammonium, ppm.Nitrogen.Ammonium);
             Assert.Equal(amine, ppm.Nitrogen.Amine);
@@ -64,7 +64,7 @@ namespace NPKTools.Core.Tests
             Assert.Equal(se, ppm.Selenium.Value);
             Assert.Equal(na, ppm.Sodium.Value);
             Assert.Equal(liters, ppm.Liters.Value);
-            Assert.Equal(expectedTotalValue, ppm.Value); 
+            Assert.Equal(expectedTotalValue, ppm.Value);
         }
     }
 }

@@ -24,7 +24,7 @@ public class ThrowIfTests
         Exception exceptionRecord = Record.Exception(() => ThrowIf.Default(nonDefaultValue, nameof(nonDefaultValue)));
         Assert.Null(exceptionRecord);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void NotEmpty_WithNullCollection_ThrowsArgumentNullException()
@@ -55,7 +55,7 @@ public class ThrowIfTests
         Exception exceptionRecord = Record.Exception(() => ThrowIf.NullOrEmpty(nonEmptyCollection, nameof(nonEmptyCollection)));
         Assert.Null(exceptionRecord);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Duplicate_WithNewItem_DoesNotThrow()

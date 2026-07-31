@@ -6,7 +6,7 @@ namespace NPKTools.Core.Domain.Fertilizers;
 /// This class serves as a central collection of data points, each representing a specific nutrient or property of the fertilizer.
 /// These attributes are essential for the optimization of fertilizers
 /// </summary>
-public class FertilizerAttributes 
+public class FertilizerAttributes
 {
     /// <summary>
     /// Represents the monetary price of the fertilizer.
@@ -92,8 +92,8 @@ public class FertilizerAttributes
     /// Represents the sodium (Na) content in the fertilizer.
     /// </summary>
     public FertilizerSodium Sodium { get; }
-    
-    
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FertilizerAttributes"/> class.
     /// </summary>

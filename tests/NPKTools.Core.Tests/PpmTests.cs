@@ -1,7 +1,6 @@
 using System.Text;
 using NPKTools.Core.Domain.PartsPerMillion;
 using NPKTools.Core.Domain.PartsPerMillion.Builder;
-using NPKTools.Core.Domain.PartsPerMillion.ValueObjects;
 using Xunit;
 
 namespace NPKTools.Core.Tests;
@@ -31,7 +30,7 @@ public class PpmTests
             .AddCl(0.01)
             .AddSi(0.01)
             .AddSe(0.01)
-            .AddLiters(1000) 
+            .AddLiters(1000)
             .Build();
 
         // Act
@@ -39,10 +38,10 @@ public class PpmTests
 
         // Assert
         string expectedOutput = new StringBuilder()
-            .AppendLine("-PPM Report-")  
-            .AppendLine("Total PPM: 688.290")  
-            .AppendLine("Nitrogen: 175.000") 
-            .AppendLine("\u2514Nitrate NO\u2083: 50.000")  
+            .AppendLine("-PPM Report-")
+            .AppendLine("Total PPM: 688.290")
+            .AppendLine("Nitrogen: 175.000")
+            .AppendLine("\u2514Nitrate NO\u2083: 50.000")
             .AppendLine("\u2514Ammonium NH\u2084: 25.000")
             .AppendLine("\u2514Amine NH\u2082: 100.000")
             .AppendLine("Phosphorus P: 50.000")

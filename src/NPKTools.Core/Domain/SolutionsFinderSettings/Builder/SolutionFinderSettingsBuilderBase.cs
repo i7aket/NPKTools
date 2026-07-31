@@ -21,7 +21,7 @@ public class SolutionFinderSettingsBuilderBase<TBuilder> : BuilderBase<TBuilder>
             new RangeFactorSettings(Accuracy),
             new NitrogenSettings(N),
             new PhosphorusSettings(P),
-            new PotassiumSettings( K),
+            new PotassiumSettings(K),
             new CalciumSettings(Ca),
             new MagnesiumSettings(Mg),
             new SulfurSettings(S),
@@ -35,7 +35,7 @@ public class SolutionFinderSettingsBuilderBase<TBuilder> : BuilderBase<TBuilder>
             new SiliconSettings(Si),
             new SeleniumSettings(Se),
             new SodiumSettings(Na)
-        );    
+        );
     }
     public TBuilder AddRangeFactor(double value) => SetValue(ref Accuracy, value, nameof(Accuracy));
     public TBuilder AddN(double value) => SetValue(ref N, value, nameof(N));

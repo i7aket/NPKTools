@@ -40,26 +40,26 @@ public static class Labels
     public const string CuEdta = "CuEDTA";
     public const string MnEdta = "MnEDTA";
     public const string ZnEdta = "ZnEDTA";
-    
+
     public const string Edta = "EDTA";
     public const string Dtpa = "DTPA";
     public const string Eddha = "FeEDDHA";
     public const string Hbed = "FeHBED";
     public const string OrthoOrtho = "Ortho-ortho";
-    
+
     public const string SubItemPrefix = "\u2514";
     public const string TotalPpm = "Total PPM";
     public const string TotalMass = "Total Mass";
     public const string Ec = "Electrical Conductivity";
     public const string PpmReport = "-PPM Report-";
-    
-    
+
+
     public const string No3 = "NO₃";
     public const string Nh4 = "NH₄";
     public const string Nh2 = "NH₂";
     public const string H2O = "H₂O";
     public const string So4 = "SO₄";
     public const string Po4 = "PO₄";
-    
-    
+
+
 }

@@ -22,12 +22,12 @@ public class FertilizerOptimizationServiceTests
         IOptimizationProblemSolver solver = new SimplexOptimizationSolver();
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
-        IFertilizerBundleRepository bundles = new FertilizerBundleRepository();        
+        IFertilizerBundleRepository bundles = new FertilizerBundleRepository();
         FertilizerOptimizationService = new FertilizerOptimizationService(optimizer, bundles);
-        
+
         Calc = new PpmCalculationService();
     }
-    
+
     [Fact]
     [Trait("Category", "Integration")]
     public void FindMacroSolutions_WithValidTarget_ReturnsSolutions()
@@ -44,7 +44,7 @@ public class FertilizerOptimizationServiceTests
         Solutions result = FertilizerOptimizationService.FindMacroSolutions(target);
 
         const double tolerance = 0.00001;
-        
+
         foreach (Solution solution in result)
         {
             Ppm solutionPpm = Calc.CalculatePpm(solution);
@@ -54,11 +54,11 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Magnesium.Value, target.Mg.Value - tolerance, target.Mg.Value + tolerance);
             Assert.InRange(solutionPpm.Calcium.Value, target.Ca.Value - tolerance, target.Ca.Value + tolerance);
         }
-        
+
         Assert.NotNull(result);
         Assert.NotEmpty(result);
     }
-    
+
     [Fact]
     [Trait("Category", "Integration")]
     public void FindMicroSolutions_WithValidTarget_ReturnsSolutions()
@@ -77,7 +77,7 @@ public class FertilizerOptimizationServiceTests
         Solutions result = FertilizerOptimizationService.FindMicroSolutions(target);
 
         const double tolerance = 0.00001;
-        
+
         foreach (Solution solution in result)
         {
             Ppm solutionPpm = Calc.CalculatePpm(solution);
@@ -90,11 +90,11 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Silicon.Value, target.Si.Value - tolerance, target.Si.Value + tolerance);
             Assert.InRange(solutionPpm.Selenium.Value, target.Se.Value - tolerance, target.Se.Value + tolerance);
         }
-        
+
         Assert.NotNull(result);
         Assert.NotEmpty(result);
     }
-    
+
     [Fact]
     [Trait("Category", "Integration")]
     public void FindSolutions_WithValidTarget_ReturnsSolutions()
@@ -120,7 +120,7 @@ public class FertilizerOptimizationServiceTests
         (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
 
         const double tolerance = 0.00001;
-        
+
         foreach (Solution solution in result.Macro)
         {
             Ppm solutionPpm = Calc.CalculatePpm(solution);
@@ -131,7 +131,7 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Calcium.Value, target.Ca.Value - tolerance, target.Ca.Value + tolerance);
             Assert.InRange(solutionPpm.Chlorine.Value, target.Cl.Value - tolerance, target.Cl.Value + tolerance);
         }
-        
+
         foreach (Solution solution in result.Micro)
         {
             Ppm solutionPpm = Calc.CalculatePpm(solution);
@@ -145,7 +145,7 @@ public class FertilizerOptimizationServiceTests
             Assert.InRange(solutionPpm.Selenium.Value, target.Se.Value - tolerance, target.Se.Value + tolerance);
         }
     }
-    
+
     [Fact]
     [Trait("Category", "Integration")]
     public void FindSolutions_WithTargetCu_EqualsOne_ReturnsSolutions()
@@ -156,7 +156,7 @@ public class FertilizerOptimizationServiceTests
 
         (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
 
-        const double tolerance = 0.01; 
+        const double tolerance = 0.01;
 
         Assert.Empty(result.Macro);
         Assert.NotEmpty(result.Micro);
@@ -173,12 +173,12 @@ public class FertilizerOptimizationServiceTests
     public void FindSolutions_WithTargetN_EqualsOne_ReturnsSolutions()
     {
         PpmTarget target = new PpmTargetBuilder()
-            .AddN(1) 
+            .AddN(1)
             .Build();
 
         (Solutions Macro, Solutions Micro) result = FertilizerOptimizationService.FindSolutions(target);
 
-        const double tolerance = 0.01; 
+        const double tolerance = 0.01;
 
         Assert.Empty(result.Micro);
         Assert.NotEmpty(result.Macro);

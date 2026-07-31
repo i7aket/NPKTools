@@ -5,7 +5,7 @@ namespace NPKTools.Core.Domain.SolutionsFinderSettings;
 /// <summary>
 /// Encapsulates all settings used to find optimized solutions for fertilizer applications, including settings for each specific nutrient.
 /// </summary>
-public class SolutionFinderSettings
+public sealed class SolutionFinderSettings
 {
     /// <summary>
     /// Gets or sets the range factor settings which might include tolerances and other factors that influence the overall optimization constraints.
@@ -120,7 +120,7 @@ public class SolutionFinderSettings
     {
         ArgumentNullException.ThrowIfNull(rangeFactor);
         RangeFactor = rangeFactor;
-        
+
         ArgumentNullException.ThrowIfNull(nitrogen);
         Nitrogen = nitrogen;
 

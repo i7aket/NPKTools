@@ -13,7 +13,7 @@ namespace NPKTools.Optimizer.Preset;
 /// for various elements. This service supports finding solutions for both macro and micro
 /// nutrient requirements.
 /// </summary>
-public class FertilizerOptimizationService : IFertilizerOptimizationService
+public sealed class FertilizerOptimizationService : IFertilizerOptimizationService
 {
     private readonly IFertilizerOptimizer _fertilizerOptimizer;
     private readonly IFertilizerBundleRepository _fertilizerBundleRepository;

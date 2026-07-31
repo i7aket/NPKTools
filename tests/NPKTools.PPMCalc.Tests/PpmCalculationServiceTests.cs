@@ -125,7 +125,7 @@ public class PpmCalculationServiceTests
                 .AddWeight(2.393E-05 * liters)
                 .Build()
         };
-        
+
         Ppm expectedPpm = new PpmBuilder()
             .AddNitrate(126)
             .AddAmmonium(24)

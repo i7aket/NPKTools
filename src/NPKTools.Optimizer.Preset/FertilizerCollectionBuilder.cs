@@ -10,10 +10,10 @@ namespace NPKTools.Optimizer.Preset;
 /// Builds a collection of fertilizers. This builder allows for the creation of complex
 /// fertilizer mixes by adding predefined or custom fertilizers.
 /// </summary>
-public class FertilizerCollectionBuilder
+public sealed class FertilizerCollectionBuilder
 {
-    private readonly HashSet<Fertilizer> _selectedFertilizer = new (new FertilizerAttributesComparer());
-    
+    private readonly HashSet<Fertilizer> _selectedFertilizer = new(new FertilizerAttributesComparer());
+
     /// <summary>
     /// Adds a fertilizer optimization model to the collection.
     /// </summary>
@@ -25,7 +25,7 @@ public class FertilizerCollectionBuilder
         ThrowIf.Duplicate(_selectedFertilizer, fertilizer);
         return this;
     }
-    
+
     /// <summary>
     /// Adds a predefined Calcium Nitrate fertilizer to the collection.
     /// </summary>
@@ -69,7 +69,7 @@ public class FertilizerCollectionBuilder
         .AddType(ConcentrateType.B)
         .AddP(22.761)
         .AddK(28.731).Build());
-    
+
     /// <summary>
     /// Adds a predefined Calcium Chloride fertilizer to the collection.
     /// </summary>
@@ -392,7 +392,7 @@ public class FertilizerCollectionBuilder
         .AddFormula("C₁₀H₁₂N₂O₈NaFe*3H₂O")
         .AddType(ConcentrateType.B)
         .AddFeEdta(13.262).Build());
-    
+
     /// <summary>
     /// Finalizes the building process and returns the complete collection of fertilizers.
     /// </summary>

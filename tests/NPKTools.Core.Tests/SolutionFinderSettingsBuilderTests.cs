@@ -16,19 +16,19 @@ namespace NPKTools.Core.Tests
             double nSettings = 0.8;
             double pSettings = 0.7;
             double kSettings = 0.6;
-            double caSettings =0.5;
-            double mgSettings =0.4;
+            double caSettings = 0.5;
+            double mgSettings = 0.4;
             double sSettings = 0.3;
-            double clSettings =0.2;
-            double feSettings =0.3;
-            double cuSettings =0.2;
-            double mnSettings =0.1;
-            double znSettings =0.1;
+            double clSettings = 0.2;
+            double feSettings = 0.3;
+            double cuSettings = 0.2;
+            double mnSettings = 0.1;
+            double znSettings = 0.1;
             double bSettings = 0.05;
-            double moSettings =0.02;
-            double siSettings =0.01;
-            double seSettings =0.005;
-            double naSettings =0.1;
+            double moSettings = 0.02;
+            double siSettings = 0.01;
+            double seSettings = 0.005;
+            double naSettings = 0.1;
 
             // Act
             SolutionFinderSettings solutionFinderSettings = builder

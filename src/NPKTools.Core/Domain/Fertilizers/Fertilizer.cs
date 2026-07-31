@@ -1,9 +1,5 @@
-using System.Text;
-using NPKTools.Core.Common;
-using NPKTools.Core.Constants;
 using NPKTools.Core.Domain.Fertilizers.Enums;
 using NPKTools.Core.Domain.Fertilizers.ValueObjects;
-using static NPKTools.Core.Constants.Labels;
 
 namespace NPKTools.Core.Domain.Fertilizers;
 
@@ -15,7 +11,7 @@ namespace NPKTools.Core.Domain.Fertilizers;
 /// Immutable. Build one with <see cref="Builders.FertilizerBuilder"/>, and use
 /// <see cref="With"/> to obtain a copy carrying a different weight.
 /// </remarks>
-public class Fertilizer : FertilizerAttributes
+public sealed class Fertilizer : FertilizerAttributes
 {
     /// <summary>
     /// Gets the identifier distinguishing this fertilizer within a source collection.

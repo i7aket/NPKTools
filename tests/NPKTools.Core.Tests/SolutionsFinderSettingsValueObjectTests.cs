@@ -6,7 +6,7 @@ namespace NPKTools.Core.Tests;
 
 public class SolutionsFinderSettingsValueObjectTests
 {
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.1)]
@@ -18,7 +18,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.2)]
@@ -30,7 +30,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.3)]
@@ -42,7 +42,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.25)]
@@ -54,7 +54,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.4)]
@@ -66,7 +66,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.5)]
@@ -77,7 +77,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.6)]
@@ -88,7 +88,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.7)]
@@ -99,7 +99,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.8)]
@@ -110,7 +110,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.85)]
@@ -121,7 +121,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.9)]
@@ -132,7 +132,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.95)]
@@ -143,7 +143,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.96)]
@@ -154,7 +154,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.97)]
@@ -165,7 +165,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.98)]
@@ -176,7 +176,7 @@ public class SolutionsFinderSettingsValueObjectTests
         settings.Value.Should().Be(validValue);
     }
 
-    [Theory]    
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(0)]
     [InlineData(0.99)]
@@ -186,8 +186,8 @@ public class SolutionsFinderSettingsValueObjectTests
         ZincSettings settings = new ZincSettings(validValue);
         settings.Value.Should().Be(validValue);
     }
-    
-    [Theory]    
+
+    [Theory]
     [Trait("Category", "Unit")]
     [InlineData(-0.1)]
     [InlineData(1.1)]

@@ -1,7 +1,5 @@
 using AwesomeAssertions;
-using NPKTools.Optimizer.Components;
 using NPKTools.Optimizer.Contracts;
-using NPKTools.Optimizer.OrTools;
 using Xunit;
 
 namespace NPKTools.Optimizer.OrTools.Tests;
@@ -12,9 +10,9 @@ public class GoogleOrToolsOptimizationSolverTests
 
     public GoogleOrToolsOptimizationSolverTests()
     {
-        Solver = new GoogleOrToolsOptimizationSolver();   
+        Solver = new GoogleOrToolsOptimizationSolver();
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Solve_ValidData_ReturnsOptimalSolution()
@@ -74,7 +72,7 @@ public class GoogleOrToolsOptimizationSolverTests
         result["x"].Should().BeApproximately(0.333, 0.01);
         result["y"].Should().BeApproximately(0.333, 0.01);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Solve_SolverFailsToFindOptimal_ThrowsInvalidOperationException()
@@ -106,7 +104,7 @@ public class GoogleOrToolsOptimizationSolverTests
                         { "x", 1 },
                         { "y", 1 }
                     },
-                    LowerBound = 100,  
+                    LowerBound = 100,
                     UpperBound = double.PositiveInfinity
                 },
                 new ()
@@ -118,7 +116,7 @@ public class GoogleOrToolsOptimizationSolverTests
                         { "y", 1 }
                     },
                     LowerBound = 0,
-                    UpperBound = 10 
+                    UpperBound = 10
                 }
             }
         };
@@ -129,7 +127,7 @@ public class GoogleOrToolsOptimizationSolverTests
         // Assert
         result.Should().BeNull();
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void Solve_OptimizationProblemWithMicroAndMacronutrients_ReturnsValidSolution()
@@ -137,7 +135,7 @@ public class GoogleOrToolsOptimizationSolverTests
         // Arrange
         OptimizationProblem problem = new OptimizationProblem
         {
-            Variables = new Dictionary<string, double> 
+            Variables = new Dictionary<string, double>
             {
                 {"CalciumNitrate", 0},
                 {"AmmoniumNitrate", 0},
@@ -192,7 +190,7 @@ public class GoogleOrToolsOptimizationSolverTests
                         {"PotassiumNitrate", 13.854},
                         {"AmmoniumNitrate", 34.998},
                         {"MagnesiumNitrate", 10.925}
-                        
+
                     }
                 },
                 new ()
@@ -217,7 +215,7 @@ public class GoogleOrToolsOptimizationSolverTests
                         {"PotassiumSulfate", 44.874}
                     }
                 },
-                
+
                 new ()
                 {
                     Name = "Ca",
@@ -403,7 +401,7 @@ public class GoogleOrToolsOptimizationSolverTests
                     { "x", 1 },
                     { "y", 1 }
                 },
-                IsMinimization = false  
+                IsMinimization = false
             },
             Constraints = new List<OptimizationProblem.OptimizationConstraint>
             {

@@ -21,7 +21,7 @@ public class FertilizerBundleRepositoryTests
         Assert.Equal(firstCallResult, secondCallResult);
         Assert.Same(firstCallResult, secondCallResult);
     }
-    
+
     [Fact]
     [Trait("Category", "Unit")]
     public void InitializeMacro_CreatesExpectedGroups()

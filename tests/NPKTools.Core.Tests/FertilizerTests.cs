@@ -57,7 +57,7 @@ public class FertilizerTests
         string expectedOutput = new StringBuilder()
             .AppendLine("Name: Complete Mix")
             .AppendLine("Formula: NPK-15-10-20")
-            .AppendLine("Concentrate Type: A")  
+            .AppendLine("Concentrate Type: A")
             .AppendLine("Weight: 100.000")
             .AppendLine("Nitrogen: 30.000")
             .AppendLine("\u2514Nitrate NO\u2083: 15.000")

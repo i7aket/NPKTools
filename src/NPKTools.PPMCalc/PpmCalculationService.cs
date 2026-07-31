@@ -10,7 +10,7 @@ namespace NPKTools.PPMCalc;
 /// Provides services to calculate parts per million (ppm) concentrations of various nutrients
 /// based on a collection of fertilizers and a specified amount of water.
 /// </summary>
-public class PpmCalculationService : IPpmCalculationService
+public sealed class PpmCalculationService : IPpmCalculationService
 {
     /// <summary>
     /// Calculates ppm concentrations for a collection of fertilizers diluted in a specified amount of water.
@@ -24,7 +24,7 @@ public class PpmCalculationService : IPpmCalculationService
     {
         ThrowIf.NullOrEmpty(collection);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(waterLiters);
-        
+
         double totalNo3 = 0, totalNh4 = 0, totalNh2 = 0, totalP = 0, totalK = 0, totalMg = 0, totalS = 0, totalCa = 0;
         double totalFe = 0, totalCu = 0, totalMn = 0, totalZn = 0, totalB = 0, totalMo = 0, totalCl = 0;
         double totalSi = 0, totalSe = 0, totalNa = 0;

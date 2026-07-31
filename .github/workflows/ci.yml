@@ -34,6 +34,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      # Formatting is part of the contract, not a review topic. Runs on one OS only —
+      # the result is platform-independent and three identical failures help nobody.
+      - name: Verify formatting
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet format --verify-no-changes --no-restore
+
       # The build treats warnings as errors, so this step also enforces the analyzer rules.
       - name: Build
         run: dotnet build --no-restore --configuration Release

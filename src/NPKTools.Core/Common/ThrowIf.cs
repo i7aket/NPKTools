@@ -21,7 +21,7 @@ public static class ThrowIf
             throw new ArgumentException("Value cannot be the default value.", parameterName);
         }
     }
-    
+
     /// <summary>
     /// Throws an ArgumentNullException if the specified collection is null, or an ArgumentException if it is empty.
     /// </summary>
@@ -30,18 +30,33 @@ public static class ThrowIf
     /// <param name="parameterName">The name of the parameter being checked. This is captured automatically.</param>
     /// <exception cref="ArgumentNullException">Thrown if the collection is null.</exception>
     /// <exception cref="ArgumentException">Thrown if the collection is empty.</exception>
-    public static void NullOrEmpty<T>(IEnumerable<T> collection, [CallerArgumentExpression("collection")] string? parameterName = null)
+    /// <remarks>
+    /// Emptiness is established from a count where the sequence exposes one, so the common case
+    /// never enumerates. <see cref="Enumerable.TryGetNonEnumeratedCount{TSource}"/> alone is not
+    /// enough: it recognises <see cref="ICollection{T}"/> but not <see cref="IReadOnlyCollection{T}"/>,
+    /// and the library's own <c>Solution</c> and <c>Solutions</c> are read-only collections.
+    /// Only a genuinely lazy sequence falls through to <c>Any()</c>.
+    /// </remarks>
+    public static void NullOrEmpty<T>(IEnumerable<T> collection, [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
     {
-        if (collection == null)
+        if (collection is null)
         {
             throw new ArgumentNullException(parameterName, "The collection cannot be null.");
         }
-        if (!collection.Any())
+
+        bool isEmpty = collection switch
+        {
+            IReadOnlyCollection<T> readOnly => readOnly.Count == 0,
+            ICollection<T> mutable => mutable.Count == 0,
+            _ => !collection.TryGetNonEnumeratedCount(out int count) ? !collection.Any() : count == 0
+        };
+
+        if (isEmpty)
         {
             throw new ArgumentException("The collection cannot be empty.", parameterName);
         }
     }
-    
+
     /// <summary>
     /// Throws an InvalidOperationException if the item cannot be added to the set (indicating a duplicate).
     /// </summary>

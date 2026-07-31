@@ -6,7 +6,7 @@ namespace NPKTools.Core.Tests;
 
 public class PpmTargetValueObjectTests
 {
-    [Fact]        
+    [Fact]
     [Trait("Category", "Unit")]
     public void BoronPpmTarget_WithValidValue_ShouldInitializeCorrectly()
     {

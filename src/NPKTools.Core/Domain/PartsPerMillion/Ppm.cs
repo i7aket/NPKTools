@@ -1,8 +1,6 @@
-using System.Runtime.InteropServices;
 using System.Text;
 using NPKTools.Core.Common;
 using NPKTools.Core.Constants;
-using NPKTools.Core.Domain.Fertilizers.ValueObjects;
 using NPKTools.Core.Domain.PartsPerMillion.ValueObjects;
 
 namespace NPKTools.Core.Domain.PartsPerMillion;
@@ -11,7 +9,7 @@ namespace NPKTools.Core.Domain.PartsPerMillion;
 /// Represents the concentration of various nutrients in parts per million (ppm),
 /// along with the total volume of water in liters in which these nutrients are intended to be dissolved.
 /// </summary>
-public class Ppm
+public sealed class Ppm
 {
     /// <summary>
     /// Gets or sets the ppm value for nitrogen.
