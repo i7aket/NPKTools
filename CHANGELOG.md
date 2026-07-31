@@ -36,7 +36,7 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 
   This is not a cosmetic change. OR-Tools ships native binaries only for linux-x64/arm64,
   osx-x64/arm64 and win-x64, so anything depending on it cannot run under WebAssembly. With the
-  managed solver, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.PPMCalc` and
+  managed solver, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
   `NPKTools.Optimizer.PpmTargetParser` all run client-side — verified by publishing the full
   pipeline to `browser-wasm` and executing it, which produced 11 macro solutions landing exactly on
   a 150/50/200 N/P/K target.
@@ -127,7 +127,6 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 | `GoogleOrToolsOptimizationSolver` in `NPKTools.Optimizer` | package **`NPKTools.Optimizer.OrTools`**, namespace `NPKTools.Optimizer.OrTools` | Keeps native binaries out of the base package so it can run under WebAssembly. Add the package and call `AddNpkToolsOrToolsSolver()` before `AddNpkToolsOptimizer()`/`AddNpkToolsPreset()` to keep using GLOP. |
 | OR-Tools was the only solver | `SimplexOptimizationSolver` is the default | Managed, dependency-free, and validated against OR-Tools. Results are equivalent; where an optimum is degenerate the two may report different vertices of equal cost. |
 | `OptimizationConstraint.Name` was a `required` field | `required` property | Consistency with the rest of the record. |
-| package `NPKTools.Optimizer.PPMCalc` | **`NPKTools.PPMCalc`** | The id did not match the assembly or namespace, and the README documented a third name (`NPKTools.PpmCalc`) that never existed. |
 
 ## [1.1.6] and earlier
 

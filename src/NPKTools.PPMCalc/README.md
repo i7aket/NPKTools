@@ -6,8 +6,10 @@ water.
 
 Targets **.NET 10**. Fully managed — no native dependencies, so it also runs under WebAssembly.
 
-> **Renamed in 2.0.0.** This package used to ship as `NPKTools.Optimizer.PPMCalc`. The id now
-> matches the assembly and namespace (`NPKTools.PPMCalc`), as it does for the rest of the suite.
+> **Package id vs namespace.** This package ships as **`NPKTools.Optimizer.PPMCalc`** while its
+> assembly and namespace are `NPKTools.PPMCalc`. The mismatch is historical and kept deliberately so
+> that existing consumers receive updates without having to switch packages. Install
+> `NPKTools.Optimizer.PPMCalc`; write `using NPKTools.PPMCalc;`.
 
 ## What it computes
 
@@ -85,8 +87,8 @@ This is the usual way to verify that an optimized mix really hits the target it 
 
 ## Breaking changes in 2.0.0
 
-Besides the package rename, `CalculatePpm` now takes `IReadOnlyList<Fertilizer>` rather than
-`IList<Fertilizer>`. See the
+`CalculatePpm` now takes `IReadOnlyList<Fertilizer>` rather than `IList<Fertilizer>`, which lets a
+`Solution` be passed straight in. See the
 [changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
 
 ## Developers

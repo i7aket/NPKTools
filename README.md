@@ -21,11 +21,12 @@ Targets **.NET 10**. The current release is **2.0.0**, which contains breaking A
 | [`NPKTools.Optimizer`](https://www.nuget.org/packages/NPKTools.Optimizer/) | Solves the fertilizer mix as a linear program. Fully managed, no native dependencies |
 | [`NPKTools.Optimizer.OrTools`](https://www.nuget.org/packages/NPKTools.Optimizer.OrTools/) | Optional Google OR-Tools (GLOP) backend |
 | [`NPKTools.Optimizer.Preset`](https://www.nuget.org/packages/NPKTools.Optimizer.Preset/) | The optimizer preloaded with 34 fertilizers and 22 blending scenarios |
-| [`NPKTools.PPMCalc`](https://www.nuget.org/packages/NPKTools.PPMCalc/) | Calculates the ppm of a fertilizer mixture |
+| [`NPKTools.Optimizer.PPMCalc`](https://www.nuget.org/packages/NPKTools.Optimizer.PPMCalc/) | Calculates the ppm of a fertilizer mixture (namespace: `NPKTools.PPMCalc`) |
 | [`NPKTools.Optimizer.PpmTargetParser`](https://www.nuget.org/packages/NPKTools.Optimizer.PpmTargetParser/) | Parses `"N=150 P=50 K=200"` into a `PpmTarget` |
 
-> **Renamed in 2.0.0:** the ppm calculator used to ship as `NPKTools.Optimizer.PPMCalc`. It is now
-> `NPKTools.PPMCalc`, matching its assembly and namespace.
+> **Note on the ppm calculator:** its package id is `NPKTools.Optimizer.PPMCalc` while its assembly
+> and namespace are `NPKTools.PPMCalc`. The mismatch is historical and kept on purpose so existing
+> consumers keep receiving updates without switching packages.
 
 ## Runs in the browser
 
@@ -68,7 +69,7 @@ services.AddNpkToolsOrToolsSolver()  // must come first; the default is register
 
 ```bash
 dotnet add package NPKTools.Optimizer.Preset
-dotnet add package NPKTools.PPMCalc
+dotnet add package NPKTools.Optimizer.PPMCalc
 dotnet add package NPKTools.Optimizer.PpmTargetParser
 ```
 
