@@ -17,7 +17,9 @@ public class FertilizerOptimizationServiceTests
 
     public FertilizerOptimizationServiceTests()
     {
-        IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
+        // Exercises the shipped default. The OR-Tools backend has its own tests, and
+        // SolverEquivalenceTests proves the two agree on every preset bundle.
+        IOptimizationProblemSolver solver = new SimplexOptimizationSolver();
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(solver, mapper);
         IFertilizerBundleRepository bundles = new FertilizerBundleRepository();        

@@ -17,15 +17,24 @@ public static class NpkToolsOptimizerServiceCollectionExtensions
     /// <returns>The same <paramref name="services"/> instance, to allow chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
     /// <remarks>
-    /// All three components are stateless, so they are registered as singletons. Registrations
-    /// are added with <c>TryAdd</c>, so registering your own <see cref="IOptimizationProblemSolver"/>
-    /// beforehand replaces the OR-Tools default.
+    /// <para>
+    /// The default solver is the managed <see cref="SimplexOptimizationSolver"/>, which has no native
+    /// dependencies and therefore works on every .NET target including WebAssembly.
+    /// </para>
+    /// <para>
+    /// All three components are stateless, so they are registered as singletons. Registrations use
+    /// <c>TryAdd</c>, so a solver registered beforehand wins — this is how
+    /// <c>NPKTools.Optimizer.OrTools</c> substitutes the GLOP backend:
+    /// </para>
+    /// <code>
+    /// services.AddNpkToolsOrToolsSolver().AddNpkToolsOptimizer();
+    /// </code>
     /// </remarks>
     public static IServiceCollection AddNpkToolsOptimizer(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<IOptimizationProblemSolver, GoogleOrToolsOptimizationSolver>();
+        services.TryAddSingleton<IOptimizationProblemSolver, SimplexOptimizationSolver>();
         services.TryAddSingleton<IOptimizationProblemMapper, OptimizationProblemMapper>();
         services.TryAddSingleton<IFertilizerOptimizer, FertilizerOptimizationAdapter>();
 

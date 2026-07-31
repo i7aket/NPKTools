@@ -20,7 +20,9 @@ public class FertilizerOptimizerTests
     public FertilizerOptimizerTests()
     {
         Calc = new PpmCalculationService();
-        IOptimizationProblemSolver solver = new GoogleOrToolsOptimizationSolver();
+        // Exercises the shipped default. The OR-Tools backend has its own tests, and
+        // SolverEquivalenceTests proves the two agree on every preset bundle.
+        IOptimizationProblemSolver solver = new SimplexOptimizationSolver();
         IOptimizationProblemMapper mapper = new OptimizationProblemMapper();
         Optimizer = new FertilizerOptimizationAdapter(solver, mapper);
     }

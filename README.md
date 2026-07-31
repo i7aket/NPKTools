@@ -18,13 +18,41 @@ Targets **.NET 10**. The current release is **2.0.0**, which contains breaking A
 | Package | Purpose |
 | --- | --- |
 | [`NPKTools.Core`](https://www.nuget.org/packages/NPKTools.Core/) | Domain model shared by everything else: fertilizers, ppm values, ppm targets, settings, builders |
-| [`NPKTools.Optimizer`](https://www.nuget.org/packages/NPKTools.Optimizer/) | Solves the fertilizer mix as a linear program using Google OR-Tools |
+| [`NPKTools.Optimizer`](https://www.nuget.org/packages/NPKTools.Optimizer/) | Solves the fertilizer mix as a linear program. Fully managed, no native dependencies |
+| [`NPKTools.Optimizer.OrTools`](https://www.nuget.org/packages/NPKTools.Optimizer.OrTools/) | Optional Google OR-Tools (GLOP) backend |
 | [`NPKTools.Optimizer.Preset`](https://www.nuget.org/packages/NPKTools.Optimizer.Preset/) | The optimizer preloaded with 34 fertilizers and 22 blending scenarios |
 | [`NPKTools.PPMCalc`](https://www.nuget.org/packages/NPKTools.PPMCalc/) | Calculates the ppm of a fertilizer mixture |
 | [`NPKTools.Optimizer.PpmTargetParser`](https://www.nuget.org/packages/NPKTools.Optimizer.PpmTargetParser/) | Parses `"N=150 P=50 K=200"` into a `PpmTarget` |
 
 > **Renamed in 2.0.0:** the ppm calculator used to ship as `NPKTools.Optimizer.PPMCalc`. It is now
 > `NPKTools.PPMCalc`, matching its assembly and namespace.
+
+## Runs in the browser
+
+Every shipped package is fully managed, so the whole pipeline — parse a target, optimize the mix,
+report the resulting ppm — runs client-side under WebAssembly with no server round trip.
+
+This is why the default solver is a managed simplex rather than Google OR-Tools: OR-Tools ships
+native binaries only for linux-x64/arm64, osx-x64/arm64 and win-x64, and there is no `browser-wasm`
+build, so any package depending on it is server-only. The problem being solved is small enough that
+this costs nothing — a macronutrient bundle is at most 16 variables and 7 range constraints, and a
+full preset search is 22 such problems.
+
+Agreement with OR-Tools is enforced by 60 tests: 20 over the curated preset bundles across 11 target
+profiles, and 40 randomized synthetic catalogues. They compare feasibility verdicts, optimal
+objective values, non-negativity and constraint satisfaction. Where an optimum is degenerate the two
+solvers may report different vertices, so the assertions compare optimal cost rather than exact
+weights.
+
+If you want GLOP anyway — on a server, or to cross-check results — add the optional package and
+register it first:
+
+```csharp
+using NPKTools.Optimizer.OrTools;
+
+services.AddNpkToolsOrToolsSolver()  // must come first; the default is registered with TryAdd
+        .AddNpkToolsPreset();
+```
 
 ## Installation
 
@@ -91,7 +119,7 @@ Without a DI container, construct the pieces directly:
 
 ```csharp
 IFertilizerOptimizer adapter = new FertilizerOptimizationAdapter(
-    new GoogleOrToolsOptimizationSolver(),
+    new SimplexOptimizationSolver(),
     new OptimizationProblemMapper());
 
 IFertilizerOptimizationService service =
@@ -107,9 +135,9 @@ Three components in a pipeline:
 - **Mapper** turns the nutrient target and the available fertilizers into a linear program —
   variables, constraints and an objective — and turns the solver's answer back into concrete
   fertilizer weights.
-- **Solver** minimises the objective (by default, cost) subject to the constraints. The default
-  implementation uses Google OR-Tools' GLOP. Swap it by registering your own
-  `IOptimizationProblemSolver` before calling `AddNpkToolsOptimizer()`.
+- **Solver** minimises the objective (by default, cost) subject to the constraints. The default is
+  the managed `SimplexOptimizationSolver`; `NPKTools.Optimizer.OrTools` provides a GLOP alternative,
+  and you can register any `IOptimizationProblemSolver` of your own instead.
 - **Adapter** drives the two and is what `IFertilizerOptimizer` exposes.
 
 Each element's tolerance is the smaller of its own precision setting and the global
@@ -159,7 +187,7 @@ attribute.
 
 ## Testing
 
-308 tests across six projects, run on Linux, Windows and macOS in CI. Coverage is collected on
+368 tests across seven projects, run on Linux, Windows and macOS in CI. Coverage is collected on
 every run via coverlet and uploaded as a build artifact.
 
 ## Releasing
@@ -176,8 +204,10 @@ suite, then pushes to NuGet.org and GitHub Packages.
 
 ## Dependencies
 
-- [**Google OR-Tools**](https://developers.google.com/optimization) — linear programming solver.
-- [**Microsoft.Extensions.DependencyInjection.Abstractions**](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/) — for the DI helpers.
+- [**Microsoft.Extensions.DependencyInjection.Abstractions**](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/) — for the DI helpers. This is the
+  only dependency of the default packages.
+- [**Google OR-Tools**](https://developers.google.com/optimization) — used only by the optional
+  `NPKTools.Optimizer.OrTools` package.
 
 Test-only: [xUnit](https://xunit.net/),
 [AwesomeAssertions](https://github.com/AwesomeAssertions/AwesomeAssertions),

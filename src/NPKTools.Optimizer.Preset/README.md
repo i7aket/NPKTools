@@ -5,7 +5,7 @@ Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. A preconfigure
 fertilizer catalogue, so you can go from a nutrient target to a set of workable mixes without
 describing any fertilizers yourself.
 
-Targets **.NET 10**.
+Targets **.NET 10**. Fully managed — no native dependencies, so it also runs under WebAssembly.
 
 ## What it contains
 
@@ -40,7 +40,7 @@ Or construct it directly:
 
 ```csharp
 IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
-    new GoogleOrToolsOptimizationSolver(),
+    new SimplexOptimizationSolver(),
     new OptimizationProblemMapper());
 
 IFertilizerOptimizationService service =

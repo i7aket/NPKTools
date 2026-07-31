@@ -28,6 +28,24 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 
 ### Added
 
+- **A fully managed solver, and the package split that makes it useful.**
+  `SimplexOptimizationSolver` is a two-phase primal simplex with no native dependencies, and it is
+  now the default behind `IOptimizationProblemSolver`. `NPKTools.Optimizer` therefore no longer
+  depends on Google OR-Tools; the GLOP backend moved to the optional
+  **`NPKTools.Optimizer.OrTools`** package, opted into with `AddNpkToolsOrToolsSolver()`.
+
+  This is not a cosmetic change. OR-Tools ships native binaries only for linux-x64/arm64,
+  osx-x64/arm64 and win-x64, so anything depending on it cannot run under WebAssembly. With the
+  managed solver, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.PPMCalc` and
+  `NPKTools.Optimizer.PpmTargetParser` all run client-side — verified by publishing the full
+  pipeline to `browser-wasm` and executing it, which produced 11 macro solutions landing exactly on
+  a 150/50/200 N/P/K target.
+
+  The problem size justifies it: a macronutrient bundle is at most 16 variables and 7 range
+  constraints, and a full preset search is 22 such problems. Equivalence with OR-Tools is asserted
+  by 60 tests — 20 over the curated preset bundles across 11 target profiles, and 40 randomized
+  synthetic catalogues (11 feasible, 29 infeasible) comparing feasibility verdicts, optimal
+  objective values, non-negativity and constraint satisfaction.
 - **The test suite actually runs.** No test project referenced `xunit.runner.visualstudio`, so
   `dotnet test` reported "No test is available" for all six assemblies and 283 tests never
   executed — in CI or locally. The runner is now present and the suite is wired into CI.
@@ -84,6 +102,8 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 | `IList<Fertilizer>` parameters on `IFertilizerOptimizer`, `IOptimizationProblemMapper`, `IPpmCalculationService` | `IReadOnlyList<Fertilizer>` | These APIs only enumerate their input, and it lets `Solution` be passed straight to `CalculatePpm`. |
 | `FertilizerCollectionBuilder.Build()` returned `IList<Fertilizer>` | returns `IReadOnlyList<Fertilizer>` | Consistency with the above. |
 | namespace `NPKTools.Core.Const` | `NPKTools.Core.Constants` | `Const` collides with a reserved keyword in some .NET languages (CA1716). |
+| `GoogleOrToolsOptimizationSolver` in `NPKTools.Optimizer` | package **`NPKTools.Optimizer.OrTools`**, namespace `NPKTools.Optimizer.OrTools` | Keeps native binaries out of the base package so it can run under WebAssembly. Add the package and call `AddNpkToolsOrToolsSolver()` before `AddNpkToolsOptimizer()`/`AddNpkToolsPreset()` to keep using GLOP. |
+| OR-Tools was the only solver | `SimplexOptimizationSolver` is the default | Managed, dependency-free, and validated against OR-Tools. Results are equivalent; where an optimum is degenerate the two may report different vertices of equal cost. |
 | `OptimizationConstraint.Name` was a `required` field | `required` property | Consistency with the rest of the record. |
 | package `NPKTools.Optimizer.PPMCalc` | **`NPKTools.PPMCalc`** | The id did not match the assembly or namespace, and the README documented a third name (`NPKTools.PpmCalc`) that never existed. |
 

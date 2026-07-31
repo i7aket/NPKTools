@@ -1,9 +1,10 @@
 using AwesomeAssertions;
 using NPKTools.Optimizer.Components;
 using NPKTools.Optimizer.Contracts;
+using NPKTools.Optimizer.OrTools;
 using Xunit;
 
-namespace NPKTools.Optimizer.Tests;
+namespace NPKTools.Optimizer.OrTools.Tests;
 
 public class GoogleOrToolsOptimizationSolverTests
 {

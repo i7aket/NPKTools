@@ -2,11 +2,17 @@ using Google.OrTools.LinearSolver;
 using NPKTools.Core.Common;
 using NPKTools.Optimizer.Contracts;
 
-namespace NPKTools.Optimizer.Components;
+namespace NPKTools.Optimizer.OrTools;
 
 /// <summary>
-/// Provides an implementation of the <see cref="IOptimizationProblemSolver"/> using Google's OR-Tools.
+/// An <see cref="IOptimizationProblemSolver"/> backed by Google OR-Tools' GLOP linear solver.
 /// </summary>
+/// <remarks>
+/// This is an optional backend. <c>NPKTools.Optimizer</c> defaults to the managed
+/// <c>SimplexOptimizationSolver</c>, which has no native dependencies. Use this one when you
+/// specifically want GLOP; note that OR-Tools ships native binaries only for linux-x64/arm64,
+/// osx-x64/arm64 and win-x64, so it cannot run under WebAssembly.
+/// </remarks>
 public class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
 {
     /// <summary>

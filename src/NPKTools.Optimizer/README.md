@@ -4,7 +4,8 @@ Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. Given a nutrie
 available fertilizers and precision settings, it works out how much of each fertilizer to use by
 solving the mix as a linear program.
 
-Targets **.NET 10**. Uses [Google OR-Tools](https://developers.google.com/optimization) (GLOP).
+Targets **.NET 10**. Fully managed with no native dependencies, so it runs anywhere .NET runs —
+including WebAssembly, where a native solver cannot go.
 
 If you want a ready-made fertilizer catalogue instead of supplying your own, use
 [`NPKTools.Optimizer.Preset`](https://www.nuget.org/packages/NPKTools.Optimizer.Preset/).
@@ -17,7 +18,11 @@ Three components in a pipeline:
   into a linear program — variables, constraints, objective — and turns the solver's answer back
   into concrete fertilizer weights.
 - **Solver** (`IOptimizationProblemSolver`) minimises the objective subject to the constraints. The
-  default objective is total cost, taken from each fertilizer's `Price`.
+  default objective is total cost, taken from each fertilizer's `Price`. The default implementation
+  is `SimplexOptimizationSolver`, a managed two-phase primal simplex. Install
+  [`NPKTools.Optimizer.OrTools`](https://www.nuget.org/packages/NPKTools.Optimizer.OrTools/) for a
+  Google OR-Tools (GLOP) backend instead — note it brings native binaries and cannot run on
+  WebAssembly.
 - **Adapter** (`IFertilizerOptimizer`) drives the two and is the public entry point.
 
 Each element gets a constraint whose width is the smaller of that element's precision setting and
@@ -38,7 +43,7 @@ ServiceProvider provider = new ServiceCollection()
 IFertilizerOptimizer optimizer = provider.GetRequiredService<IFertilizerOptimizer>();
 ```
 
-Registrations use `TryAdd`, so registering your own solver first replaces the OR-Tools default:
+Registrations use `TryAdd`, so registering a solver first replaces the managed default:
 
 ```csharp
 new ServiceCollection()
@@ -50,7 +55,7 @@ Or construct the components directly:
 
 ```csharp
 IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
-    new GoogleOrToolsOptimizationSolver(),
+    new SimplexOptimizationSolver(),
     new OptimizationProblemMapper());
 ```
 
@@ -108,7 +113,12 @@ supplied fertilizers can reach the target within the given precision. Every fert
 ## Breaking changes in 2.0.0
 
 `Optimize` now takes `IReadOnlyList<Fertilizer>` rather than `IList<Fertilizer>`, and `Solution` is
-an `IReadOnlyList<Fertilizer>` instead of deriving from `List<Fertilizer>`. See the
+an `IReadOnlyList<Fertilizer>` instead of deriving from `List<Fertilizer>`.
+
+`GoogleOrToolsOptimizationSolver` moved out of this package into
+[`NPKTools.Optimizer.OrTools`](https://www.nuget.org/packages/NPKTools.Optimizer.OrTools/), so this
+package no longer carries native binaries. Add that package and call `AddNpkToolsOrToolsSolver()`
+before `AddNpkToolsOptimizer()` to keep using GLOP. See the
 [changelog](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
 
 ## Developers

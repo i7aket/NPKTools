@@ -4,7 +4,7 @@ Part of the [NPKTools](https://github.com/i7aket/NPKTools) suite. Calculates the
 each nutrient, in parts per million, for a collection of fertilizers dissolved in a given volume of
 water.
 
-Targets **.NET 10**.
+Targets **.NET 10**. Fully managed — no native dependencies, so it also runs under WebAssembly.
 
 > **Renamed in 2.0.0.** This package used to ship as `NPKTools.Optimizer.PPMCalc`. The id now
 > matches the assembly and namespace (`NPKTools.PPMCalc`), as it does for the rest of the suite.
