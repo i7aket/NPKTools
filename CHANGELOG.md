@@ -100,9 +100,11 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 - Added `benchmarks/NPKTools.Benchmarks` (BenchmarkDotNet). It records that the managed solver is
   about 5.5× faster than GLOP on a full preset search (0.67 ms against 3.67 ms), which keeps the
   choice of default solver an evidence-based one.
-- Added a CodeQL workflow (`security-and-quality` queries, weekly plus per-PR) and `SECURITY.md`
-  describing the actual threat surface — these libraries perform no I/O, so it is essentially input
-  handling and bounded solve time.
+- Added `SECURITY.md` describing the actual threat surface — these libraries perform no I/O, so it
+  is essentially input handling and bounded solve time. CodeQL scanning is left to the repository's
+  existing GitHub default setup; an advanced-setup workflow was tried and removed, because CodeQL
+  rejects advanced configurations while default setup is enabled ("configuration error") and a second
+  analysis would only duplicate the first.
 
 ### Removed
 

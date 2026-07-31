@@ -200,7 +200,8 @@ attribute.
 
 368 tests across seven projects, run on Linux, Windows and macOS in CI. Coverage is collected on
 every run via coverlet and uploaded as a build artifact. CI also verifies formatting
-(`dotnet format --verify-no-changes`) and runs CodeQL.
+(`dotnet format --verify-no-changes`). CodeQL scanning runs through GitHub's default setup for the
+repository.
 
 ## Benchmarks
 
