@@ -193,6 +193,63 @@ solutions are run. Above pH 7.2 half of it is HPO₄²⁻. This library does not
 is stated rather than computed — and it is what makes the acid-base figures above come out in whole
 protons.
 
+## Predict what the EC meter will say
+
+EC is the number a grower actually measures, so predicting it is what connects a calculated recipe to the
+meter in the reservoir.
+
+```csharp
+ConductivityEstimate ec = ppm.EstimateConductivity();
+
+Console.WriteLine($"{ec.MilliSiemensPerCm:F2} mS/cm");   // 2.04
+Console.WriteLine($"{ec.AsTdsPpm(500):F0} ppm TDS");     // 1020 on a 500-scale meter
+```
+
+It is computed the way conductivity works — each ion's own molar conductivity times how much of it there
+is — not by scaling total dissolved solids by a fitted factor. That distinction is not academic: a mole of
+sulfate conducts more than twice what a mole of dihydrogen phosphate does, so two solutions of identical
+ppm can read differently, and a single factor cannot know which one it was handed.
+
+Which also means you can see what is driving the reading:
+
+```
+ion       µS/cm   share
+NO3         765   34.2%
+Ca          475   21.3%
+K           395   17.7%
+SO4         324   14.5%
+Mg          218    9.8%
+H2PO4        58    2.6%
+```
+
+**How accurate.** Checked against the certified KCl conductivity standards at 25 °C — the same reference
+solutions meters are calibrated against:
+
+| KCl | ideal sum | estimate | certified | error |
+| --- | --- | --- | --- | --- |
+| 0.001 M | 150 | 147 | 147 | **+0.1%** |
+| 0.01 M | 1498 | 1416 | 1412 | **+0.3%** |
+| 0.1 M | 14980 | 12375 | 12880 | −3.9% |
+
+The first two bracket the ionic strength of a real feed (0.02–0.04 M); the third is ten times stronger than
+anything you would grow in, and is shown to mark where the model stops being good.
+
+`IdealMicroSiemensPerCm` is the raw sum of limiting molar conductivities — exact for infinitely dilute
+water, and increasingly high above it because ions interfere with each other as they crowd.
+`MicroSiemensPerCm` applies a Kohlrausch-form correction for that, `Correction` is the factor it used
+(≈0.91 for a normal feed, i.e. the ideal sum runs 9% high), and `IonicStrength` is the exactly-computable
+quantity that decides it. Nothing is hidden behind a magic number: the one coefficient in the model comes
+from those certified standards, not from fitting to fertilizer recipes.
+
+Expect a few percent, not a meter replacement. The remaining error is not all the model's — the source
+water's bicarbonate conducts and is not modelled, meter calibration drifts, and temperature compensation
+is itself approximate.
+
+**Urea reads as pure water.** 150 ppm of nitrogen as urea gives an EC of exactly 0, because an uncharged
+molecule carries no current. That is not a bug to work around; it is the reason EC is a poor proxy for feed
+strength whenever urea is in the mix, and worth knowing before trusting a meter to tell you how strong a
+solution is.
+
 ## Use the salts you already have
 
 The preset catalogue offers eighteen macro bundles and therefore a dozen recipes to compare. Someone
@@ -425,7 +482,7 @@ runs.
 | --- | --- |
 | `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
-| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, `MolarProfile`, `IonBalance`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, `MolarProfile`, `IonBalance`, `ConductivityEstimate`, the ppm calculator and the target parser |
 | `SYT.NPKTools.Concentrates` | `ConcentratePlan` and the A/B tank split |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
 

@@ -51,6 +51,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Together these close the standing complaint about comparable tools: that they compute a recipe but
   say nothing about whether it is a sensible one.
 
+- **EC estimation from the ions.** `ppm.EstimateConductivity()` predicts what a conductivity meter will
+  read, and `AsTdsPpm(scale)` converts that to the "ppm" a TDS meter shows.
+
+  Computed from each ion's molar conductivity rather than by scaling total dissolved solids by a fitted
+  factor, which is the distinction that makes it worth having: a mole of sulfate conducts more than twice
+  what a mole of dihydrogen phosphate does, so two solutions of identical ppm read differently and a single
+  factor cannot know which it was given. The per-ion shares come out of the same calculation, so a caller can
+  see that nitrate is usually about a third of the reading.
+
+  Checked against the certified KCl conductivity standards at 25 °C — the reference solutions meters
+  themselves are calibrated against. The estimate is **+0.1%** at 0.001 M and **+0.3%** at 0.01 M, which
+  bracket the ionic strength of a real feed, and −3.9% at 0.1 M, ten times stronger than anything anyone
+  grows in. A test asserts all three, including the last, so the boundary of usefulness is a fact in the
+  suite rather than a claim in a comment.
+
+  `IdealMicroSiemensPerCm` is the raw sum of limiting molar conductivities, exact at infinite dilution and
+  increasingly high above it as ions interfere with each other. `MicroSiemensPerCm` applies a Kohlrausch-form
+  correction, `Correction` exposes the factor used (≈0.91 for a normal feed) and `IonicStrength` the
+  exactly-computable quantity that sets it. The single coefficient in that correction is anchored on the
+  certified standards, not fitted to fertilizer recipes — which was the point of doing this ionically rather
+  than by regression.
+
+  Urea gives an EC of exactly zero while carrying a great deal of nitrogen, because an uncharged molecule
+  carries no current. Asserted as a test, because it is the reason EC is a poor proxy for feed strength
+  whenever urea is involved rather than an edge case to be smoothed over.
+
 - **mM and meq/L, and the charge balance.** `ppm.AsMillimolar()` converts a profile to millimoles per
   litre; `ppm.IonBalance()` expresses it as charge in milliequivalents and reports how the two sides
   compare.

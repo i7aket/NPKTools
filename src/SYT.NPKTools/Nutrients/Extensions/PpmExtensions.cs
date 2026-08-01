@@ -85,6 +85,48 @@ public static class PpmExtensions
     }
 
     /// <summary>
+    /// Estimates the electrical conductivity a meter would read for this solution.
+    /// </summary>
+    /// <param name="ppm">The measured concentrations.</param>
+    /// <returns>The estimate, its ideal upper bound, and each ion's share.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="ppm"/> is null.</exception>
+    /// <remarks>
+    /// Computed from each ion's own molar conductivity rather than by scaling total dissolved solids, because
+    /// a mole of sulfate conducts more than twice what a mole of dihydrogen phosphate does — two solutions of
+    /// identical ppm can read differently, and a single factor cannot tell which it was given. See
+    /// <see cref="ConductivityEstimate"/> for the accuracy and what is excluded.
+    /// </remarks>
+    public static ConductivityEstimate EstimateConductivity(this Ppm ppm)
+    {
+        ArgumentNullException.ThrowIfNull(ppm);
+
+        MolarProfile mM = ppm.AsMillimolar();
+
+        // Ionic strength is half the sum of cz², in moles per litre. The mM figures are divided by 1000 to
+        // get there, and the divalent ions contribute four times their concentration.
+        double ionicStrength = (
+            mM.Potassium + mM.Ammonium + mM.Sodium + mM.Nitrate + mM.Phosphorus + mM.Chlorine
+            + 4 * (mM.Calcium + mM.Magnesium + mM.Sulfur)) / 2000;
+
+        double correction = Math.Max(
+            0,
+            1 - MolarConductivities.InteractionCoefficient * Math.Sqrt(ionicStrength));
+
+        return new ConductivityEstimate(
+            potassium: mM.Potassium * MolarConductivities.Potassium,
+            calcium: mM.Calcium * MolarConductivities.Calcium,
+            magnesium: mM.Magnesium * MolarConductivities.Magnesium,
+            ammonium: mM.Ammonium * MolarConductivities.Ammonium,
+            sodium: mM.Sodium * MolarConductivities.Sodium,
+            nitrate: mM.Nitrate * MolarConductivities.Nitrate,
+            phosphate: mM.Phosphorus * MolarConductivities.DihydrogenPhosphate,
+            sulfate: mM.Sulfur * MolarConductivities.Sulfate,
+            chloride: mM.Chlorine * MolarConductivities.Chloride,
+            ionicStrength: ionicStrength,
+            correction: correction);
+    }
+
+    /// <summary>
     /// Breaks a mix down into what each fertilizer in it contributes.
     /// </summary>
     /// <param name="solution">The mix, as returned by the optimizer.</param>
