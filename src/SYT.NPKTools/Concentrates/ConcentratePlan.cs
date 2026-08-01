@@ -1,5 +1,3 @@
-using SYT.NPKTools.Fertilizers;
-
 namespace SYT.NPKTools.Concentrates;
 
 /// <summary>
