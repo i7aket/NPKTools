@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Differential tests: every claim that the managed simplex agrees with GLOP is asserted here.
+    Google OR-Tools arrives through the oracle project and is never shipped.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SYT.NPKTools.OrToolsOracle\SYT.NPKTools.OrToolsOracle.csproj" />
+    <ProjectReference Include="..\..\src\SYT.NPKTools\SYT.NPKTools.csproj" />
+  </ItemGroup>
+
+</Project>

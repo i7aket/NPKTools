@@ -1,0 +1,55 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Package metadata shared by every shipped library. -->
+  <PropertyGroup>
+    <Version>1.0.0-preview.1</Version>
+    <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
+    <Company>SYT</Company>
+    <Copyright>Copyright (c) Anatoliy Yermakov</Copyright>
+    <PackageProjectUrl>https://github.com/i7aket/NPKTools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/i7aket/NPKTools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>package-icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>fertilizer nutrient npk ppm hydroponics agriculture horticulture optimization linear-programming simplex</PackageTags>
+    <PackageReleaseNotes>See https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <!--
+    The licence ships as a file rather than as a PackageLicenseExpression, so the exact text a
+    consumer agreed to is inside the package they downloaded.
+  -->
+  <PropertyGroup>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <!-- Packing is an explicit `dotnet pack` step, not a side effect of every local build. -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <!-- Ship the XML docs so consumers get IntelliSense. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Debugging support: SourceLink ships in the SDK, so no PackageReference is needed. -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!--
+    One README, packed from the repository root, so the NuGet page and the GitHub landing page cannot
+    drift apart. Images in it use absolute raw.githubusercontent URLs because NuGet does not resolve
+    relative paths.
+  -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)../assets/icon.png" Pack="true" PackagePath="\package-icon.png" />
+    <None Include="$(MSBuildThisFileDirectory)../LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

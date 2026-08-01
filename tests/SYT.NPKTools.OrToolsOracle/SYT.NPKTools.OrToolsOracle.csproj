@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Google OR-Tools (GLOP) backend, kept out of the shipped package on purpose.
+
+    OR-Tools publishes native binaries only for linux-x64/arm64, osx-x64/arm64 and win-x64 — there is
+    no browser-wasm build — so shipping it would make NPKTools server-only. Here it serves two
+    purposes instead: it is the independent oracle the managed simplex is differentially tested
+    against, and it is the comparison baseline in the benchmarks.
+
+    Not packable, and referenced only by tests/ and benchmarks/.
+  -->
+  <PropertyGroup>
+    <RootNamespace>SYT.NPKTools.OrToolsOracle</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.OrTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SYT.NPKTools\SYT.NPKTools.csproj" />
+  </ItemGroup>
+
+</Project>

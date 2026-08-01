@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!-- The DI tests need a container implementation, not just the abstractions. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SYT.NPKTools\SYT.NPKTools.csproj" />
+  </ItemGroup>
+
+</Project>

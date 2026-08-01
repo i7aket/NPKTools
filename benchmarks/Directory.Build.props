@@ -1,0 +1,18 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <!-- BenchmarkDotNet builds and runs generated code; Release is the only meaningful config. -->
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <!--
+      CA1859 wants concrete types for devirtualization. Benchmarks deliberately go through the
+      interfaces, because that is the code path consumers take when resolving from DI; measuring
+      a devirtualized path would measure something nobody runs.
+    -->
+    <NoWarn>$(NoWarn);CA1859</NoWarn>
+  </PropertyGroup>
+
+</Project>

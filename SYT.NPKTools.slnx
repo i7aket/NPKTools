@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/SYT.NPKTools.Benchmarks/SYT.NPKTools.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SYT.NPKTools/SYT.NPKTools.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SYT.NPKTools.IntegrationTests/SYT.NPKTools.IntegrationTests.csproj" />
+    <Project Path="tests/SYT.NPKTools.OrTools.Tests/SYT.NPKTools.OrTools.Tests.csproj" />
+    <Project Path="tests/SYT.NPKTools.OrToolsOracle/SYT.NPKTools.OrToolsOracle.csproj" />
+    <Project Path="tests/SYT.NPKTools.Tests/SYT.NPKTools.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,73 +1,271 @@
-# NPKTools
-<img src="assets/logo.png" alt="Logo" width="200"/>
+# SYT.NPKTools
 
-NPKTools is developed on the .NET platform and helps adjust the ratios of various fertilizers to achieve the desired PPM (parts per million) profile. Additionally, it is capable of calculating the PPM of a mixture of fertilizers.
-## Features:
-### NPKTools.Optimizer
-- The Optimizer is composed of three main components: an adapter, a mapper, and a solver. It takes a nutrient target in NPK values, a list of available fertilizers, and specific precision settings as inputs to calculate the optimal fertilizer mix. Here's how the flow works with these components:
-- Mapper: This component converts the high-level nutrient targets and the list of available fertilizers into a structured optimization problem. It translates real-world data about fertilizers and nutrient requirements into mathematical variables, constraints, and objectives suitable for optimization. After the solver processes these, the mapper also translates the optimized mathematical solution back into practical terms, specifying exact quantities of each fertilizer to use.
-- Solver: Once the optimization problem is defined, this component uses mathematical algorithms to find the best combination of fertilizers. The solver processes the variables and constraints set by the mapper to minimize or maximize the objective function, typically focusing on cost efficiency or nutrient precision.
-- Adapter: Acts as the bridge between the domain-specific data (fertilizers and nutrient targets) and the optimization tools. It takes the problem as defined by the mapper, passes it to the solver for optimization, and then interprets the output from the solver back into a practical solution, detailing the specific amounts of each fertilizer to use to achieve the nutrient targets.
-- Together, these components ensure that the FertilizerOptimizer effectively integrates and processes the inputs to produce an optimized fertilizer mix that meets the specified NPK goals with the required precision.
-### NPKTools.PpmCalc
-- The PpmCalculationService is a component in the NPKOptimizer software that calculates the concentration of various nutrients in parts per million (ppm) when a specified collection of fertilizers is diluted in a given volume of water. This service is essential for users who need to understand the nutrient composition of their fertilizer solutions to ensure optimal plant growth.
-- Key Functions:
-Nutrient Calculation: It computes the ppm concentrations of major and minor plant nutrients including nitrogen (in forms of nitrate, ammonium, and amine), phosphorus, potassium, magnesium, sulfur, calcium, and trace elements such as iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium, and sodium.
-Flexible Dilution: Users can specify the volume of water in liters for the dilution process. This flexibility allows for accurate adjustment of nutrient concentrations based on different watering needs or systems.
-### NPKTools.Optimizer.Preset
-- FertilizerOptimizationService is an preconfigured version of the FertilizerOptimizer. It includes:
-- 17 basic types of macronutrient fertilizers combined into 18 different sets to optimize the selection process.
-- 17 types of micronutrient fertilizers grouped into four main sets: basic, sulfate, nitrate, and chelated.
-- During the selection of macronutrient fertilizers, the service conducts two searches: in the first, sulfur is accounted for as specified, while the second search excludes sulfur coefficients to expand the possible options.
-### NPKTools.Optimizer.PpmTargetParser
-- Project primarily focuses on parsing strings that represent the concentration of various elements in parts per million (ppm) and converting them into structured PpmTarget objects which can be further processed or analyzed within the system. The NPKTools.Optimizer.PpmTargetParser project is designed as a specialized component within the NPKTools suite, aimed at interpreting and transforming user input into actionable data models.
+<img src="https://raw.githubusercontent.com/i7aket/NPKTools/main/assets/logo.png" alt="NPKTools logo" width="200"/>
+
+[![CI](https://github.com/i7aket/NPKTools/actions/workflows/ci.yml/badge.svg)](https://github.com/i7aket/NPKTools/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/vpre/SYT.NPKTools.svg)](https://www.nuget.org/packages/SYT.NPKTools/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/i7aket/NPKTools/blob/main/LICENSE)
+
+Fertilizer nutrient management for .NET. Give it a target nutrient profile in ppm and the fertilizers
+you have, and it works out how much of each to use by solving the mix as a linear program. It also
+calculates the ppm of a mixture you already have.
+
+Targets **.NET 10**. One package, no native dependencies, so the whole pipeline runs server-side or
+in the browser under WebAssembly.
+
+```bash
+dotnet add package SYT.NPKTools
+```
+
+> **This is `1.0.0-preview.1`.** It supersedes the `NPKTools.*` packages, which are no longer
+> updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
+
+## Quick start
+
+`AddNpkTools()` registers everything. `ServiceCollection` itself comes from
+**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions — so in a
+console app add that too:
+
+```bash
+dotnet add package Microsoft.Extensions.DependencyInjection
+```
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using SYT.NPKTools;
+using SYT.NPKTools.Fertilizers;
+using SYT.NPKTools.Nutrients;
+
+ServiceProvider provider = new ServiceCollection()
+    .AddNpkTools()
+    .BuildServiceProvider();
+
+IPpmTargetParser parser = provider.GetRequiredService<IPpmTargetParser>();
+IFertilizerOptimizationService optimizer = provider.GetRequiredService<IFertilizerOptimizationService>();
+IPpmCalculationService calculator = provider.GetRequiredService<IPpmCalculationService>();
+
+// Elements are separated by spaces or commas; L is the water volume in liters.
+PpmTarget target = parser.Parse("N=150 P=50 K=200 Ca=100 Mg=50 L=100");
+
+FertilizerSolutions result = optimizer.FindSolutions(target);
+
+foreach (Solution solution in result.Macro)
+{
+    foreach (Fertilizer fertilizer in solution)
+    {
+        Console.WriteLine($"{fertilizer.Name.Value}: {fertilizer.Weight.Value:F3} g");
+    }
+
+    // A Solution is an IReadOnlyList<Fertilizer>, so it can be measured directly.
+    Console.WriteLine(calculator.CalculatePpm(solution, solution.WaterLiters).Report());
+}
+```
+
+`FindMacroSolutions`, `FindMicroSolutions` and `FindSolutions` return empty sets rather than `null`
+when nothing satisfies the target, so the loops above need no null check.
+
+A macro search solves 36 linear programs in sequence — the 18 bundles once honouring the sulfur target
+and once ignoring it — so pass a token if you need to bail out:
+
+```csharp
+using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
+Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
+```
+
+Without a DI container, construct the pieces directly:
+
+```csharp
+using SYT.NPKTools;
+using SYT.NPKTools.Optimization;
+
+IFertilizerOptimizer adapter = new FertilizerOptimizationAdapter(
+    new SimplexOptimizationSolver(),
+    new OptimizationProblemMapper());
+
+IFertilizerOptimizationService service =
+    new FertilizerOptimizationService(adapter, new FertilizerBundleRepository());
+```
+
+## What's in the box
+
+| Namespace | Contents |
+| --- | --- |
+| `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and `AddNpkTools()` |
+| `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
+| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
+
+The only dependency is
+[**Microsoft.Extensions.DependencyInjection.Abstractions**](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/),
+and only for `AddNpkTools()`.
+
+## Runs in the browser
+
+Every part of this package is managed code, so parsing a target, optimizing the mix and reporting the
+resulting ppm all work client-side under WebAssembly with no server round trip.
+
+That is why the default solver is a managed simplex rather than Google OR-Tools. OR-Tools ships native
+binaries only for linux-x64/arm64, osx-x64/arm64 and win-x64 — there is no `browser-wasm` build — so
+anything depending on it is server-only. The problem is small enough that this costs nothing: a
+macronutrient bundle is at most 16 variables and 7 range constraints, and a full preset search is 40
+such problems.
+
+Verified end to end: the pipeline was published to `browser-wasm` and executed, producing 11 macro
+solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. Transfer cost is roughly
+1.1 MB gzipped, almost entirely the .NET runtime — the library itself is about 51 KB.
+
+## About the solver
+
+`SimplexOptimizationSolver` is a two-phase primal simplex using Bland's rule, on a dense tableau. It
+is validated against Google OR-Tools' GLOP, which the repository keeps as a test-only oracle rather
+than shipping: 60 equivalence tests plus differential testing over 17,760 problems generated by the
+mapper, in which the two never disagreed — worst constraint violation 1.4e-14, worst relative cost gap
+5.8e-16.
+
+At this problem size the managed solver is also the faster of the two, because GLOP's per-solve setup
+dominates. Measured on a full macro-plus-micro search:
+
+| Solver | Full search | Allocated |
+| --- | --- | --- |
+| Managed simplex | **0.67 ms** | 939 KB |
+| OR-Tools GLOP | 3.67 ms | 913 KB |
+
+Reproduce with `dotnet run -c Release --project benchmarks/SYT.NPKTools.Benchmarks`.
+
+**It is not a general-purpose LP solver.** There is no scaling, equilibration or iterative refinement.
+Within this library's regime — nutrient percentages and ppm/10 right-hand sides, about three orders of
+magnitude apart — it is exact. Given a problem whose coefficients span ten or more orders of magnitude,
+round-off can make it stop at a suboptimal vertex or report no solution where one exists. Every answer
+it returns is verified against the original constraints before being handed back, so it will never
+return a mix that violates them.
+
+If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public and the default
+is registered with `TryAdd` — so register your own first and it wins:
+
+```csharp
+services.AddSingleton<IOptimizationProblemSolver, MyGlopSolver>()
+        .AddNpkTools();
+```
+
+The repository's oracle at `tests/SYT.NPKTools.OrToolsOracle` is a complete worked example of exactly
+that, backed by GLOP.
+
+## How it works
+
+Three components in a pipeline:
+
+- **Mapper** turns the nutrient target and the available fertilizers into a linear program —
+  variables, constraints and an objective — and turns the solver's answer back into concrete
+  fertilizer weights.
+- **Solver** minimises the objective (by default, cost) subject to the constraints.
+- **Adapter** drives the two and is what `IFertilizerOptimizer` exposes.
+
+Each element is constrained to `target ± target × (1 − p)`, where `p` is the **smaller** of that
+element's precision setting and the global `RangeFactorSettings`. The looser of the two therefore
+decides, and raising `RangeFactorSettings` tightens the search rather than widening it. At the default
+of `1`, an element with a precision of `1` becomes an exact equality; an element with a precision of
+`0` is left unconstrained entirely.
+
+### The preset catalogue
+
+- 17 macronutrient fertilizers combined into 18 bundles.
+- 17 micronutrient fertilizers in four sets: basic, sulfate, nitrate and chelated.
+- Macronutrient searches run twice — once honouring the sulfur target, once ignoring it — to widen the
+  set of feasible mixes, so 18 bundles mean 36 solves. Duplicate results are collapsed.
+
+Bundles are built lazily and cached, so the repository is registered as a singleton.
+
+### Nutrients covered
+
+Nitrogen (split into nitrate, ammonium and amine), phosphorus, potassium, magnesium, sulfur, calcium,
+and the trace elements iron, copper, manganese, zinc, boron, molybdenum, chlorine, silicon, selenium
+and sodium. Chelated and non-chelated fractions are tracked separately: iron carries all four chelate
+forms (EDTA, DTPA, EDDHA, HBED), while copper, manganese, zinc, calcium and magnesium carry EDTA only.
+
+### Target strings
+
+`element=value` pairs separated by spaces or commas. Element names are case-insensitive. Accepted:
+`N P K Ca Mg S Fe Cu Mn Zn B Mo Cl Si Se Na`, plus `L` for water volume in liters (default `1`).
+Unknown elements, malformed pairs and duplicates all raise `FormatException`. Values are always parsed
+with the invariant culture, so `1.5` means one and a half regardless of regional settings.
+
+Weights are in **grams** and ppm is `percent × grams ÷ liters × 10`.
+
+## Migrating from NPKTools 1.x
+
+The six `NPKTools.*` packages are replaced by this single one. Namespaces are flattened; the mechanical
+part of the move is a find-and-replace:
+
+| NPKTools 1.x | SYT.NPKTools |
+| --- | --- |
+| packages `NPKTools.Core`, `.Optimizer`, `.Optimizer.Preset`, `.Optimizer.PPMCalc`, `.Optimizer.PpmTargetParser` | one package, `SYT.NPKTools` |
+| `NPKTools.Core.Domain.Fertilizers*` | `SYT.NPKTools.Fertilizers` |
+| `NPKTools.Core.Domain.PartsPerMillion*`, `.PpmTarget*`, `NPKTools.PPMCalc`, `NPKTools.Optimizer.PpmTargetParser` | `SYT.NPKTools.Nutrients` |
+| `NPKTools.Core.Domain.SolutionsFinderSettings*`, `NPKTools.Optimizer.Components`, `.Contracts` | `SYT.NPKTools.Optimization` |
+| `NPKTools.Core.Domain.Collections`, `NPKTools.Optimizer.Preset` | `SYT.NPKTools` |
+| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | one `AddNpkTools()` |
+| `AddNpkToolsOrToolsSolver()` | gone — see [About the solver](#about-the-solver) |
+| `IFertilizerBundleRepository.Marco()` | `.Macro()` |
+| `PpmTargetBuilder.AddLitters(...)` | `.AddLiters(...)` |
+| `FindSolutions` returned `(Solutions Macro, Solutions Micro)` | returns `FertilizerSolutions` |
+| `Solution : List<Fertilizer>`, `Solutions : List<Solution>` | `IReadOnlyList<…>`; construct with `new Solution(fertilizers, waterLiters)` |
+| `Solutions?` returns, `null` for "not found" | `Solutions`, `Solutions.Empty` |
+| parameterless constructors + settable properties on the domain types | constructors only; use the builders |
+| `NPKTools.Core.Common`, `NPKTools.Core.Const`/`.Constants` | internal — `ThrowIf`, `ReportFormatter`, `Labels`, `Names` are no longer public |
+
+The full history is in [CHANGELOG.md](https://github.com/i7aket/NPKTools/blob/main/CHANGELOG.md).
+
+## Building from source
+
+```bash
+git clone https://github.com/i7aket/NPKTools.git
+cd NPKTools
+dotnet build
+dotnet test
+```
+
+Requires the .NET 10 SDK (pinned in `global.json`). The build treats warnings as errors, so a clean
+`dotnet build` is part of the contract. NuGet versions live in `Directory.Packages.props` and shared
+package metadata in `src/Directory.Build.props`; add references without a `Version` attribute.
+
+405 tests run on Linux, Windows and macOS in CI, with coverage collected via coverlet and formatting
+enforced by `dotnet format --verify-no-changes`. CodeQL scanning runs through GitHub's default setup.
+
+## Releasing
+
+Publishing is triggered by a version tag, not by pushes to `main`. Bump `<Version>` in
+`src/Directory.Build.props`, commit it, then tag:
+
+```bash
+git tag v1.0.0-preview.1
+git push origin v1.0.0-preview.1
+```
+
+The workflow refuses to publish if the tag is not valid SemVer or does not match the committed
+`<Version>`, because a version pushed to NuGet.org can be unlisted but never replaced. It then builds,
+runs the full test suite, and pushes to NuGet.org and GitHub Packages.
+
+Always release through the workflow. `dotnet pack` records the current branch in the nuspec's
+`<repository>` element, so a package built locally on a feature branch carries that branch name in its
+public metadata; packing from a tag ref records the tag.
+
 ## Developers
-This tool was developed by **Anatoliy Yermakov**.
+
+Developed by **Anatoliy Yermakov**.
+
 - **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
 - **GitHub**: [i7aket](https://github.com/i7aket)
 
-Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of this project.
+Special thanks to **Artem Frolov** for his invaluable assistance and guidance in the development of
+this project.
+
 - **LinkedIn**: [Artem Frolov](https://www.linkedin.com/in/artfrolov/)
 - **GitHub**: [AqueGen](https://github.com/AqueGen)
-## Installation:
-The modules of the NPKTools suite, including NPKTools.Optimizer, NPKTools.PpmCalc, NPKTools.Optimizer.Preset, and NPKTools.Optimizer.PpmTargetParser, are available as NuGet packages. You can install these packages via NuGet Package Manager in Visual Studio or via the command line interface (CLI) as follows:
-Using Visual Studio
 
-Open your solution in Visual Studio.
-Go to Solution Explorer, right-click on your project, and select Manage NuGet Packages.
-Search for the following packages:
-- NPKTools.Optimizer
-- NPKTools.PpmCalc
-- NPKTools.Optimizer.Preset
-- NPKTools.Optimizer.PpmTargetParser
+## Contributing
 
-Install needed package by selecting it from the list and clicking Install.
+See [CONTRIBUTING.md](https://github.com/i7aket/NPKTools/blob/main/CONTRIBUTING.md).
 
-## License:
-This project is licensed under the MIT License.
+## License
 
-## Code Coverage:
-The project maintains a high standard of code quality with 99% unit test coverage, ensuring that the features perform as expected and are reliable under various scenarios.
-
-## Roadmap:
-### NPKTools.Optimizer ✔ Completed.
-Description: This feature calculates the best combination of fertilizers from a provided collection based on fertilizer attributes and the desired ppm (parts per million) profile. This process optimizes nutrient delivery for specific agricultural needs.
-### - NPKTools.PpmCalc ✔ Completed.
-Description: This function computes the PPM (parts per million) of nutrients in a given mixture of fertilizers, taking into account the weights of the fertilizers and the volume of liquid in which they will be dissolved. This is crucial for ensuring the accuracy of nutrient delivery according to the specified agricultural requirements.
-### NPKTools.Optimizer.Preset: ✔ Completed.
-Description: A preconfigured version featuring over 40 fertilizers, built using Fertilizer Composition, and more than 20 fertilizer blending scenarios.
-### NPKTools.Optimizer.PpmTargetParser ✔ Completed.
-
-## Dependencies
-### NPKOptimizer
-- [**Google OR-Tools**](https://developers.google.com/optimization): Used for performing optimization calculations.
-### NPKOptimizer.Tests
-- [**xUnit**](https://xunit.net/): Framework for unit testing.
-- [**AutoFixture**](https://github.com/AutoFixture/AutoFixture): Generates test data.
-- [**FluentAssertions**](https://fluentassertions.com/): Enhanced assertions for tests.
-- [**Microsoft.AspNetCore.Mvc.Testing**](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0): Testing for ASP.NET MVC applications.
-- [**NSubstitute**](https://nsubstitute.github.io/): Library for creating mock and stub objects.
-- [**Microsoft.NET.Test.Sdk**](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/): Test SDK for .NET.
-
-## Contact Information:
-- **LinkedIn**: [Anatoliy Yermakov](https://www.linkedin.com/in/anatoliyyermakov)
+Licensed under the [MIT License](https://github.com/i7aket/NPKTools/blob/main/LICENSE).

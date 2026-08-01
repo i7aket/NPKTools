@@ -1,0 +1,38 @@
+<Project>
+
+  <!--
+    Settings shared by every project in the repository.
+    Packaging-specific settings live in src/Directory.Build.props,
+    test-specific settings in tests/Directory.Build.props.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Treat every diagnostic as an error so warnings cannot accumulate again. -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!--
+      CS1591 (missing XML doc) is enforced. It is switched off in .editorconfig for the value
+      objects and constants tables, where the only undocumented members are self-describing
+      (`Value` accessors, constructor parameters, and string constants whose value is their
+      meaning). Everywhere else, adding undocumented public API breaks the build.
+    -->
+    <!--
+      Code-style (IDExxxx) rules stay editor suggestions rather than build errors;
+      .editorconfig documents the conventions without making formatting break CI.
+    -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Reproducible builds. ContinuousIntegrationBuild normalizes paths embedded in the PDB. -->
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>
