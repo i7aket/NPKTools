@@ -4,7 +4,15 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <!--
+      Not everything under tests/ is a test project. The OR-Tools oracle is shared support code
+      referenced by both the differential tests and the benchmarks, and `dotnet test` must not try
+      to run it as an assembly with no tests.
+    -->
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests'))">true</IsTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <!--
       CS86xx: test code deliberately passes nulls to assert on guard clauses.
       CA1707: xUnit's Method_Scenario_Expectation naming convention requires underscores.
@@ -16,7 +24,7 @@
   </PropertyGroup>
 
   <!-- Every test project needs the same harness; declare it once. -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageReference Include="AutoFixture" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

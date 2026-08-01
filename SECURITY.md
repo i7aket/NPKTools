@@ -38,6 +38,7 @@ intended to fail gracefully rather than exhaust the host.
 
 ## Dependencies
 
-The default packages depend only on `Microsoft.Extensions.DependencyInjection.Abstractions`. The
-optional `NPKTools.Optimizer.OrTools` package additionally brings `Google.OrTools` and its native
-binaries. Dependency updates are tracked automatically by Dependabot.
+`SYT.NPKTools` depends only on `Microsoft.Extensions.DependencyInjection.Abstractions`, and carries no
+native binaries. `Google.OrTools` is a test-only dependency — it backs the differential oracle the
+shipped solver is validated against and is never distributed to consumers. Dependency updates are
+tracked automatically by Dependabot.

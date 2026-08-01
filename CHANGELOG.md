@@ -3,10 +3,73 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-07-31
+## [1.0.0-preview.1] - 2026-08-01
 
-The whole suite moves to .NET 10. This release contains breaking API changes; see
-**Migrating from 1.x** at the end of this entry.
+**A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
+further updates. The version resets to 1.0.0 because the package identity is new; in terms of code
+this is a direct continuation, carrying every fix listed under *Inherited from the NPKTools line*
+below.
+
+The find-and-replace table for moving off the old packages is in
+[README.md](README.md#migrating-from-npktools-1x).
+
+### One package instead of six
+
+`NPKTools.Core`, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
+`NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`.
+
+The split cost consumers something and bought them nothing. Five of the six projects had identical
+external dependencies — `Microsoft.Extensions.DependencyInjection.Abstractions` alone — and together
+came to 161 KB of IL, so nobody was avoiding a meaningful download by taking a subset. Meanwhile a
+first-time user had to know which three of six packages made a working setup, and every release
+multiplied version-matrix combinations that were never tested apart.
+
+- **Namespaces are flattened** from 24 to 4: `SYT.NPKTools`, `.Fertilizers`, `.Nutrients`,
+  `.Optimization`. The old tree had namespaces named after the type inside them
+  (`NPKTools.Core.Domain.PpmTarget` containing `PpmTarget`), which forced awkward qualification.
+- **One `AddNpkTools()`** replaces `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`,
+  `AddNpkToolsPpmCalc()` and `AddNpkToolsPpmTargetParser()`. Registration order between the four was
+  load-bearing and undocumented; now there is no order to get wrong.
+- **`ThrowIf`, `ReportFormatter`, `Labels`, `Names` and `OptimizationSettings` are `internal`.** They
+  were public only because they had to cross package boundaries. `ElementFieldBase` and the
+  `*BuilderBase<T>` types stay public — the public value objects and builders derive from them.
+- **`FindSolutions` returns `FertilizerSolutions`** instead of a
+  `(Solutions Macro, Solutions Micro)` tuple, so the shape is named, documented and extensible.
+  It carries `Empty` and `IsEmpty`.
+
+### Google OR-Tools is no longer shipped
+
+`NPKTools.Optimizer.OrTools` is gone, and with it `AddNpkToolsOrToolsSolver()`. The GLOP solver now
+lives at `tests/SYT.NPKTools.OrToolsOracle`, which is not published.
+
+This is what makes the browser story real rather than conditional. OR-Tools distributes native
+binaries only for linux-x64/arm64, osx-x64/arm64 and win-x64 — there is no `browser-wasm` build — so
+while a shipped OR-Tools package existed, "runs in the browser" depended on which package you
+installed. Now every published byte is managed code.
+
+Nothing is lost in validation terms: the oracle is exactly how the managed solver's correctness is
+established, and it is also the benchmark baseline, which is why it is its own project rather than a
+file inside a test assembly. `IOptimizationProblemSolver` remains public and the default is registered
+with `TryAdd`, so a consumer who wants GLOP at runtime registers their own implementation first — the
+oracle is a complete worked example of doing that.
+
+### Packaging
+
+- Package id `SYT.NPKTools`, title `SYT NPKTools`, matching the other `SYT.*` packages.
+- The licence ships as a file inside the package rather than as an SPDX expression, so the exact text
+  is in what consumers downloaded.
+- One README, packed from the repository root, so the NuGet page and the GitHub landing page cannot
+  drift apart. Its images use absolute URLs because NuGet does not resolve relative paths.
+- Test projects consolidated from six to three — `SYT.NPKTools.Tests`,
+  `SYT.NPKTools.IntegrationTests`, `SYT.NPKTools.OrTools.Tests` — because the old split mirrored
+  package boundaries that no longer exist. **405 tests**, unchanged in coverage.
+
+---
+
+## Inherited from the NPKTools line
+
+Everything below shipped in the `NPKTools.*` packages and is present in `SYT.NPKTools 1.0.0-preview.1`.
+It is kept here because it is the actual history of this code, not of a package id.
 
 ### Fixed
 
@@ -15,12 +78,12 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
   fertilizer rendered as `Weight: 100,000` on one machine and `Weight: 100.000` on another. All
   report output — `Fertilizer.Report()`, `Ppm.Report()` and `Fertilizer.GetNutrientSummary()` — is
   now invariant. `GetNutrientSummary` was affected separately through its `:N2` format specifier.
-- **Sodium could not be parsed.** `PpmTargetParser` omitted `Na` from its set of accepted elements
+- **Sodium could not be parsed.** The target parser omitted `Na` from its set of accepted elements
   even though it read a sodium target back out, so `"Na=5"` threw `FormatException` and the sodium
   target was always zero.
 - **`FertilizerPrice.Value` and `RangeFactorSettings.Value` were public mutable fields**, letting
-  callers overwrite a validated value and bypass the positive/range checks. Both are now
-  get-only properties, matching every other value object.
+  callers overwrite a validated value and bypass the positive/range checks. Both are now get-only
+  properties, matching every other value object.
 - **`ArgumentNullException.ThrowIfNull` was called on `ConcentrateType`**, an enum, where it is a
   no-op.
 - **The mapper threw a bare `ArgumentOutOfRangeException`** with no parameter name or message from
@@ -28,163 +91,94 @@ The whole suite moves to .NET 10. This release contains breaking API changes; se
 - **One-sided constraints always came back infeasible from the managed solver.** A non-finite bound
   is the only way `OptimizationConstraint` expresses "≥ only" or "≤ only", and it went straight into
   the right-hand side, leaving an artificial variable basic at infinity. `2 ≤ x + y ≤ +∞` returned
-  null while OR-Tools solved it. A non-finite bound now contributes no row on that side, so the two
-  backends accept the same problems. This was a silent behavioral regression for any 1.x consumer of
-  the raw `IOptimizationProblemSolver` API, since 2.0.0 also changes which solver is the default.
+  null while OR-Tools solved it. A non-finite bound now contributes no row on that side.
 - **The managed solver could report a wrong answer as a success.** On badly scaled problems it
-  returned points violating `x ≥ 0` by as much as 0.88 — reachable only through the raw solver API,
-  since the mapper would have turned such a value into an `ArgumentOutOfRangeException` downstream.
-  Every result is now verified against the original constraints in one O(mn) pass and downgraded to
-  null if it does not hold. Found by differential testing against GLOP over ~16,200 adversarial
-  random LPs.
+  returned points violating `x ≥ 0` by as much as 0.88. Every result is now verified against the
+  original constraints in one O(mn) pass and downgraded to null if it does not hold. Found by
+  differential testing against GLOP over ~16,200 adversarial random LPs.
 - **A `NaN` bound produced a `NaN` "solution" reported as success.** NaN bounds and coefficients are
   now rejected with `ArgumentException`.
 - **The managed solver silently ignored coefficients naming an undeclared variable**, so a typo
-  became a zero. It now throws `KeyNotFoundException`, which is what the OR-Tools backend already
-  did.
+  became a zero. It now throws `KeyNotFoundException`, as the OR-Tools backend already did.
 
 ### Added
 
-- **A fully managed solver, and the package split that makes it useful.**
-  `SimplexOptimizationSolver` is a two-phase primal simplex with no native dependencies, and it is
-  now the default behind `IOptimizationProblemSolver`. `NPKTools.Optimizer` therefore no longer
-  depends on Google OR-Tools; the GLOP backend moved to the optional
-  **`NPKTools.Optimizer.OrTools`** package, opted into with `AddNpkToolsOrToolsSolver()`.
+- **A fully managed solver.** `SimplexOptimizationSolver` is a two-phase primal simplex using Bland's
+  rule, with no native dependencies, and it is the default behind `IOptimizationProblemSolver`.
 
-  This is not a cosmetic change. OR-Tools ships native binaries only for linux-x64/arm64,
-  osx-x64/arm64 and win-x64, so anything depending on it cannot run under WebAssembly. With the
-  managed solver, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
-  `NPKTools.Optimizer.PpmTargetParser` all run client-side — verified by publishing the full
-  pipeline to `browser-wasm` and executing it, which produced 11 macro solutions landing exactly on
-  an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. (Plain 150/50/200 N/P/K yields 4, in both
-  backends.)
-
-  The problem size justifies it: a macronutrient bundle is at most 16 variables and 7 range
-  constraints, and a full preset search is 40 such problems. Equivalence with OR-Tools is asserted
+  The problem size justifies a dense tableau: a macronutrient bundle is at most 16 variables and 7
+  range constraints, and a full preset search is 40 such problems. Equivalence with GLOP is asserted
   by 60 tests — 20 over the curated preset bundles across 11 target profiles, and 40 randomized
-  synthetic catalogues (11 feasible, 29 infeasible) comparing feasibility verdicts, optimal
-  objective values, non-negativity and constraint satisfaction. Differential testing over 17,760
-  mapper-generated problems found no disagreement with GLOP: the worst constraint violation was
-  1.4e-14 and the worst relative cost gap 5.8e-16.
+  synthetic catalogues (11 feasible, 29 infeasible). Differential testing over 17,760
+  mapper-generated problems found no disagreement: worst constraint violation 1.4e-14, worst relative
+  cost gap 5.8e-16.
 
-  It is not a general-purpose LP solver, and the class documentation now says so. It is a dense
-  tableau with a fixed tolerance and no scaling or iterative refinement; on a problem whose
-  coefficients span ten or more orders of magnitude, round-off can make it stop at a suboptimal
-  vertex or report no solution where one exists. Every answer it returns is verified against the
-  original constraints first, so it will not return a mix that violates them. `NPKTools.Optimizer.OrTools`
-  remains available for input outside that envelope.
+  It is not a general-purpose LP solver, and the class documentation says so. On a problem whose
+  coefficients span ten or more orders of magnitude, round-off can make it stop at a suboptimal vertex
+  or report no solution where one exists — but never return an infeasible mix, because every answer is
+  verified first.
+
+  Verified in the browser: the full pipeline was published to `browser-wasm` and executed, producing
+  11 macro solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. (Plain
+  150/50/200 N/P/K yields 4, in both backends.)
 - **The test suite actually runs.** No test project referenced `xunit.runner.visualstudio`, so
-  `dotnet test` reported "No test is available" for all six assemblies and 283 tests never
-  executed — in CI or locally. The runner is now present and the suite is wired into CI. The suite is
-  now 403 tests.
-- **Direct unit tests for the default solver.** Its coverage was entirely differential against
-  OR-Tools, which only runs where the OR-Tools native binaries exist — so on an unsupported RID the
-  shipped default solver had no coverage at all. There are now 22 tests with hand-computed optima,
-  including the maximization path (previously exercised by zero tests in the suite, so a sign error
-  would have shipped green), the unbounded and infeasible paths, every documented guard clause, and
-  the one-sided-bound and ill-scaling cases above.
-- **A test for the OR-Tools substitution.** `AddNpkToolsOrToolsSolver().AddNpkToolsPreset()` is the
-  flagship snippet in three READMEs and was never asserted; the whole mechanism rests on
-  registration order, which is now pinned in both directions.
-- `Ppm.Report()` is covered by the cross-culture tests alongside `Fertilizer.Report()`.
-- Regression tests for both bugs above: report output is asserted identical across de-DE, ru-RU,
-  fr-FR and en-US, and sodium parsing is covered for mixed casing, combination with other
-  elements, absence, and duplicates.
-- **Dependency injection helpers**, so consumers no longer wire four objects together by hand:
-  `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()` and
-  `AddNpkToolsPpmTargetParser()`. All use `TryAdd`, so registering your own
-  `IOptimizationProblemSolver` first replaces the managed default — which is how
-  `AddNpkToolsOrToolsSolver()` substitutes the GLOP backend.
-- **`CancellationToken` support** on `IFertilizerOptimizationService`. A macro search solves 36
-  linear programs in sequence — the 18 bundles once with the sulfur target and once without — and
-  previously could not be interrupted.
-- XML documentation is now shipped in the packages (`GenerateDocumentationFile`), along with
-  SourceLink, deterministic builds and `.snupkg` symbol packages.
-- A `CHANGELOG.md`, `.editorconfig`, `global.json` and Dependabot configuration.
+  `dotnet test` reported "No test is available" for all six assemblies and 283 tests never executed —
+  in CI or locally. That is why two culture-dependent failures sat unnoticed in the repository.
+- **Direct unit tests for the default solver.** Its coverage had been entirely differential against
+  OR-Tools, which only runs where the OR-Tools native binaries exist, so on an unsupported RID the
+  shipped solver had no coverage at all. There are now 22 tests with hand-computed optima, including
+  the maximization path — previously exercised by zero tests in the suite, so a sign error would have
+  shipped green — the unbounded and infeasible paths, and every documented guard clause.
+- **Regression tests for both culture and sodium bugs**, verified to fail when the fix is reverted.
+  Report output is asserted identical across de-DE, ru-RU, fr-FR and en-US.
+- **`CancellationToken` support** on `IFertilizerOptimizationService`. A macro search solves 36 linear
+  programs in sequence — the 18 bundles once with the sulfur target and once without — and previously
+  could not be interrupted.
+- XML documentation shipped in the package, plus SourceLink, deterministic builds and `.snupkg`
+  symbol packages.
+- A `CHANGELOG.md`, `SECURITY.md`, `.editorconfig`, `global.json`, Dependabot configuration,
+  issue/PR templates, and a BenchmarkDotNet project.
 
 ### Changed
 
-- **Target framework is now `net10.0`** (was `net8.0`).
-- **Google.OrTools 9.9.3963 → 9.15.6755.**
+- **Target framework `net10.0`** (was `net8.0`).
 - **Test dependencies:** xunit 2.7.1 → 2.9.3, NSubstitute 5.1.0 → 6.0.0,
-  Microsoft.NET.Test.Sdk 17.9.0 → 18.8.1. `FluentAssertions` 6.12.0 is replaced by
-  **AwesomeAssertions 9.4.0**, the Apache-2.0 community fork of FluentAssertions 7, because
-  FluentAssertions 8+ requires a paid commercial licence.
-- Package metadata and versions moved into `src/Directory.Build.props`, and NuGet versions into
-  `Directory.Packages.props` (Central Package Management). The eleven project files shrank from
-  ~25 lines each to only what is specific to them.
-- The build now treats warnings as errors with `AnalysisLevel: latest-recommended`. The 105
-  pre-existing warnings are resolved rather than suppressed, apart from documented, narrowly
-  scoped exceptions (`CA1051` on the builders' `ref`-assigned protected fields, xUnit naming and
-  null-argument conventions in tests).
-- `GeneratePackageOnBuild` is off; packing is an explicit `dotnet pack` step.
-- CI runs build, test and pack on Linux, Windows and macOS for every push and pull request.
-  Publishing is triggered by a `v*.*.*` tag rather than every push to `main`, and runs the test
-  suite before pushing packages.
+  Microsoft.NET.Test.Sdk 17.9.0 → 18.8.1, Google.OrTools 9.9.3963 → 9.15.6755.
+  `FluentAssertions` 6.12.0 is replaced by **AwesomeAssertions 9.4.0**, the Apache-2.0 community fork
+  of FluentAssertions 7, because FluentAssertions 8+ requires a paid commercial licence.
+- **Removed** the dead `Microsoft.AspNetCore.Mvc.Testing` reference from every test project (the
+  repository contains no ASP.NET code), the redundant `xunit.assert` reference, and duplicate
+  `ProjectReference` entries.
+- NuGet versions moved into `Directory.Packages.props` (Central Package Management) and shared package
+  metadata into `src/Directory.Build.props`.
+- The build treats warnings as errors with `AnalysisLevel: latest-recommended`. All 105 pre-existing
+  warnings were resolved rather than suppressed, apart from documented, narrowly scoped exceptions.
+- **API cleanup.** The parameterless constructors and property setters on `Fertilizer`,
+  `FertilizerAttributes`, `Ppm`, `PpmTarget` and `SolutionFinderSettings` are gone — they left
+  non-nullable properties null and produced 144 `CS8618` warnings, and nothing used them. `Solution`
+  and `Solutions` are `IReadOnlyList<T>` rather than deriving from `List<T>`, so a result cannot be
+  mutated after the optimizer produced it. Search methods return `Solutions.Empty` instead of `null`.
+  `IFertilizerBundleRepository.Marco()` → `Macro()` and `PpmTargetBuilder.AddLitters` → `AddLiters`
+  fix misspellings in the public API. 13 leaf types were sealed.
+- `ThrowIf.NullOrEmpty` no longer enumerates to decide emptiness. It read the count via `Any()`, which
+  starts enumerating; it now reads `Count` from `IReadOnlyCollection<T>` or `ICollection<T>`.
+  `Enumerable.TryGetNonEnumeratedCount` alone was not sufficient — it does not recognise
+  `IReadOnlyCollection<T>`, which is what `Solution` and `Solutions` are.
+- **Documentation that was wrong rather than merely thin was corrected.** The tolerance rule was
+  inverted: the allowed deviation is `target × (1 − min(rangeFactor, elementPrecision))`, so the looser
+  of the two precisions decides and raising the range factor *tightens* the search. `FertilizerWeight`
+  was documented as "kilograms or pounds" when the ppm arithmetic requires grams. The OR-Tools solver
+  declared an `InvalidOperationException` it never throws. Only iron tracks four chelate forms, not
+  every chelatable element. Quick-start snippets were missing usings and never mentioned that
+  `ServiceCollection` needs `Microsoft.Extensions.DependencyInjection` rather than the abstractions
+  package the library references — so the examples on the package pages did not compile as shown. Every
+  snippet is now compiled and run as part of preparing a release.
+- CI runs build, test and pack on Linux, Windows and macOS for every push and pull request. Publishing
+  is triggered by a version tag, which is checked for valid SemVer and against the committed
+  `<Version>` before anything is built — a version pushed to NuGet.org can be unlisted but never
+  replaced. CodeQL scanning runs through the repository's GitHub default setup.
 
-### Quality
+## NPKTools 1.1.6 and earlier
 
-- Sealed the 13 leaf types and interface-backed implementations that were never designed for
-  inheritance (`Fertilizer`, `Ppm`, `PpmTarget`, `SolutionFinderSettings`, the services, the mapper,
-  the adapter, the repository, the comparer). `FertilizerAttributes` and the `*BuilderBase<TBuilder>`
-  types stay open because they exist to be inherited. Extend behaviour through the interfaces or
-  composition.
-- `ThrowIf.NullOrEmpty` no longer enumerates to decide emptiness. It read the count via `Any()`,
-  which starts enumerating; it now reads `Count` from `IReadOnlyCollection<T>` or `ICollection<T>`
-  and only falls back to enumeration for a genuinely lazy sequence. `Enumerable.TryGetNonEnumeratedCount`
-  alone was not sufficient — it does not recognise `IReadOnlyCollection<T>`, which is what the
-  library's own `Solution` and `Solutions` are.
-- `dotnet format` applied across the repository (123 files: unused usings removed, missing final
-  newlines added) and wired into CI as `--verify-no-changes`, so formatting cannot drift again.
-- Added `benchmarks/NPKTools.Benchmarks` (BenchmarkDotNet). It records that the managed solver is
-  about 5.5× faster than GLOP on a full preset search (0.67 ms against 3.67 ms), which keeps the
-  choice of default solver an evidence-based one.
-- **Corrected documentation that was wrong rather than merely thin.** The `RangeFactorSettings` XML
-  doc and two READMEs had the tolerance rule inverted — the allowed deviation is
-  `target × (1 − min(rangeFactor, elementPrecision))`, so the looser of the two precisions decides and
-  raising the range factor *tightens* the search. `FertilizerWeight` was documented as "kilograms or
-  pounds" when the ppm arithmetic requires grams. The `GoogleOrToolsOptimizationSolver` XML doc
-  declared an `InvalidOperationException` it never throws. `NPKTools.Core`'s README claimed every
-  chelatable element tracks four chelate forms; only iron does. Quick-start snippets were missing the
-  usings they need and never mentioned that `ServiceCollection` requires
-  `Microsoft.Extensions.DependencyInjection`, not just the abstractions package the libraries
-  reference — so the examples on the package pages did not compile as shown. `CONTRIBUTING.md` still
-  called the project NPKOptimizer.
-- Added `SECURITY.md` describing the actual threat surface — these libraries perform no I/O, so it
-  is essentially input handling and bounded solve time. CodeQL scanning is left to the repository's
-  existing GitHub default setup; an advanced-setup workflow was tried and removed, because CodeQL
-  rejects advanced configurations while default setup is enabled ("configuration error") and a second
-  analysis would only duplicate the first.
-
-### Removed
-
-- The dead `Microsoft.AspNetCore.Mvc.Testing` reference from all six test projects. The repository
-  contains no ASP.NET code.
-- The redundant `xunit.assert` reference, which `xunit` already brings in.
-- Duplicate `ProjectReference` entries in `NPKTools.Optimizer.PpmTargetParser.Tests` and
-  `NPKTools.Optimizer.Preset.Tests`.
-
-### Migrating from 1.x
-
-| 1.x | 2.0.0 | Why |
-| --- | --- | --- |
-| `IFertilizerBundleRepository.Marco()` | `.Macro()` | Spelling fix in the public API. |
-| `PpmTargetBuilderBase.AddLitters(...)` | `.AddLiters(...)` | Spelling fix. Compile-breaking for anyone building a `PpmTarget`. |
-| `IFertilizerBundleRepository.Macro()`/`Micro()` returned `IList<IList<Fertilizer>>` | `IReadOnlyList<IReadOnlyList<Fertilizer>>` | The bundles are cached and shared; handing out a mutable list let a caller corrupt the catalogue for everyone. |
-| `Solution : List<Fertilizer>` | `Solution : IReadOnlyList<Fertilizer>` | A solution was mutable after the optimizer produced it. Construct with `new Solution(fertilizers, waterLiters)`; `WaterLiters` is now get-only. |
-| `Solutions : List<Solution>` | `Solutions : IReadOnlyList<Solution>` | Same reason. |
-| `Solutions?` returns, `null` for "not found" | `Solutions`, `Solutions.Empty` | Callers no longer need a null check before enumerating. |
-| `Fertilizer`, `Ppm`, `PpmTarget`, `SolutionFinderSettings`, `FertilizerAttributes`: parameterless constructor + settable properties | constructor only, get-only properties | The parameterless constructors left non-nullable properties null and produced 144 `CS8618` warnings. Nothing in the repository used them. Use the existing builders (`FertilizerBuilder`, `PpmBuilder`, `PpmTargetBuilder`, `SolutionFinderSettingsBuilder`). |
-| `IList<Fertilizer>` parameters on `IFertilizerOptimizer`, `IOptimizationProblemMapper`, `IPpmCalculationService` | `IReadOnlyList<Fertilizer>` | These APIs only enumerate their input, and it lets `Solution` be passed straight to `CalculatePpm`. |
-| `FertilizerCollectionBuilder.Build()` returned `IList<Fertilizer>` | returns `IReadOnlyList<Fertilizer>` | Consistency with the above. |
-| namespace `NPKTools.Core.Const` | `NPKTools.Core.Constants` | `Const` collides with a reserved keyword in some .NET languages (CA1716). |
-| `GoogleOrToolsOptimizationSolver` in `NPKTools.Optimizer` | package **`NPKTools.Optimizer.OrTools`**, namespace `NPKTools.Optimizer.OrTools` | Keeps native binaries out of the base package so it can run under WebAssembly. Add the package and call `AddNpkToolsOrToolsSolver()` before `AddNpkToolsOptimizer()`/`AddNpkToolsPreset()` to keep using GLOP. |
-| OR-Tools was the only solver | `SimplexOptimizationSolver` is the default | Managed, dependency-free, and validated against OR-Tools. Results are equivalent; where an optimum is degenerate the two may report different vertices of equal cost. |
-| `OptimizationConstraint.Name` was a `required` field | `required` property | Consistency with the rest of the record. |
-| A coefficient naming an undeclared variable was ignored by `SimplexOptimizationSolver` | throws `KeyNotFoundException` | It is a typo, not a zero. OR-Tools already threw; the two backends now reject the same problems. Only affects code calling `IOptimizationProblemSolver` directly. |
-| A `NaN` bound or coefficient produced a `NaN` result | throws `ArgumentException` | Returning NaN as a successful solve is the worst possible output. |
-
-## [1.1.6] and earlier
-
-See the [commit history](https://github.com/i7aket/NPKTools/commits/main) for releases before
-this changelog was introduced.
+See the [commit history](https://github.com/i7aket/NPKTools/commits/main) for releases before this
+changelog was introduced.

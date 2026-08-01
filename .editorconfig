@@ -55,23 +55,24 @@ dotnet_diagnostic.CS1591.severity = warning
 
 # Every value object is documented at the type level. Their members are a `Value` accessor and
 # constructor parameters whose names already say what they hold, so per-member docs add noise.
-[src/NPKTools.Core/Domain/*/ValueObjects/*.cs]
+[src/SYT.NPKTools/*/ValueObjects/*.cs]
 dotnet_diagnostic.CS1591.severity = none
 
-# Constants tables: the value of each constant is its meaning.
-[src/NPKTools.Core/Constants/*.cs]
+# Internal helpers and constants tables: the value of each constant is its meaning, and none of
+# this is part of the public API surface.
+[src/SYT.NPKTools/Internal/*.cs]
 dotnet_diagnostic.CS1591.severity = none
 
 # The builders expose one Add* method per nutrient, named after the element it sets.
-[src/NPKTools.Core/Domain/*/Builder*/*.cs]
+[src/SYT.NPKTools/*/Builders/*.cs]
 dotnet_diagnostic.CS1591.severity = none
 
 # The builder hierarchy accumulates state in protected fields because BuilderBase.SetValue
 # takes them by `ref`, which properties cannot provide. CA1051 does not apply here.
-[src/NPKTools.Core/Common/BuilderBase.cs]
+[src/SYT.NPKTools/BuilderBase.cs]
 dotnet_diagnostic.CA1051.severity = none
 
-[src/NPKTools.Core/Domain/*/Builder*/*.cs]
+[src/SYT.NPKTools/*/Builders/*.cs]
 dotnet_diagnostic.CA1051.severity = none
 
 [tests/**/*.cs]

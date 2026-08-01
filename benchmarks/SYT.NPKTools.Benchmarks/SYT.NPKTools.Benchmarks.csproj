@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- GLOP is the comparison baseline; it comes from the non-shipped oracle project. -->
+    <ProjectReference Include="..\..\tests\SYT.NPKTools.OrToolsOracle\SYT.NPKTools.OrToolsOracle.csproj" />
+    <ProjectReference Include="..\..\src\SYT.NPKTools\SYT.NPKTools.csproj" />
+  </ItemGroup>
+
+</Project>

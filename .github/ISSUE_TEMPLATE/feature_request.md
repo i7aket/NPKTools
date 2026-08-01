@@ -16,10 +16,10 @@ labels: enhancement
 
 <!-- Workarounds you have tried, or other designs you thought about. Delete if not applicable. -->
 
-## Which package
+## Which area
 
-- [ ] NPKTools.Core
-- [ ] NPKTools.Optimizer
-- [ ] NPKTools.Optimizer.Preset
-- [ ] NPKTools.PPMCalc
-- [ ] NPKTools.Optimizer.PpmTargetParser
+- [ ] Fertilizers — the domain model and its builders
+- [ ] Nutrients — ppm, ppm targets, the calculator and the target parser
+- [ ] Optimization — the linear program, the solver and its settings
+- [ ] Presets — the bundled fertilizer catalogue
+- [ ] Packaging, build or CI

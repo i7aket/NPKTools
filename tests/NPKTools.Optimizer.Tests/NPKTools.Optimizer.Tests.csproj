@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\NPKTools.Optimizer\NPKTools.Optimizer.csproj" />
-  </ItemGroup>
-
-</Project>

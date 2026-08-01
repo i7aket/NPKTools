@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <PackageId>NPKTools.Core</PackageId>
-    <Description>Domain model shared by the NPKTools suite: fertilizers, ppm values, ppm targets, optimizer settings and their builders. Every other NPKTools package builds on these types.</Description>
-  </PropertyGroup>
-
-</Project>
