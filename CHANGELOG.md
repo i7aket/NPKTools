@@ -31,6 +31,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   value objects rather than introducing sixteen more. It has no water volume, because a water analysis
   is a concentration and holds regardless of how much is used.
 
+- **Nutrient ratios and a per-fertilizer breakdown.** `ppm.Ratios()` returns the ratios a profile is
+  actually judged by — NO₃:NH₄, N:K, K:Ca, Ca:Mg, K:Mg, N:S, N:P — and `solution.Breakdown(calculator)`
+  attributes every element to the salt that supplied it.
+
+  Absolute ppm figures say how strong a solution is; the ratios say what it will do. NO₃:NH₄ is the one
+  worth watching most closely, because it predicts pH movement at the root rather than nutrition:
+  ammonium uptake acidifies the root zone, nitrate uptake alkalizes it.
+
+  A ratio whose denominator is zero is `null`, not zero and not infinity. A nitrate-only mix is the
+  everyday case and reporting "0" or "∞" for its NO₃:NH₄ would be actively misleading.
+
+  The breakdown answers what a bare recipe cannot: which salt is responsible for the sulfur nobody
+  asked for. Every salt brings a counter-ion along with the nutrient you wanted, so an unrequested
+  element is rarely a mistake — it is the price of the element next to it, and seeing which salt carries
+  it is what makes a recipe adjustable. Contributions are measured through the same calculator as the
+  whole mix, so the parts cannot drift from the total; a test asserts they sum.
+
+  Together these close the standing complaint about comparable tools: that they compute a recipe but
+  say nothing about whether it is a sensible one.
+
 ## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no

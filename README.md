@@ -101,6 +101,47 @@ The remedies are outside the calculation — raise the target, or dilute the sou
 this surfaces instead of being hidden. `adjusted.Target` is an ordinary `PpmTarget`, so nothing
 downstream needs to know water was involved.
 
+## Judge the mix, not just compute it
+
+Absolute ppm figures say how strong a solution is; the ratios say what it will do.
+
+```csharp
+NutrientRatios ratios = calculator.CalculatePpm(mix, mix.WaterLiters).Ratios();
+
+Console.WriteLine($"NO3:NH4 {ratios.NitrateToAmmonium}");   // pH drift at the root
+Console.WriteLine($"K:Ca    {ratios.PotassiumToCalcium}");  // these compete for uptake
+Console.WriteLine($"Ca:Mg   {ratios.CalciumToMagnesium}");
+```
+
+`NitrateToAmmonium` is the one to watch most closely, because it predicts pH movement rather than
+nutrition: ammonium uptake acidifies the root zone, nitrate uptake alkalizes it. A ratio whose
+denominator is zero is `null` rather than zero or infinity — a nitrate-only mix is the everyday case,
+and reporting `0` or `∞` for it would mislead.
+
+To see which salt supplied what:
+
+```csharp
+foreach (FertilizerContribution part in mix.Breakdown(calculator))
+{
+    Console.WriteLine($"{part.Fertilizer.Name.Value}: S {part.Contribution.Sulfur.Value:F1} ppm");
+}
+```
+
+This answers what a bare recipe cannot — which salt is responsible for the sulfur you did not ask for:
+
+```
+salt                                     g      N      P      K     Ca     Mg      S
+Calcium Nitrate Tetrahydrate          58.9   69.9    0.0    0.0  100.0    0.0    0.0
+Potassium Nitrate                     35.4   49.0    0.0  136.9    0.0    0.0    0.0
+Magnesium Sulfate Heptahydrate        23.4    0.0    0.0    0.0    0.0   23.0   30.4
+Potassium Dihydrogen Phosphate        22.0    0.0   50.0   63.1    0.0    0.0    0.0
+Magnesium Nitrate Hexahydrate         28.4   31.1    0.0    0.0    0.0   27.0    0.0
+```
+
+Every salt brings a counter-ion along with the nutrient you wanted, so an unrequested element is rarely
+a mistake — it is the price of the element next to it. Contributions are measured through the same
+calculator as the whole mix, so the parts always sum to the total.
+
 ## Dependency injection
 
 Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.
