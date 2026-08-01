@@ -81,7 +81,7 @@ jobs:
           --output ./nupkgs
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nupkgs-${{ steps.version.outputs.version }}
           path: ./nupkgs/*
