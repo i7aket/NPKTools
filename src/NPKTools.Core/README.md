@@ -17,8 +17,9 @@ Targets **.NET 10**.
 
 Each nutrient is a small value object (`FertilizerNitrogen`, `IronPpm`, `CalciumPpmTarget`, …) that
 validates its own range on construction, so a negative nutrient value cannot be represented.
-Nitrogen is split into nitrate, ammonium and amine; iron and the other chelatable elements track
-each chelation form (EDTA, DTPA, EDDHA, HBED) separately.
+Nitrogen is split into nitrate, ammonium and amine. Chelated and non-chelated fractions are tracked
+separately: iron carries all four chelate forms (EDTA, DTPA, EDDHA, HBED), while copper, manganese,
+zinc, calcium and magnesium carry EDTA only.
 
 ## Building domain objects
 
@@ -55,7 +56,11 @@ PpmTarget target = new PpmTargetBuilder()
 output listing only the non-zero nutrients. All three use the invariant culture, so output does not
 change with the machine's regional settings.
 
+`GetNutrientSummary()` is an extension method, so it needs its own using:
+
 ```csharp
+using NPKTools.Core.Domain.Fertilizers.Extensions;
+
 Console.WriteLine(calciumNitrate.GetNutrientSummary()); // N 11.86 | Ca 16.97
 ```
 

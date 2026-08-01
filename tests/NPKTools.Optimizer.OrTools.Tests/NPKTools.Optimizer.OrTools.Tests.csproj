@@ -1,7 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <!-- The registration tests need a container implementation, not just the abstractions. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\NPKTools.Optimizer.OrTools\NPKTools.Optimizer.OrTools.csproj" />
+    <!-- The documented substitution snippet is AddNpkToolsOrToolsSolver().AddNpkToolsPreset(); the
+         preset package is referenced so that composition can actually be asserted. -->
+    <ProjectReference Include="..\..\src\NPKTools.Optimizer.Preset\NPKTools.Optimizer.Preset.csproj" />
   </ItemGroup>
 
 </Project>

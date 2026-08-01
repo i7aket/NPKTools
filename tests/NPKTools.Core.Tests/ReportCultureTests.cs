@@ -4,6 +4,8 @@ using NPKTools.Core.Common;
 using NPKTools.Core.Domain.Fertilizers;
 using NPKTools.Core.Domain.Fertilizers.Builders;
 using NPKTools.Core.Domain.Fertilizers.Extensions;
+using NPKTools.Core.Domain.PartsPerMillion;
+using NPKTools.Core.Domain.PartsPerMillion.Builder;
 using Xunit;
 
 namespace NPKTools.Core.Tests;
@@ -64,12 +66,54 @@ public class ReportCultureTests
         Assert.Equal(underInvariant, underCulture);
     }
 
+    /// <summary>
+    /// <see cref="Ppm.Report"/> shares <see cref="ReportFormatter"/> with the fertilizer report, but it
+    /// is named separately in the 2.0.0 fix list, so it is asserted separately rather than assumed.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE")]
+    [InlineData("ru-RU")]
+    [InlineData("en-US")]
+    [InlineData("fr-FR")]
+    [Trait("Category", "Unit")]
+    public void PpmReport_IsIdenticalAcrossCultures(string culture)
+    {
+        string underInvariant = RunInCulture("en-US", () => BuildPpm().Report());
+        string underCulture = RunInCulture(culture, () => BuildPpm().Report());
+
+        Assert.Equal(underInvariant, underCulture);
+    }
+
+    [Theory]
+    [InlineData("de-DE")]
+    [InlineData("ru-RU")]
+    [InlineData("en-US")]
+    [InlineData("fr-FR")]
+    [Trait("Category", "Unit")]
+    public void PpmReport_UsesInvariantDecimalSeparator(string culture)
+    {
+        RunInCulture(culture, () =>
+        {
+            string report = BuildPpm().Report();
+
+            Assert.Contains("150.500", report, StringComparison.Ordinal);
+            Assert.DoesNotContain(",", report, StringComparison.Ordinal);
+        });
+    }
+
     [Fact]
     [Trait("Category", "Unit")]
     public void AppendLineIfNonZero_NullBuilder_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() => ReportFormatter.AppendLineIfNonZero(null!, "Weight", 1));
     }
+
+    private static Ppm BuildPpm() => new PpmBuilder()
+        .AddNitrate(150.5)
+        .AddP(50.25)
+        .AddK(200.125)
+        .AddLiters(100)
+        .Build();
 
     private static Fertilizer BuildFertilizer() => new FertilizerBuilder()
         .AddName("Calcium Nitrate Tetrahydrate")

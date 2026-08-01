@@ -11,7 +11,8 @@ namespace NPKTools.Benchmarks;
 
 /// <summary>
 /// Compares the managed simplex against the OR-Tools GLOP backend on the work the library actually
-/// does: a full preset search, which solves 22 linear programs.
+/// does: a full preset search, which solves 40 linear programs (the 18 macro bundles twice, with and
+/// without the sulfur target, plus the 4 micro bundles).
 /// </summary>
 /// <remarks>
 /// The managed solver is the shipped default, chosen because OR-Tools cannot run under WebAssembly.

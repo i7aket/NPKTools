@@ -1,4 +1,4 @@
-# How to Contribute to NPKOptimizer
+# How to Contribute to NPKTools
 ## We welcome contributions from everyone who is willing to work collaboratively and contribute positively to the project. Whether you're fixing bugs, adding new features, improving documentation, or sharing your valuable feedback, here's how you can contribute:
 
 ### Get Familiar with the Project
@@ -35,4 +35,4 @@ Respond to feedback. Be open to feedback and willing to make further adjustments
 Keep your fork up to date. Regularly sync your fork with the main repository to keep up with ongoing changes.
 Continue contributing. Stay involved in the project by continuing to contribute and collaborate with others.
 Thank You for Your Contributions!
-We appreciate your efforts in improving NPKOptimizer and look forward to your creative and thoughtful contributions.
+We appreciate your efforts in improving NPKTools and look forward to your creative and thoughtful contributions.

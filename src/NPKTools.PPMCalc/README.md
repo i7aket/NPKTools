@@ -20,6 +20,10 @@ fertilizer mix can be measured at any dilution.
 
 ## Setup
 
+`ServiceCollection` and `BuildServiceProvider()` come from
+**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions, so in a
+console app add the implementation too (`dotnet add package Microsoft.Extensions.DependencyInjection`).
+
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using NPKTools.PPMCalc;

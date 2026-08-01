@@ -29,6 +29,10 @@ Reasonable reasons to install it anyway:
 Register it **before** `AddNpkToolsOptimizer()` or `AddNpkToolsPreset()`. Those register the managed
 solver with `TryAdd`, so whichever solver is registered first wins:
 
+`ServiceCollection` and `BuildServiceProvider()` come from
+**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions, so in a
+console app add the implementation too (`dotnet add package Microsoft.Extensions.DependencyInjection`).
+
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using NPKTools.Optimizer.OrTools;
@@ -64,6 +68,16 @@ verdicts, optimal objective values, non-negativity and constraint satisfaction.
 
 Where a linear program has several optimal vertices the two solvers may report different fertilizer
 weights of identical total cost, so do not expect byte-identical mixes when switching backends.
+
+## When this backend is worth it
+
+For the problems this library generates the two are equivalent, and the managed solver is faster —
+differential testing over 17,760 mapper-generated problems found no disagreement, with a worst
+constraint violation of 1.4e-14. GLOP earns its place on badly scaled input: it scales and
+equilibrates the problem, whereas the managed solver is a dense tableau with a fixed tolerance and
+will stop at a suboptimal vertex, or report no solution, once coefficients span ten or more orders of
+magnitude in a single problem. If you feed the optimizer your own catalogue with extreme prices or
+nutrient percentages, use this backend.
 
 ## New in 2.0.0
 

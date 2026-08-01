@@ -26,7 +26,11 @@ public sealed class GoogleOrToolsOptimizationSolver : IOptimizationProblemSolver
     /// Returns null if the solver does not find an optimal solution.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when any critical component of the problem (such as the problem itself, its variables, constraints, or objective) is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the solver does not find an optimal solution, although the actual method returns null instead of throwing.</exception>
+    /// <exception cref="ArgumentException">Thrown when the variables, constraints or objective coefficients are empty.</exception>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when a constraint or the objective references a variable that is not declared in
+    /// <see cref="OptimizationProblem.Variables"/>.
+    /// </exception>
     public Dictionary<string, double>? Solve(OptimizationProblem problem)
     {
         ArgumentNullException.ThrowIfNull(problem);

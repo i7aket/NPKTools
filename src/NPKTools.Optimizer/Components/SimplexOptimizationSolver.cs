@@ -12,18 +12,31 @@ namespace NPKTools.Optimizer.Components;
 /// <para>
 /// Fertilizer optimization problems are small. A macronutrient bundle produces at most 16 variables
 /// (one per candidate fertilizer) and 7 range constraints (one per constrained element), and a full
-/// preset search solves 22 such problems. A dense tableau is the right data structure at that size;
+/// preset search solves 40 such problems. A dense tableau is the right data structure at that size;
 /// the sparse, scaled machinery of a production solver buys nothing here.
 /// </para>
 /// <para>
 /// The problem solved is: minimise <c>cᵀx</c> subject to <c>L ≤ Ax ≤ U</c> and <c>x ≥ 0</c>.
 /// Range constraints whose bounds coincide — which is what the mapper produces when an element's
-/// precision is 1 — become a single equality row instead of two inequality rows.
+/// precision is 1 — become a single equality row instead of two inequality rows. A non-finite bound
+/// expresses a one-sided constraint and simply contributes no row on that side.
 /// </para>
 /// <para>
 /// Entering and leaving variables are chosen by Bland's rule, which guarantees termination on
 /// degenerate problems at the cost of more iterations than Dantzig's rule. At this problem size that
 /// trade is free, and it removes cycling as a failure mode.
+/// </para>
+/// <para>
+/// <b>Numerical envelope.</b> This is a dense tableau with a fixed tolerance and no scaling,
+/// equilibration or iterative refinement. It is exact enough for the problems this library
+/// generates — coefficients are nutrient percentages (roughly 1–50) and right-hand sides are ppm/10
+/// (roughly 0–100), a spread of about three orders of magnitude — and it is differentially tested
+/// against GLOP over the whole preset catalogue. On a badly scaled problem, one mixing coefficient
+/// magnitudes across ten or more orders of magnitude, accumulated round-off can make it stop at a
+/// suboptimal vertex or report no solution where one exists. Every answer it returns is verified
+/// feasible before being handed back, so the failure mode is a missed or suboptimal solution, never
+/// a violated constraint. If you need a solver robust across arbitrary scaling, use
+/// <c>NPKTools.Optimizer.OrTools</c>.
 /// </para>
 /// </remarks>
 public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
@@ -42,15 +55,32 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
     private const int MaxIterations = 10_000;
 
     /// <summary>
+    /// Relative slack allowed when verifying the answer against the original constraints. It is
+    /// scaled by the magnitude of each row, so it means "correct to about six significant digits"
+    /// rather than a fixed absolute distance. In-regime problems land within 1e-14 of their bounds,
+    /// which is many orders of magnitude inside this limit.
+    /// </summary>
+    private const double VerificationTolerance = 1e-6;
+
+    /// <summary>
     /// Solves the given optimization problem.
     /// </summary>
     /// <param name="problem">The optimization problem to solve.</param>
     /// <returns>
     /// A dictionary mapping every variable name to its optimal value, or null when the problem is
-    /// infeasible or unbounded — matching the contract of the OR-Tools implementation.
+    /// infeasible or unbounded — matching the contract of the OR-Tools implementation. Null is also
+    /// returned when the computed answer fails verification against the original constraints, which
+    /// is how numerical trouble on a badly scaled problem surfaces. See the class remarks.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when the problem or its objective is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when the variables, constraints or objective coefficients are empty.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the variables, constraints or objective coefficients are empty, or when a bound or
+    /// coefficient is <see cref="double.NaN"/>.
+    /// </exception>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when a constraint or the objective references a variable that is not declared in
+    /// <see cref="OptimizationProblem.Variables"/>.
+    /// </exception>
     public Dictionary<string, double>? Solve(OptimizationProblem problem)
     {
         ArgumentNullException.ThrowIfNull(problem);
@@ -82,12 +112,60 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
             result[variableNames[j]] = Math.Abs(value) < Tolerance ? 0 : value;
         }
 
-        return result;
+        // The tableau reports optimality with respect to its own accumulated arithmetic. Check the
+        // answer against the problem as it was given before claiming success: a solution that
+        // violates the constraints is worse than no solution, because callers act on it.
+        return IsVerified(problem, result) ? result : null;
     }
 
     /// <summary>
-    /// Translates the problem into standard form: one row per constraint (two for a genuine range),
-    /// a slack or surplus column per inequality, and a right-hand side normalised to be non-negative.
+    /// Re-evaluates the original constraints at the computed point, in one O(mn) pass. Rejects
+    /// negative quantities and any row outside its bounds by more than a scaled tolerance.
+    /// </summary>
+    private static bool IsVerified(OptimizationProblem problem, Dictionary<string, double> values)
+    {
+        foreach (double value in values.Values)
+        {
+            if (double.IsNaN(value) || value < -Tolerance)
+            {
+                return false;
+            }
+        }
+
+        foreach (OptimizationProblem.OptimizationConstraint constraint in problem.Constraints)
+        {
+            double leftHandSide = 0;
+            double magnitude = 0;
+
+            foreach (KeyValuePair<string, double> coefficient in constraint.Coefficients)
+            {
+                double term = coefficient.Value * values[coefficient.Key];
+                leftHandSide += term;
+                magnitude += Math.Abs(term);
+            }
+
+            // Cancellation between large terms costs absolute precision, so the allowance grows with
+            // the size of the numbers that produced the row, not with the size of the bound alone.
+            double allowance = VerificationTolerance * Math.Max(1, magnitude);
+
+            if (double.IsFinite(constraint.UpperBound) && leftHandSide > constraint.UpperBound + allowance)
+            {
+                return false;
+            }
+
+            if (double.IsFinite(constraint.LowerBound) && leftHandSide < constraint.LowerBound - allowance)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Translates the problem into standard form: one row per constraint (two for a genuine range,
+    /// one for a one-sided or equality constraint), a slack or surplus column per inequality, and a
+    /// right-hand side normalised to be non-negative.
     /// </summary>
     private static Tableau Build(OptimizationProblem problem, Dictionary<string, int> columnOf, int variableCount)
     {
@@ -97,16 +175,41 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
 
         foreach (OptimizationProblem.OptimizationConstraint constraint in problem.Constraints)
         {
+            if (double.IsNaN(constraint.LowerBound) || double.IsNaN(constraint.UpperBound))
+            {
+                throw new ArgumentException(
+                    $"Constraint '{constraint.Name}' has a NaN bound.",
+                    nameof(problem));
+            }
+
             double[] row = new double[variableCount];
             foreach (KeyValuePair<string, double> coefficient in constraint.Coefficients)
             {
-                if (columnOf.TryGetValue(coefficient.Key, out int column))
+                if (double.IsNaN(coefficient.Value))
                 {
-                    row[column] = coefficient.Value;
+                    throw new ArgumentException(
+                        $"Constraint '{constraint.Name}' has a NaN coefficient for variable '{coefficient.Key}'.",
+                        nameof(problem));
                 }
+
+                // An undeclared variable is a caller error, not a zero coefficient. The OR-Tools
+                // backend throws here too, so both solvers reject the same problems.
+                row[columnOf[coefficient.Key]] = coefficient.Value;
             }
 
-            if (Math.Abs(constraint.UpperBound - constraint.LowerBound) <= Tolerance)
+            // A non-finite bound is not a constraint. It is how OptimizationConstraint expresses a
+            // one-sided restriction, so it contributes no row on that side; putting an infinity in
+            // the right-hand side would make every such problem look infeasible.
+            bool hasUpperBound = double.IsFinite(constraint.UpperBound);
+            bool hasLowerBound = double.IsFinite(constraint.LowerBound);
+
+            if (!hasUpperBound && !hasLowerBound)
+            {
+                continue;
+            }
+
+            if (hasUpperBound && hasLowerBound &&
+                Math.Abs(constraint.UpperBound - constraint.LowerBound) <= Tolerance)
             {
                 // Equality: Ax = b, no slack needed.
                 coefficientRows.Add(row);
@@ -115,15 +218,21 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
                 continue;
             }
 
-            // Ax + s = U, s >= 0
-            coefficientRows.Add(row);
-            rightHandSides.Add(constraint.UpperBound);
-            slackSigns.Add(1);
+            if (hasUpperBound)
+            {
+                // Ax + s = U, s >= 0
+                coefficientRows.Add(row);
+                rightHandSides.Add(constraint.UpperBound);
+                slackSigns.Add(1);
+            }
 
-            // Ax - t = L, t >= 0
-            coefficientRows.Add(row);
-            rightHandSides.Add(constraint.LowerBound);
-            slackSigns.Add(-1);
+            if (hasLowerBound)
+            {
+                // Ax - t = L, t >= 0
+                coefficientRows.Add(row);
+                rightHandSides.Add(constraint.LowerBound);
+                slackSigns.Add(-1);
+            }
         }
 
         int rowCount = coefficientRows.Count;
@@ -136,10 +245,14 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
 
         foreach (KeyValuePair<string, double> objectiveTerm in problem.Objective.Coefficients)
         {
-            if (columnOf.TryGetValue(objectiveTerm.Key, out int column))
+            if (double.IsNaN(objectiveTerm.Value))
             {
-                costs[column] = objectiveTerm.Value;
+                throw new ArgumentException(
+                    $"The objective has a NaN coefficient for variable '{objectiveTerm.Key}'.",
+                    nameof(problem));
             }
+
+            costs[columnOf[objectiveTerm.Key]] = objectiveTerm.Value;
         }
 
         int nextSlack = variableCount;

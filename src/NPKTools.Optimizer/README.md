@@ -25,16 +25,29 @@ Three components in a pipeline:
   WebAssembly.
 - **Adapter** (`IFertilizerOptimizer`) drives the two and is the public entry point.
 
-Each element gets a constraint whose width is the smaller of that element's precision setting and
-the global `RangeFactorSettings`. An element with a precision of `0` is left unconstrained entirely.
+Each element is constrained to `target ± target × (1 − p)`, where `p` is the **smaller** of that
+element's precision setting and the global `RangeFactorSettings`. The looser of the two therefore
+decides, and raising `RangeFactorSettings` tightens the search rather than widening it. An element
+with a precision of `0` is left unconstrained entirely.
+
+The default solver is a dense tableau with a fixed tolerance and no scaling. That suits this problem
+— nutrient percentages and ppm/10 right-hand sides span about three orders of magnitude — but it is
+not a general-purpose LP solver: on a problem whose coefficients span ten or more orders of
+magnitude, round-off can make it stop at a suboptimal vertex or report no solution where one exists.
+Every answer is verified against the original constraints before it is returned, so it will not hand
+back a mix that violates them. Use the OR-Tools backend if you need robustness across arbitrary
+scaling.
 
 ## Setup
 
-With dependency injection:
+With dependency injection. `ServiceCollection` and `BuildServiceProvider()` come from
+**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions, so add
+the implementation too in a console app:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using NPKTools.Optimizer;
+using NPKTools.Optimizer.Contracts;
 
 ServiceProvider provider = new ServiceCollection()
     .AddNpkToolsOptimizer()
@@ -54,6 +67,9 @@ new ServiceCollection()
 Or construct the components directly:
 
 ```csharp
+using NPKTools.Optimizer.Components;
+using NPKTools.Optimizer.Contracts;
+
 IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
     new SimplexOptimizationSolver(),
     new OptimizationProblemMapper());

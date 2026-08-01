@@ -33,14 +33,34 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Resolve version
+      # Publishing to NuGet.org cannot be undone: a version can be unlisted but never replaced or
+      # removed. The tag is therefore checked against the version committed in
+      # src/Directory.Build.props before anything is built, so a typo in the tag fails here rather
+      # than becoming a permanent package.
+      - name: Resolve and verify version
         id: version
         run: |
+          set -euo pipefail
+
           if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
           else
             VERSION="${GITHUB_REF_NAME#v}"
           fi
+
+          # SemVer 2.0.0: major.minor.patch with optional prerelease and build metadata.
+          SEMVER='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          if ! printf '%s' "$VERSION" | grep -Eq "$SEMVER"; then
+            echo "::error::'$VERSION' is not a valid SemVer version. Tag as vMAJOR.MINOR.PATCH, e.g. v2.0.1 or v1.0.0-preview.1."
+            exit 1
+          fi
+
+          DECLARED=$(grep -oPm1 '(?<=<Version>)[^<]+' src/Directory.Build.props)
+          if [ "$VERSION" != "$DECLARED" ]; then
+            echo "::error::Tag version '$VERSION' does not match <Version>$DECLARED</Version> in src/Directory.Build.props. Bump the file, commit it, then tag."
+            exit 1
+          fi
+
           echo "Publishing version $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 

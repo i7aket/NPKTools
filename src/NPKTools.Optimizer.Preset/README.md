@@ -25,6 +25,10 @@ already registers it as one.
 
 ## Setup
 
+`ServiceCollection` and `BuildServiceProvider()` come from
+**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions, so in a
+console app add the implementation too (`dotnet add package Microsoft.Extensions.DependencyInjection`).
+
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using NPKTools.Optimizer.Preset;
@@ -39,6 +43,10 @@ IFertilizerOptimizationService service = provider.GetRequiredService<IFertilizer
 Or construct it directly:
 
 ```csharp
+using NPKTools.Optimizer.Components;
+using NPKTools.Optimizer.Contracts;
+using NPKTools.Optimizer.Preset;
+
 IFertilizerOptimizer optimizer = new FertilizerOptimizationAdapter(
     new SimplexOptimizationSolver(),
     new OptimizationProblemMapper());
@@ -79,8 +87,8 @@ micronutrients will legitimately produce an empty macro set, and vice versa.
 
 ## Cancellation
 
-A macro search solves 18 linear programs in sequence, which takes noticeable time. Pass a token to
-abandon it:
+A macro search solves 36 linear programs in sequence — the 18 bundles once honouring the sulfur
+target and once ignoring it — which takes noticeable time. Pass a token to abandon it:
 
 ```csharp
 using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));

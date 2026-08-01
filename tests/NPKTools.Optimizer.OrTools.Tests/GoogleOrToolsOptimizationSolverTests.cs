@@ -73,9 +73,13 @@ public class GoogleOrToolsOptimizationSolverTests
         result["y"].Should().BeApproximately(0.333, 0.01);
     }
 
+    /// <summary>
+    /// x + y ≥ 100 and x + y ≤ 10 cannot both hold. The contract for "no optimal solution" is null,
+    /// not an exception — the name of this test used to promise the opposite.
+    /// </summary>
     [Fact]
     [Trait("Category", "Unit")]
-    public void Solve_SolverFailsToFindOptimal_ThrowsInvalidOperationException()
+    public void Solve_InfeasibleProblem_ReturnsNull()
     {
         // Arrange
         OptimizationProblem problem = new OptimizationProblem
