@@ -224,6 +224,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   first version of the table misspelled five micro-salt names, and a name that matches nothing fails
   silently: the salt reports as unchecked and the check appears to work.
 
+  **The figures were then reviewed against published values, and three were wrong.** The other eighteen
+  were confirmed, several to the digit — magnesium sulfate heptahydrate 710, MKP 226, dipotassium phosphate
+  1490, potassium sulfate 111, boric acid 49, iron(II) sulfate heptahydrate 256, copper sulfate
+  pentahydrate 320, sodium molybdate dihydrate 840, calcium nitrate tetrahydrate 1290.
+
+  | salt | was | now | why it was wrong |
+  | --- | --- | --- | --- |
+  | Ammonium nitrate | 1500 | **1920** | the 10 °C figure had been used instead of the 20 °C one |
+  | Magnesium nitrate hexahydrate | 1250 | **420** | the anhydrous salt's figure under the hydrate's name |
+  | Zinc sulfate monohydrate | 600 | **350** | same, and the heptahydrate's 965 was in circulation too |
+
+  The last two overstated the limit, which is the direction that matters: the check passed tanks that cannot
+  dissolve. A magnesium-nitrate-fed recipe at 1:100 needs 528 g/L where 420 is the limit, and the old figure
+  waved it through; the computed ceiling for that mix moves from 1:237 to 1:80.
+
+  The cause in both cases was the basis, not the arithmetic. Handbooks report a hydrate's solubility two
+  ways — as the hydrate, or as the anhydrous salt it contains — and the two differ by a factor of two for
+  magnesium sulfate. The table now documents its basis explicitly (grams of the salt *as the catalogue names
+  it*, water of crystallisation included, per litre of water at 20 °C) and carries each published
+  "g per 100 mL" entry as a trailing comment, so any value can be re-checked without unit arithmetic.
+
+  A test now pins **all** 21 figures rather than the five lowest. The earlier test pinned only the low ones,
+  reasoning that those bind first — and none of the three wrong values was among them, so the suite passed
+  while the table was wrong. The table's size is pinned too, so a new entry cannot be added unasserted.
+
+- **The physical constants are pinned against published values.** The atomic weights, ionic charges and molar
+  conductivities were checked and are now asserted through the conversions that use them, since they are
+  internal.
+
+  Nothing else in the suite would notice these being wrong: a mistaken atomic weight shifts every mM and meq
+  figure by a few percent and no test fails, and a mistaken molar conductivity moves EC in a way that reads
+  as ordinary model error. All sixteen atomic weights match the IUPAC standard values, and the ten
+  conductivities match the CRC infinite-dilution table cross-checked against a second compilation. H₂PO₄⁻ is
+  the one with real spread in the literature — 31.8 to 36 depending on source — which moves total EC by under
+  half a percent, since phosphate is about 2% of a feed's conductivity. A test also asserts the divalent
+  values are per mole of ion rather than per equivalent, the distinction that would otherwise halve them.
+
 ## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no

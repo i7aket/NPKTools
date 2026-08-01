@@ -288,20 +288,76 @@ public class SolubilityTests
     }
 
     /// <summary>
-    /// The salts a concentrate is most likely to run into are the barely soluble ones, so their figures are
-    /// pinned by value. A typo turning 18 into 180 would let an impossible tank through unnoticed.
+    /// Every figure in the table is pinned, not just the low ones.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// An earlier version of this test pinned only the five lowest values, on the reasoning that those are
+    /// the ones a concentrate runs into. That reasoning was wrong in a way worth recording: three entries
+    /// turned out to be incorrect on review, and none of the three was among the five, so the suite passed
+    /// while the table was wrong. Ammonium nitrate carried its 10 °C figure rather than its 20 °C one;
+    /// magnesium nitrate hexahydrate and zinc sulfate monohydrate carried figures for the anhydrous salt
+    /// under the hydrate's name, overstating both — the direction that passes a tank which cannot dissolve.
+    /// </para>
+    /// <para>
+    /// So the whole table is pinned. Each expected value is ten times the published "g per 100 mL" entry for
+    /// the named hydrate, which is the basis the table documents, and a change to any of them now has to be
+    /// deliberate.
+    /// </para>
+    /// </remarks>
     [Theory]
+    // Macro salts.
     [InlineData("Calcium Monobasic Phosphate", 18)]
-    [InlineData("Boric Acid", 49)]
-    [InlineData("Sodium Borate Decahydrate", 51)]
     [InlineData("Potassium Sulfate (SOP)", 111)]
     [InlineData("Potassium Dihydrogen Phosphate (MKP)", 226)]
+    [InlineData("Potassium Chloride", 344)]
+    [InlineData("Ammonium Chloride", 372)]
+    [InlineData("Monoammonium Phosphate", 383)]
+    [InlineData("Magnesium Nitrate Hexahydrate (MAG)", 420)]
+    [InlineData("Potassium Nitrate", 316)]
+    [InlineData("Magnesium Sulfate Heptahydrate (MGS)", 710)]
+    [InlineData("Ammonium Sulfate", 754)]
+    [InlineData("Urea", 1080)]
+    [InlineData("Calcium Nitrate Tetrahydrate", 1290)]
+    [InlineData("Potassium Dibasic Phosphate", 1490)]
+    [InlineData("Ammonium Nitrate", 1920)]
+    // Micro salts.
+    [InlineData("Boric Acid", 49)]
+    [InlineData("Sodium Borate Decahydrate", 51)]
+    [InlineData("Iron(II) Sulfate Heptahydrate", 256)]
+    [InlineData("Copper Sulfate Pentahydrate", 320)]
+    [InlineData("Zinc Sulfate Monohydrate", 350)]
+    [InlineData("Sodium Molybdate Dihydrate", 840)]
     [Trait("Category", "Unit")]
-    public void Default_TheLowSolubilityFigures_ArePinned(string name, double expected)
+    public void Default_EverySolubilityFigure_IsPinned(string name, double expected)
     {
         // Act & Assert
         SolubilityTable.Default.Limit(name).Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Phosphoric acid is miscible, so it has a limit that nothing can exceed rather than no limit at all —
+    /// the difference between "always fine" and "unchecked".
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Default_PhosphoricAcid_IsMiscibleRatherThanUnknown()
+    {
+        // Act & Assert
+        SolubilityTable.Default.Limit("Phosphoric Acid").Should().Be(double.PositiveInfinity);
+    }
+
+    /// <summary>
+    /// The count is pinned alongside the values so that adding an entry without pinning it fails here. Without
+    /// this, a new salt could be added and silently go unasserted, which is how the three wrong figures
+    /// survived.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Default_TableSize_MatchesThePinnedEntries()
+    {
+        // Act & Assert — 20 figures above plus phosphoric acid
+        SolubilityTable.Default.Count.Should().Be(21);
     }
 
     /// <summary>

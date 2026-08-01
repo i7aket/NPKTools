@@ -447,6 +447,13 @@ Two checks run, and they catch different mistakes:
 `MaxDilutionRatio` is the answer to "then how strong *can* I make it": a 1:1000 concentrate that cannot
 dissolve may be fine at 1:600.
 
+**On the basis of these figures**, because it is where they go wrong. Each is grams of the salt *as the
+catalogue names it* — water of crystallisation included — per litre of water at 20 °C, and the source
+"g per 100 mL" entry sits in a comment beside every value so it can be re-checked. Handbooks report a
+hydrate two ways, as the hydrate or as the anhydrous salt inside it, and for magnesium sulfate those differ
+by a factor of two. Three of the table's figures were wrong on first writing for exactly that reason; all 21
+are now pinned by test against published values.
+
 **A salt with no published figure is reported, not assumed.** `SolubilityTable.Default` covers 21 of the
 catalogue's 34 salts. The rest — calcium chloride hexahydrate, urea phosphate, the EDTA chelates, sodium
 silicate and selenate, the nitrate micro salts — carry no entry, because the figures in circulation for

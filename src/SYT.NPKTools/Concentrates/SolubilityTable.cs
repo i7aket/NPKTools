@@ -66,38 +66,53 @@ public sealed class SolubilityTable
     /// Gets the built-in table, covering the salts in the preset catalogue whose published figures agree.
     /// </summary>
     /// <remarks>
-    /// Values are the ordinary handbook solubilities at 20 °C for the hydrate the catalogue names. The two
-    /// worth knowing by heart are the low ones, because they are what a concentrate actually runs into:
-    /// monocalcium phosphate at 18 g/L and boric acid at 49 g/L will bind long before potassium nitrate's
+    /// <para>
+    /// <b>The basis, which is the part that goes wrong.</b> Every figure is grams of the salt <em>as the
+    /// catalogue names it</em> — including its water of crystallisation — per litre of water at 20 °C. It is
+    /// ten times the handbook "g per 100 mL" entry for that named hydrate, and the trailing comment on each
+    /// line is that entry, so any value can be checked against a reference without unit arithmetic.
+    /// </para>
+    /// <para>
+    /// Getting the basis wrong is the standard way this table becomes dangerous, because handbooks report
+    /// hydrates two ways: as the hydrate, or as the anhydrous salt it contains. Magnesium sulfate is 71 g of
+    /// the heptahydrate per 100 mL but only 35 g of anhydrous MgSO₄ — a factor of two, and the same figure
+    /// appears in circulation under both labels. Three entries here were wrong on a first pass for exactly
+    /// this reason and were corrected against published values; two of them were wrong in the direction that
+    /// passes a tank which cannot dissolve.
+    /// </para>
+    /// <para>
+    /// The two worth knowing by heart are the low ones, because they are what a concentrate actually runs
+    /// into: monocalcium phosphate at 18 g/L and boric acid at 49 g/L bind long before potassium nitrate's
     /// 316 does.
+    /// </para>
     /// </remarks>
     public static SolubilityTable Default { get; } = new(new Dictionary<string, double>
     {
         // Macro salts.
-        ["Calcium Nitrate Tetrahydrate"] = 1290,
-        ["Potassium Nitrate"] = 316,
-        ["Magnesium Sulfate Heptahydrate (MGS)"] = 710,
-        ["Magnesium Nitrate Hexahydrate (MAG)"] = 1250,
-        ["Potassium Dihydrogen Phosphate (MKP)"] = 226,
-        ["Potassium Dibasic Phosphate"] = 1490,
-        ["Monoammonium Phosphate"] = 383,
-        ["Calcium Monobasic Phosphate"] = 18,
-        ["Potassium Sulfate (SOP)"] = 111,
-        ["Ammonium Sulfate"] = 754,
-        ["Ammonium Nitrate"] = 1500,
-        ["Ammonium Chloride"] = 372,
-        ["Potassium Chloride"] = 344,
-        ["Urea"] = 1080,
-        ["Phosphoric Acid"] = double.PositiveInfinity,
+        ["Calcium Nitrate Tetrahydrate"] = 1290,     // 129 g/100 mL
+        ["Potassium Nitrate"] = 316,                 // 31.6
+        ["Magnesium Sulfate Heptahydrate (MGS)"] = 710,   // 71
+        ["Magnesium Nitrate Hexahydrate (MAG)"] = 420,    // 42
+        ["Potassium Dihydrogen Phosphate (MKP)"] = 226,   // 22.6
+        ["Potassium Dibasic Phosphate"] = 1490,      // 149.25
+        ["Monoammonium Phosphate"] = 383,            // 38.3
+        ["Calcium Monobasic Phosphate"] = 18,        // 1.8% — the lowest in the table
+        ["Potassium Sulfate (SOP)"] = 111,           // 11.1
+        ["Ammonium Sulfate"] = 754,                  // 75.4
+        ["Ammonium Nitrate"] = 1920,                 // 192
+        ["Ammonium Chloride"] = 372,                 // 37.2
+        ["Potassium Chloride"] = 344,                // 34.4
+        ["Urea"] = 1080,                             // 108
+        ["Phosphoric Acid"] = double.PositiveInfinity,    // miscible
 
         // Micro salts. Boric acid and borax matter most: they are barely soluble and boron is dosed high
         // enough for the limit to bind at concentrate strength.
-        ["Boric Acid"] = 49,
-        ["Sodium Borate Decahydrate"] = 51,
-        ["Iron(II) Sulfate Heptahydrate"] = 256,
-        ["Copper Sulfate Pentahydrate"] = 320,
-        ["Zinc Sulfate Monohydrate"] = 600,
-        ["Sodium Molybdate Dihydrate"] = 840,
+        ["Boric Acid"] = 49,                         // 4.95
+        ["Sodium Borate Decahydrate"] = 51,          // 5.1
+        ["Iron(II) Sulfate Heptahydrate"] = 256,     // 25.6
+        ["Copper Sulfate Pentahydrate"] = 320,       // 32
+        ["Zinc Sulfate Monohydrate"] = 350,          // 35 — the monohydrate; the heptahydrate is 965
+        ["Sodium Molybdate Dihydrate"] = 840,        // 84
     });
 
     /// <summary>
