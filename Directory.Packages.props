@@ -9,8 +9,12 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
+  <!--
+    The only dependency of the shipped package. Declared at 10.0.0 rather than the newest patch on
+    purpose: for a library this is a floor, and raising it would force consumers onto a later runtime
+    patch for no benefit.
+  -->
   <ItemGroup Label="Product">
-    <PackageVersion Include="Google.OrTools" Version="9.15.6755" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
@@ -19,6 +23,12 @@
   </ItemGroup>
 
   <ItemGroup Label="Testing">
+    <!--
+      Google OR-Tools is test-only: it backs the GLOP oracle the shipped managed solver is
+      differentially validated against, and the benchmark baseline. It is never distributed, because
+      it has no browser-wasm build and would make the package server-only.
+    -->
+    <PackageVersion Include="Google.OrTools" Version="9.15.6755" />
     <!--
       AwesomeAssertions is the Apache-2.0 community fork of FluentAssertions 7.
       FluentAssertions 8+ requires a paid commercial licence, so it is deliberately not used.
