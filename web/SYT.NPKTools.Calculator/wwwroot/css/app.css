@@ -232,6 +232,30 @@ button.secondary {
   border-color: var(--border);
 }
 
+/* A real anchor, so the browser handles the download without any script. */
+.download {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.download:hover { opacity: 0.8; }
+.download:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+
+@media (pointer: coarse) {
+  .download { min-height: 44px; }
+}
+
 /* Touch targets stay at least 44px on coarse pointers. */
 @media (pointer: coarse) {
   button,

@@ -113,6 +113,8 @@
             }
         </section>
 
+        <StoragePanel @ref="_storage" Changed="StateHasChanged" />
+
         <section class="card">
             <h2>Concentrate</h2>
             <div class="field">
@@ -158,28 +160,41 @@
 </div>
 
 @code {
+    private StoragePanel? _storage;
+
     protected override void OnInitialized() => Model.Recalculate();
 
-    private void OnTargetChanged(ChangeEventArgs e)
+    // Every edit recalculates and then persists, so the link in the address bar and the copy this
+    // browser remembers are never a step behind what is on screen.
+    private async Task Edited()
+    {
+        Model.Recalculate();
+        if (_storage is not null)
+        {
+            await _storage.Persist();
+        }
+    }
+
+    private Task OnTargetChanged(ChangeEventArgs e)
     {
         Model.TargetText = e.Value?.ToString() ?? string.Empty;
-        Model.Recalculate();
+        return Edited();
     }
 
-    private void OnWaterChanged(string element, ChangeEventArgs e)
+    private Task OnWaterChanged(string element, ChangeEventArgs e)
     {
         Model.Water[element] = Parse(e.Value);
-        Model.Recalculate();
+        return Edited();
     }
 
-    private void OnConcentrateChanged(ChangeEventArgs e)
+    private Task OnConcentrateChanged(ChangeEventArgs e)
     {
         string raw = e.Value?.ToString() ?? string.Empty;
         Model.ConcentrateLiters = string.IsNullOrWhiteSpace(raw) ? null : Parse(raw);
-        Model.Recalculate();
+        return Edited();
     }
 
-    private void OnSaltToggled(string name, ChangeEventArgs e)
+    private Task OnSaltToggled(string name, ChangeEventArgs e)
     {
         if (e.Value is true)
         {
@@ -190,23 +205,23 @@
             Model.Selected.Remove(name);
         }
 
-        Model.Recalculate();
+        return Edited();
     }
 
-    private void SelectAll()
+    private Task SelectAll()
     {
         foreach (Fertilizer salt in Model.Catalogue)
         {
             Model.Selected.Add(salt.Name.Value);
         }
 
-        Model.Recalculate();
+        return Edited();
     }
 
-    private void SelectNone()
+    private Task SelectNone()
     {
         Model.Selected.Clear();
-        Model.Recalculate();
+        return Edited();
     }
 
     // A half-typed number should leave the field empty rather than throw, so parsing is forgiving and

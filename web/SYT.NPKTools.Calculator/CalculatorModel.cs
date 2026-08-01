@@ -34,14 +34,17 @@ public sealed class CalculatorModel
 
         // A shelf nobody has edited yet is the whole catalogue: the calculator should produce an
         // answer on first load rather than an empty state that has to be configured first.
-        Selected = [.. Catalogue.Select(f => f.Name.Value)];
+        foreach (Fertilizer salt in Catalogue)
+        {
+            Selected.Add(salt.Name.Value);
+        }
     }
 
     /// <summary>Every salt the library knows about, macro and micro together.</summary>
     public IReadOnlyList<Fertilizer> Catalogue { get; }
 
     /// <summary>Names of the salts the grower says they have.</summary>
-    public HashSet<string> Selected { get; }
+    public HashSet<string> Selected { get; } = new(StringComparer.Ordinal);
 
     /// <summary>The target, as the parser accepts it.</summary>
     public string TargetText { get; set; } = "N=150 P=50 K=210 Ca=160 Mg=50 S=65 L=100";
@@ -139,6 +142,55 @@ public sealed class CalculatorModel
         }
 
         Recipes = [.. found.Select(Describe)];
+    }
+
+    /// <summary>Names of every catalogue salt, in display order — the ordering a link's indices mean.</summary>
+    public IReadOnlyList<string> CatalogueNames => [.. Catalogue.Select(f => f.Name.Value)];
+
+    /// <summary>Takes a snapshot of everything the person entered.</summary>
+    public CalculatorState Capture() => new()
+    {
+        Target = TargetText,
+        Water = new Dictionary<string, double>(Water, StringComparer.Ordinal),
+        Salts = [.. Selected],
+        ConcentrateLiters = ConcentrateLiters,
+    };
+
+    /// <summary>
+    /// Applies a snapshot, ignoring anything it does not carry.
+    /// </summary>
+    /// <param name="state">The snapshot.</param>
+    /// <remarks>
+    /// Deliberately tolerant. A snapshot may come from an older version, a hand-edited file or a link
+    /// someone truncated in a chat window, and the useful behaviour is to take what is readable rather
+    /// than reject the lot. Unknown element keys and unknown salt names are dropped rather than added,
+    /// so a stale file cannot introduce a salt the library no longer has.
+    /// </remarks>
+    public void Apply(CalculatorState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (!string.IsNullOrWhiteSpace(state.Target))
+        {
+            TargetText = state.Target;
+        }
+
+        foreach (string element in Water.Keys.ToList())
+        {
+            Water[element] = state.Water.TryGetValue(element, out double value) && value >= 0 ? value : 0;
+        }
+
+        if (state.Salts.Count > 0)
+        {
+            HashSet<string> known = [.. Catalogue.Select(f => f.Name.Value)];
+            Selected.Clear();
+            foreach (string name in state.Salts.Where(known.Contains))
+            {
+                Selected.Add(name);
+            }
+        }
+
+        ConcentrateLiters = state.ConcentrateLiters;
     }
 
     private WaterProfile BuildWater()

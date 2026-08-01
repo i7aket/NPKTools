@@ -298,6 +298,35 @@ three were reproduced, fixed and pinned by regression test. The existing suite h
   quoted 456 µS/cm where the code, the README and the tests all say 454, left over from an earlier
   coefficient. It would have reached users through IntelliSense.
 
+### The calculator app
+
+Not a package, and not part of the published API — `web/SYT.NPKTools.Calculator` is a Blazor WebAssembly
+app in the repository that runs the whole chain in one page. It exists because "runs in the browser" was a
+README claim, and an app that does it is the proof. There is no server, no backend and no `HttpClient`;
+the simplex runs client-side. `IsPackable=false` keeps it out of `dotnet pack`.
+
+- **A setup persists three ways, and they are not alternatives.** Local storage answers "don't lose my
+  work when I close the tab" and cannot cross browsers. The link answers "carry this elsewhere, or send it
+  to someone". The file answers "keep several of these, and edit them". Any two of the three leave a real
+  question unanswered, which is why all three are there.
+
+  The link and the file encode the same state differently on purpose. A link has to paste into a chat
+  window, so it stores salts as catalogue positions, records only the ones you unticked, and drops water
+  elements left at zero — a target, a water analysis, a concentrate volume and one excluded salt come to
+  about 140 characters. A file is an archive someone may open years later, so it is indented JSON spelling
+  out salt names.
+
+  The catalogue size travels with the positions. A link written against a different version of the library
+  would otherwise select the wrong salts silently; instead its salt selection is dropped and reported, and
+  the rest of the link still applies.
+
+- **Pasting a link into an already-open tab now applies it**, which is how a shared link actually gets
+  used. A fragment-only change does not reload the page, so reading the address once at startup ignored
+  exactly that case — the app was correct when the link opened a new tab and silently did nothing when it
+  did not. It now follows `LocationChanged`, guarded so that rewriting the address on every keystroke does
+  not re-apply and re-render its own output. Verified against a stamped live document: no reload occurs,
+  the setup transfers, the Back button works, and editing afterwards still updates the link.
+
 ## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
