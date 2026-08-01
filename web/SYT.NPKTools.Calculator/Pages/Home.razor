@@ -1,0 +1,222 @@
+@page "/"
+@inject CalculatorModel Model
+
+<PageTitle>NPKTools — fertilizer calculator</PageTitle>
+
+<div class="grid">
+
+    @* ------------------------------------------------------------------ inputs *@
+    <div class="col-4 stack">
+
+        <section class="card">
+            <h2>Target</h2>
+            <input class="target-input" type="text" value="@Model.TargetText"
+                   @onchange="OnTargetChanged" aria-label="Target nutrient profile in ppm" />
+            <p class="card-note">
+                Element=ppm, separated by spaces. <code>L</code> is the reservoir volume in litres.
+            </p>
+            @if (Model.Error is not null)
+            {
+                <div class="notice error" role="alert">
+                    <Icon Kind="IconKind.Error" />
+                    <span><strong>Cannot solve.</strong> @Model.Error</span>
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <h2>Source water</h2>
+            <p class="card-note" style="margin-top:0">
+                Leave at zero for reverse osmosis or rain. Whatever the water carries is deducted from
+                the target before the salts are worked out.
+            </p>
+            <div class="field-grid">
+                @foreach (string element in Model.Water.Keys)
+                {
+                    <div class="field">
+                        <label for="w-@element">@element</label>
+                        <input id="w-@element" type="number" min="0" step="0.01"
+                               value="@Model.Water[element]"
+                               @onchange="e => OnWaterChanged(element, e)" />
+                    </div>
+                }
+            </div>
+
+            @if (Model.HasRun && Model.WaterConductivity is { } waterEc && waterEc.MicroSiemensPerCm > 0)
+            {
+                <div class="metrics" style="margin-top:8px">
+                    <div class="metric">
+                        <div class="label">Water EC</div>
+                        <div class="value">@waterEc.MicroSiemensPerCm.ToString("F0") <span class="unit">µS/cm</span></div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">Alkalinity</div>
+                        <div class="value">@Model.Alkalinity.ToString("F2") <span class="unit">meq/L</span></div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">as HCO₃⁻</div>
+                        <div class="value">@((Model.Alkalinity * 61).ToString("F0")) <span class="unit">ppm</span></div>
+                    </div>
+                </div>
+                <p class="card-note">
+                    Compare the water EC with your own meter — it is the quickest check that the analysis
+                    above was typed in correctly. The alkalinity is inferred from the cation surplus, and is
+                    also the acid needed per litre to neutralise it.
+                </p>
+            }
+
+            @if (Model.Excesses.Count > 0)
+            {
+                <div class="notice warn" role="status">
+                    <Icon Kind="IconKind.Warning" />
+                    <span>
+                        <strong>Water oversupplies</strong>
+                        @string.Join(", ", Model.Excesses.Select(x => $"{x.Element} ({x.InWater:F0} vs target {x.Target:F0})")).
+                        Fertilizer only adds, so no recipe can bring these down — raise the target or dilute the water.
+                    </span>
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <h2>Salts you have — @Model.Selected.Count / @Model.Catalogue.Count</h2>
+            <div style="display:flex; gap:8px; margin-bottom:8px">
+                <button class="secondary" @onclick="SelectAll">All</button>
+                <button class="secondary" @onclick="SelectNone">None</button>
+            </div>
+            <div class="salt-list">
+                @foreach (IGrouping<bool, Fertilizer> group in Model.Catalogue
+                    .GroupBy(FertilizerBundleGenerator.IsMicro)
+                    .OrderBy(g => g.Key))
+                {
+                    <div class="salt-group">@(group.Key ? "Micronutrient" : "Macronutrient")</div>
+                    @foreach (Fertilizer salt in group)
+                    {
+                        <label class="salt-row">
+                            <input type="checkbox" checked="@Model.Selected.Contains(salt.Name.Value)"
+                                   @onchange="e => OnSaltToggled(salt.Name.Value, e)" />
+                            <span>@salt.Name.Value</span>
+                            <span class="formula">@salt.Formula.Value</span>
+                        </label>
+                    }
+                }
+            </div>
+            @if (Model.UncoveredElements.Count > 0)
+            {
+                <div class="notice warn" role="status">
+                    <Icon Kind="IconKind.Warning" />
+                    <span>
+                        <strong>No source for</strong> @string.Join(", ", Model.UncoveredElements).
+                        Nothing ticked above supplies these, so no recipe can reach them.
+                    </span>
+                </div>
+            }
+        </section>
+
+        <section class="card">
+            <h2>Concentrate</h2>
+            <div class="field">
+                <label for="conc">Litres per tank — blank for none</label>
+                <input id="conc" type="number" min="0" step="0.1" value="@Model.ConcentrateLiters"
+                       @onchange="OnConcentrateChanged" />
+            </div>
+            <p class="card-note">
+                The whole recipe's salt goes into this much water, so a 100 L recipe in 1 L is 1:100.
+                Calcium is kept away from sulfate and phosphate.
+            </p>
+        </section>
+
+    </div>
+
+    @* ------------------------------------------------------------------ results *@
+    <div class="col-8">
+        @if (!Model.HasRun)
+        {
+            <div class="card empty">Enter a target and the calculator will work out the recipes.</div>
+        }
+        else if (Model.Recipes.Count == 0)
+        {
+            <div class="card empty">No recipe for this combination. See the message on the left.</div>
+        }
+        else
+        {
+            <div class="card" style="margin-bottom:var(--grid-gap)">
+                <h2>@Model.Recipes.Count recipes — @(Model.Target!.Liters.Value.ToString("F0")) L</h2>
+                <p class="card-note" style="margin-top:0">
+                    Every one of these hits the target. They differ in which salts they use, so pick by
+                    what you would rather spend, or by which figures below you prefer.
+                </p>
+            </div>
+
+            @foreach ((RecipeView recipe, int index) in Model.Recipes.Select((r, i) => (r, i)))
+            {
+                <RecipeCard Recipe="recipe" Number="index + 1" Target="Model.Target!" />
+            }
+        }
+    </div>
+
+</div>
+
+@code {
+    protected override void OnInitialized() => Model.Recalculate();
+
+    private void OnTargetChanged(ChangeEventArgs e)
+    {
+        Model.TargetText = e.Value?.ToString() ?? string.Empty;
+        Model.Recalculate();
+    }
+
+    private void OnWaterChanged(string element, ChangeEventArgs e)
+    {
+        Model.Water[element] = Parse(e.Value);
+        Model.Recalculate();
+    }
+
+    private void OnConcentrateChanged(ChangeEventArgs e)
+    {
+        string raw = e.Value?.ToString() ?? string.Empty;
+        Model.ConcentrateLiters = string.IsNullOrWhiteSpace(raw) ? null : Parse(raw);
+        Model.Recalculate();
+    }
+
+    private void OnSaltToggled(string name, ChangeEventArgs e)
+    {
+        if (e.Value is true)
+        {
+            Model.Selected.Add(name);
+        }
+        else
+        {
+            Model.Selected.Remove(name);
+        }
+
+        Model.Recalculate();
+    }
+
+    private void SelectAll()
+    {
+        foreach (Fertilizer salt in Model.Catalogue)
+        {
+            Model.Selected.Add(salt.Name.Value);
+        }
+
+        Model.Recalculate();
+    }
+
+    private void SelectNone()
+    {
+        Model.Selected.Clear();
+        Model.Recalculate();
+    }
+
+    // A half-typed number should leave the field empty rather than throw, so parsing is forgiving and
+    // invariant — a comma decimal separator would otherwise silently mean a different number.
+    private static double Parse(object? value) =>
+        double.TryParse(
+            value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed >= 0
+            ? parsed
+            : 0;
+}

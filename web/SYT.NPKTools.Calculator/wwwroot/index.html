@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <!-- No maximum-scale and no user-scalable=no: pinch-zoom stays available. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Work out a hydroponic fertilizer recipe from a target nutrient profile, your own salts and your tap water. Runs entirely in the browser." />
+    <!-- Both schemes are styled, so let the browser paint its chrome to match. -->
+    <meta name="color-scheme" content="light dark" />
+    <title>NPKTools — fertilizer calculator</title>
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <script type="importmap"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="boot">Loading the calculator…</div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Something went wrong.
+        <a href="." class="reload">Reload</a>
+    </div>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+</body>
+
+</html>

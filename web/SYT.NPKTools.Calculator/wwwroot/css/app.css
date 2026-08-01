@@ -1,0 +1,483 @@
+/*
+  Design system for the NPKTools calculator.
+
+  The shape comes from the "Data-Dense Dashboard" pattern: a 12-column grid, 8px gaps, 12px card
+  padding, 36px table rows, sticky headers, 12-14px type. A nutrient recipe is a column of numbers
+  that has to be scanned and compared, so density is the point — a spacious marketing layout would
+  push the interesting comparison off the screen.
+
+  The palette is blue for data with a single amber accent, and the accent is #D97706 rather than a
+  brighter amber so it clears 3:1 against the light background.
+
+  One deliberate deviation: the recommendation called for Fira Code / Fira Sans from Google Fonts. The
+  reason to want a monospace face here is digit alignment, and `font-variant-numeric: tabular-nums`
+  achieves that with the system stack — so the app makes no network request for fonts, has no flash of
+  unstyled text, and still lines its columns up.
+*/
+
+:root {
+  /* Density — Data-Dense Dashboard */
+  --grid-gap: 8px;
+  --card-padding: 12px;
+  --row-height: 36px;
+  --header-height: 56px;
+  --radius: 6px;
+
+  /* Type */
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-data: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+
+  /* Colour — light */
+  --primary: #1E40AF;
+  --on-primary: #FFFFFF;
+  --secondary: #3B82F6;
+  --accent: #D97706;
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --foreground: #1E3A8A;
+  --text: #1F2937;
+  --text-muted: #5B6478;
+  --muted: #E9EEF6;
+  --border: #CBD9EE;
+  --destructive: #DC2626;
+  --warning: #B45309;
+  --success: #15803D;
+  --ring: #1E40AF;
+
+  --shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 1px 3px rgb(15 23 42 / 8%);
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #60A5FA;
+    --on-primary: #0B1220;
+    --secondary: #93C5FD;
+    --accent: #FBBF24;
+    --background: #0B1220;
+    --surface: #151E31;
+    --foreground: #DBEAFE;
+    --text: #E5EAF3;
+    --text-muted: #A2AEC4;
+    --muted: #1D2740;
+    --border: #2B3856;
+    --destructive: #F87171;
+    --warning: #FBBF24;
+    --success: #4ADE80;
+    --ring: #60A5FA;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  }
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--background);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------------------------------------------------------------- shell */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  min-height: var(--header-height);
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.app-header .tagline {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.app-main {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--grid-gap);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gap);
+}
+
+.col-4,
+.col-8,
+.col-12 { grid-column: span 12; }
+
+@media (min-width: 1024px) {
+  .col-4 { grid-column: span 4; }
+  .col-8 { grid-column: span 8; }
+}
+
+.stack { display: flex; flex-direction: column; gap: var(--grid-gap); }
+
+/* ---------------------------------------------------------------- cards */
+
+.card {
+  padding: var(--card-padding);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card > h2 {
+  margin: 0 0 8px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.card-note {
+  margin: 8px 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- forms */
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: var(--grid-gap);
+}
+
+.field { display: flex; flex-direction: column; gap: 2px; }
+
+.field label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 6px;
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover { border-color: var(--secondary); }
+
+.target-input { font-size: var(--text-base); min-height: 40px; }
+
+button {
+  min-height: 36px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+}
+
+button:hover:not(:disabled) { opacity: 0.88; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.secondary {
+  color: var(--primary);
+  background: transparent;
+  border-color: var(--border);
+}
+
+/* Touch targets stay at least 44px on coarse pointers. */
+@media (pointer: coarse) {
+  button,
+  input[type="text"],
+  input[type="number"] { min-height: 44px; }
+}
+
+/* ---------------------------------------------------------------- salt picker */
+
+.salt-list {
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.salt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 2px 8px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.salt-row:hover { background: var(--muted); }
+
+.salt-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.salt-row .formula {
+  margin-left: auto;
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.salt-group {
+  position: sticky;
+  top: 0;
+  padding: 4px 8px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: var(--muted);
+}
+
+/* ---------------------------------------------------------------- tables */
+
+table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 8px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+thead th:first-child { text-align: left; }
+
+tbody td {
+  height: var(--row-height);
+  padding: 0 8px;
+  text-align: right;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--muted);
+  white-space: nowrap;
+}
+
+tbody td:first-child { text-align: left; font-family: var(--font-ui); white-space: normal; }
+
+tbody tr { transition: background var(--transition); }
+tbody tr:hover { background: var(--muted); }
+tbody tr:last-child td { border-bottom: 0; }
+
+tfoot td {
+  height: var(--row-height);
+  padding: 0 8px;
+  text-align: right;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  border-top: 1px solid var(--border);
+}
+
+tfoot td:first-child { text-align: left; font-family: var(--font-ui); }
+
+.table-scroll { overflow-x: auto; }
+
+/* ---------------------------------------------------------------- metrics */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+  gap: var(--grid-gap);
+}
+
+.metric {
+  padding: 8px 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.metric .label { font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; }
+
+.metric .value {
+  font-family: var(--font-data);
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.metric .unit { font-size: var(--text-xs); font-weight: 400; color: var(--text-muted); }
+
+/* ---------------------------------------------------------------- recipes */
+
+.recipe {
+  padding: var(--card-padding);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.recipe + .recipe { margin-top: var(--grid-gap); }
+
+.recipe-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+
+.recipe-head .n {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.recipe-head .omits { font-size: var(--text-xs); color: var(--text-muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+.chip {
+  padding: 1px 7px;
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: var(--muted);
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- notices */
+
+.notice {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-top: var(--grid-gap);
+  font-size: var(--text-sm);
+  border: 1px solid;
+  border-radius: 4px;
+}
+
+.notice svg { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 2px; }
+
+/* Colour is never the only signal: every notice carries an icon and a leading word. */
+.notice.warn { color: var(--warning); border-color: var(--warning); }
+.notice.error { color: var(--destructive); border-color: var(--destructive); }
+.notice.info { color: var(--text-muted); border-color: var(--border); background: var(--background); }
+
+.notice strong { font-weight: 600; }
+
+/* ---------------------------------------------------------------- misc */
+
+details > summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--primary);
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "\25B8  "; }
+details[open] > summary::before { content: "\25BE  "; }
+
+.empty { padding: 32px 12px; text-align: center; font-size: var(--text-sm); color: var(--text-muted); }
+
+.deviation { color: var(--destructive); }
+.ok { color: var(--success); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------- boot & error */
+
+/*
+  The shell paints before the runtime downloads, so this text is the first thing on screen. Space is
+  reserved for it rather than letting the layout jump when the app mounts — the checklist calls for
+  CLS below 0.1, and a shifting first paint is the easiest way to fail that.
+*/
+.boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+#blazor-error-ui {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 10px 16px;
+  font-size: var(--text-sm);
+  color: var(--on-primary);
+  background: var(--destructive);
+}
+
+#blazor-error-ui .reload { color: inherit; text-decoration: underline; }
