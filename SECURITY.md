@@ -2,10 +2,10 @@
 
 ## Supported versions
 
-| Version | Supported |
-| --- | --- |
-| 2.0.x | Yes |
-| 1.1.x and earlier | No — please upgrade; see [CHANGELOG.md](CHANGELOG.md) for the migration table |
+| Package | Version | Supported |
+| --- | --- | --- |
+| `SYT.NPKTools`, `SYT.NPKTools.DependencyInjection` | 1.0.0-preview.2 | Yes |
+| the `NPKTools.*` packages | 1.1.x and earlier | No — superseded; see [CHANGELOG.md](CHANGELOG.md) for the migration table |
 
 ## Reporting a vulnerability
 

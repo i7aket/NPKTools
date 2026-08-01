@@ -53,9 +53,18 @@ public static class NpkToolsServiceCollectionExtensions
 
         services.TryAddSingleton(_ => NpkTools.CreateBundleRepository());
         services.TryAddSingleton(_ => NpkTools.CreateOptimizer(solver));
-        services.TryAddSingleton(_ => NpkTools.CreateOptimizationService(solver));
         services.TryAddSingleton(_ => NpkTools.CreatePpmCalculator());
         services.TryAddSingleton(_ => NpkTools.CreateTargetParser());
+
+        // Composed from the resolved registrations rather than from NpkTools.CreateOptimizationService,
+        // which would build its own optimizer and catalogue — leaving the container handing out a
+        // different IFertilizerBundleRepository than the service actually uses. Harmless, since the
+        // catalogue is immutable and value-identical, but two lazy copies of it is not what anyone
+        // reading the registrations would expect.
+        services.TryAddSingleton<IFertilizerOptimizationService>(provider =>
+            new FertilizerOptimizationService(
+                provider.GetRequiredService<IFertilizerOptimizer>(),
+                provider.GetRequiredService<IFertilizerBundleRepository>()));
 
         return services;
     }

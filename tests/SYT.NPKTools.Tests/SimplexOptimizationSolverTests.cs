@@ -433,6 +433,92 @@ public class SimplexOptimizationSolverTests
         act.Should().Throw<ArgumentException>().WithMessage("*NaN*");
     }
 
+    /// <summary>
+    /// An infinite coefficient used to survive into a "solution" reported as success: the tableau
+    /// produced <c>x = 0</c>, and verification could not catch it because <c>Infinity * 0</c> is
+    /// <see cref="double.NaN"/> and every comparison against NaN is false, so the row looked satisfied.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Solve_InfiniteConstraintCoefficient_ThrowsArgumentException()
+    {
+        // Arrange
+        OptimizationProblem problem =
+            Problem(isMinimization: true, [1], (1, [double.PositiveInfinity], 2));
+
+        // Act
+        Action act = () => _solver.Solve(problem);
+
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("*non-finite*");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Solve_InfiniteObjectiveCoefficient_ThrowsArgumentException()
+    {
+        // Arrange
+        OptimizationProblem problem =
+            Problem(isMinimization: true, [double.NegativeInfinity], (1, [1], 2));
+
+        // Act
+        Action act = () => _solver.Solve(problem);
+
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("*non-finite*");
+    }
+
+    /// <summary>
+    /// Only the outward-facing infinities express "unbounded on this side". A lower bound of
+    /// <c>+Infinity</c> means <c>Ax ≥ +Infinity</c>, which nothing satisfies, and it must not be
+    /// mistaken for a one-sided constraint and silently dropped.
+    /// </summary>
+    [Theory]
+    [Trait("Category", "Unit")]
+    [InlineData(double.PositiveInfinity, double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity, double.NegativeInfinity)]
+    public void Solve_UnsatisfiableInfiniteBound_ThrowsArgumentException(double lowerBound, double upperBound)
+    {
+        // Arrange
+        OptimizationProblem problem = Problem(
+            isMinimization: true,
+            [1],
+            (0, [1], 10),
+            (lowerBound, [1], upperBound));
+
+        // Act
+        Action act = () => _solver.Solve(problem);
+
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("*Infinity*");
+    }
+
+    /// <summary>
+    /// The verification allowance is relative to each row's own scale. Flooring it at an absolute
+    /// 1e-6 made the check vacuous for rows whose terms are smaller than that, so a returned point
+    /// could violate a constraint bounded near 1e-7 by more than the constraint's own width.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Solve_TinyMagnitudeConstraint_IsStillVerifiedAgainstItsOwnScale()
+    {
+        // Arrange
+        OptimizationProblem problem =
+            Problem(isMinimization: false, [-1], (1.5e-7, [1.0e-7], 1.57e-7));
+
+        // Act
+        Dictionary<string, double>? solution = _solver.Solve(problem);
+
+        // Assert
+        solution.Should().NotBeNull();
+        double leftHandSide = 1.0e-7 * solution!["x0"];
+        leftHandSide.Should().BeInRange(1.5e-7 - 1e-13, 1.57e-7 + 1e-13);
+    }
+
+    /// <summary>
+    /// NaN and infinity are rejected by the same guard, so the message names the category rather than
+    /// the specific value.
+    /// </summary>
     [Fact]
     [Trait("Category", "Unit")]
     public void Solve_NaNCoefficient_ThrowsArgumentException()
@@ -444,7 +530,7 @@ public class SimplexOptimizationSolverTests
         Action act = () => _solver.Solve(problem);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("*NaN*");
+        act.Should().Throw<ArgumentException>().WithMessage("*non-finite*");
     }
 
     /// <summary>

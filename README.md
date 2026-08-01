@@ -143,8 +143,11 @@ macronutrient bundle is at most 16 variables and 7 range constraints, and a full
 such problems.
 
 Verified end to end: the pipeline was published to `browser-wasm` and executed, producing 11 macro
-solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. Transfer cost is roughly
-1.1 MB gzipped, almost entirely the .NET runtime — the library itself is about 51 KB.
+solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target.
+
+The library's own contribution to a download is **128 KB, or about 46 KB gzipped**. Everything else is
+the .NET runtime: a minimal WebAssembly app came to roughly 1.1 MB gzipped in total, and a full Blazor
+app with UI assets is naturally larger than that.
 
 ## About the solver
 
@@ -164,12 +167,18 @@ dominates. Measured on a full macro-plus-micro search:
 
 Reproduce with `dotnet run -c Release --project benchmarks/SYT.NPKTools.Benchmarks`.
 
-**It is not a general-purpose LP solver.** There is no scaling, equilibration or iterative refinement.
-Within this library's regime — nutrient percentages and ppm/10 right-hand sides, about three orders of
-magnitude apart — it is exact. Given a problem whose coefficients span ten or more orders of magnitude,
-round-off can make it stop at a suboptimal vertex or report no solution where one exists. Every answer
-it returns is verified against the original constraints before being handed back, so it will never
-return a mix that violates them.
+**It is not a general-purpose LP solver.** There is no scaling, equilibration or iterative refinement,
+and the pivoting tolerance is absolute. Differential testing puts the safe band at roughly **1e-6 to
+1e5** in coefficient and right-hand-side magnitude, where agreement with GLOP is exact; this library's
+own problems — nutrient percentages and ppm/10 right-hand sides — sit comfortably inside it.
+
+Outside that band it can stop at a suboptimal vertex or report no solution where one exists. This does
+*not* require an ill-conditioned problem: because the tolerance is absolute, a perfectly conditioned
+problem that is merely uniformly large fails too — at a scale of 1e9 a genuine improving direction can
+have a reduced cost below the tolerance and be mistaken for optimality. Every answer is verified against
+the original constraints before being returned, to a relative tolerance of 1e-6, so a returned mix
+satisfies its constraints to about six significant digits; the failure mode is a missed or suboptimal
+solution rather than a badly violated one.
 
 If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public — pass your own
 implementation and it is used for every solve:
@@ -260,7 +269,7 @@ Requires the .NET 10 SDK (pinned in `global.json`). The build treats warnings as
 `dotnet build` is part of the contract. NuGet versions live in `Directory.Packages.props` and shared
 package metadata in `src/Directory.Build.props`; add references without a `Version` attribute.
 
-405 tests run on Linux, Windows and macOS in CI, with coverage collected via coverlet and formatting
+418 tests run on Linux, Windows and macOS in CI, with coverage collected via coverlet and formatting
 enforced by `dotnet format --verify-no-changes`. CodeQL scanning runs through GitHub's default setup.
 
 ## Releasing

@@ -7,7 +7,7 @@ namespace SYT.NPKTools;
 /// combination of fertilizers and quantities that meets the requested nutrient targets.
 /// </summary>
 /// <remarks>
-/// Up to 2.0.0 this type derived from <see cref="List{T}"/>. Optimizer APIs also returned
+/// In the NPKTools.* packages this type derived from <see cref="List{T}"/>. Optimizer APIs also returned
 /// <c>null</c> to mean "nothing found"; they now return <see cref="Empty"/> instead, so callers
 /// no longer have to null-check before enumerating.
 /// </remarks>

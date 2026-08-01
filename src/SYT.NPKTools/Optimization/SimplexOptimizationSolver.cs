@@ -26,16 +26,26 @@ namespace SYT.NPKTools.Optimization;
 /// trade is free, and it removes cycling as a failure mode.
 /// </para>
 /// <para>
-/// <b>Numerical envelope.</b> This is a dense tableau with a fixed tolerance and no scaling,
-/// equilibration or iterative refinement. It is exact enough for the problems this library
-/// generates — coefficients are nutrient percentages (roughly 1–50) and right-hand sides are ppm/10
-/// (roughly 0–100), a spread of about three orders of magnitude — and it is differentially tested
-/// against GLOP over the whole preset catalogue. On a badly scaled problem, one mixing coefficient
-/// magnitudes across ten or more orders of magnitude, accumulated round-off can make it stop at a
-/// suboptimal vertex or report no solution where one exists. Every answer it returns is verified
-/// feasible before being handed back, so the failure mode is a missed or suboptimal solution, never
-/// a violated constraint. If you need a solver robust across arbitrary scaling, use
-/// <c>NPKTools.Optimizer.OrTools</c>.
+/// <b>Numerical envelope.</b> This is a dense tableau with a fixed <em>absolute</em> tolerance and no
+/// scaling, equilibration or iterative refinement.
+/// </para>
+/// <para>
+/// Differential testing against GLOP puts the safe band at roughly <c>1e-6</c> to <c>1e5</c> in
+/// coefficient and right-hand-side magnitude, where agreement is exact. The problems this library
+/// generates sit comfortably inside it: coefficients are nutrient percentages (roughly 0.1–50) and
+/// right-hand sides are ppm/10 (roughly 0–100).
+/// </para>
+/// <para>
+/// Outside that band it can stop at a suboptimal vertex or report no solution where one exists. Note
+/// that this does <em>not</em> require a badly conditioned problem — because <see cref="Tolerance"/> is
+/// absolute, a perfectly conditioned problem that is merely uniformly large fails too: at a scale of
+/// <c>1e9</c> a genuine improving direction can have a reduced cost below the tolerance and be mistaken
+/// for optimality. Every answer is verified against the original constraints before being returned, to
+/// a relative <see cref="VerificationTolerance"/>, so a returned mix satisfies its constraints to about
+/// six significant digits; the failure mode is a missed or suboptimal solution rather than a badly
+/// violated one. If you need a solver robust across arbitrary scaling, implement
+/// <see cref="IOptimizationProblemSolver"/> over one — GLOP is a good choice, and the repository
+/// contains a worked example.
 /// </para>
 /// </remarks>
 public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
@@ -143,9 +153,24 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
                 magnitude += Math.Abs(term);
             }
 
-            // Cancellation between large terms costs absolute precision, so the allowance grows with
-            // the size of the numbers that produced the row, not with the size of the bound alone.
-            double allowance = VerificationTolerance * Math.Max(1, magnitude);
+            // Purely relative to the row's own scale. Flooring this at 1 would make the check vacuous
+            // for rows whose terms are smaller than the tolerance itself: a row bounded near 1e-7
+            // would be allowed a 1e-6 deviation, which is larger than the entire constraint.
+            // Cancellation between large terms costs absolute precision, which is why the scale comes
+            // from the sum of term magnitudes rather than from the resulting left-hand side.
+            double scale = magnitude;
+
+            if (double.IsFinite(constraint.UpperBound))
+            {
+                scale = Math.Max(scale, Math.Abs(constraint.UpperBound));
+            }
+
+            if (double.IsFinite(constraint.LowerBound))
+            {
+                scale = Math.Max(scale, Math.Abs(constraint.LowerBound));
+            }
+
+            double allowance = VerificationTolerance * scale;
 
             if (double.IsFinite(constraint.UpperBound) && leftHandSide > constraint.UpperBound + allowance)
             {
@@ -181,18 +206,36 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
                     nameof(problem));
             }
 
+            // +Infinity as a *lower* bound means Ax >= +Infinity, which nothing satisfies; likewise
+            // -Infinity as an upper bound. Only the outward-facing directions express "unbounded on
+            // this side", so the other two are caller errors rather than one-sided constraints — and
+            // they must not fall through to the row-skipping below, which would silently drop them.
+            if (double.IsPositiveInfinity(constraint.LowerBound) ||
+                double.IsNegativeInfinity(constraint.UpperBound))
+            {
+                throw new ArgumentException(
+                    $"Constraint '{constraint.Name}' has an unsatisfiable infinite bound: a lower bound " +
+                    "of +Infinity or an upper bound of -Infinity cannot be met. Use -Infinity for a " +
+                    "lower bound and +Infinity for an upper bound to express a one-sided constraint.",
+                    nameof(problem));
+            }
+
             double[] row = new double[variableCount];
             foreach (KeyValuePair<string, double> coefficient in constraint.Coefficients)
             {
-                if (double.IsNaN(coefficient.Value))
+                // Infinity is rejected alongside NaN: an infinite coefficient survives the tableau and
+                // then defeats verification, because Infinity * 0 is NaN and every comparison against
+                // NaN is false, so the row would appear satisfied.
+                if (!double.IsFinite(coefficient.Value))
                 {
                     throw new ArgumentException(
-                        $"Constraint '{constraint.Name}' has a NaN coefficient for variable '{coefficient.Key}'.",
+                        $"Constraint '{constraint.Name}' has a non-finite coefficient for variable " +
+                        $"'{coefficient.Key}'.",
                         nameof(problem));
                 }
 
                 // An undeclared variable is a caller error, not a zero coefficient. The OR-Tools
-                // backend throws here too, so both solvers reject the same problems.
+                // backend throws here too, so both solvers reject the same unknown names.
                 row[columnOf[coefficient.Key]] = coefficient.Value;
             }
 
@@ -244,10 +287,10 @@ public sealed class SimplexOptimizationSolver : IOptimizationProblemSolver
 
         foreach (KeyValuePair<string, double> objectiveTerm in problem.Objective.Coefficients)
         {
-            if (double.IsNaN(objectiveTerm.Value))
+            if (!double.IsFinite(objectiveTerm.Value))
             {
                 throw new ArgumentException(
-                    $"The objective has a NaN coefficient for variable '{objectiveTerm.Key}'.",
+                    $"The objective has a non-finite coefficient for variable '{objectiveTerm.Key}'.",
                     nameof(problem));
             }
 

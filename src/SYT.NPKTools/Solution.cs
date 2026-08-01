@@ -8,7 +8,7 @@ namespace SYT.NPKTools;
 /// computed weight, together with the volume of water they are to be dissolved in.
 /// </summary>
 /// <remarks>
-/// Up to 2.0.0 this type derived from <see cref="List{T}"/>, which let callers mutate a solution
+/// In the NPKTools.* packages this type derived from <see cref="List{T}"/>, which let callers mutate a solution
 /// after the optimizer had produced it and exposed the whole list API as part of the contract.
 /// A solution is now an immutable read-only view over its fertilizers.
 /// </remarks>

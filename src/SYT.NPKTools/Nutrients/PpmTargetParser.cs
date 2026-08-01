@@ -22,7 +22,7 @@ public sealed class PpmTargetParser : IPpmTargetParser
 
     /// <summary>
     /// Every element the parser accepts. Must stay in sync with the <see cref="PpmTarget"/>
-    /// members populated in <see cref="Parse"/>: Na was missing here until 2.0.0, so
+    /// members populated in <see cref="Parse"/>: Na was missing here in the NPKTools.* packages, so
     /// "Na=5" was rejected even though the sodium target was read back below.
     /// </summary>
     private static readonly HashSet<string> ValidElements = new(StringComparer.OrdinalIgnoreCase)

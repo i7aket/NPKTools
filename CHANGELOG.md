@@ -108,7 +108,7 @@ a complete worked example of doing that.
   drift apart. Its images use absolute URLs because NuGet does not resolve relative paths.
 - Test projects consolidated from six to three — `SYT.NPKTools.Tests`,
   `SYT.NPKTools.IntegrationTests`, `SYT.NPKTools.OrTools.Tests` — because the old split mirrored
-  package boundaries that no longer exist. **405 tests**, unchanged in coverage.
+  package boundaries that no longer exist. **418 tests**, unchanged in coverage.
 
 ---
 
@@ -146,6 +146,21 @@ It is kept here because it is the actual history of this code, not of a package 
   now rejected with `ArgumentException`.
 - **The managed solver silently ignored coefficients naming an undeclared variable**, so a typo
   became a zero. It now throws `KeyNotFoundException`, as the OR-Tools backend already did.
+- **An infinite coefficient produced a wrong answer reported as success.** `1 ≤ ∞·x ≤ 2` returned
+  `{x = 0}` while GLOP correctly reported infeasible: the guard checked only for NaN, and verification
+  could not catch the result either, because `∞ × 0` is NaN and every comparison against NaN is false,
+  so the row looked satisfied. Non-finite coefficients — in constraints and in the objective — are now
+  rejected with `ArgumentException`.
+- **A contradictory infinite bound was accepted as feasible.** A *lower* bound of `+Infinity` means
+  `Ax ≥ +Infinity`, which nothing satisfies, but it was treated as "unbounded on this side" and the row
+  was silently dropped; the same for an upper bound of `-Infinity`. Both now throw. Only the
+  outward-facing directions express a one-sided constraint.
+- **Verification was vacuous for very small rows.** The allowance was
+  `1e-6 × max(1, term magnitude)`, so a row bounded near `1e-7` was permitted a deviation larger than
+  the entire constraint. It is now purely relative to each row's own scale, taken as the larger of the
+  term magnitudes and the finite bounds. Re-checked for false negatives afterwards over 7,200
+  differential problems spanning `1e-5` to `1e5`: none, and the one apparent disagreement turned out to
+  be GLOP returning a point that violated a constraint by 6% relative.
 
 ### Added
 
@@ -159,10 +174,12 @@ It is kept here because it is the actual history of this code, not of a package 
   mapper-generated problems found no disagreement: worst constraint violation 1.4e-14, worst relative
   cost gap 5.8e-16.
 
-  It is not a general-purpose LP solver, and the class documentation says so. On a problem whose
-  coefficients span ten or more orders of magnitude, round-off can make it stop at a suboptimal vertex
-  or report no solution where one exists — but never return an infeasible mix, because every answer is
-  verified first.
+  It is not a general-purpose LP solver, and the class documentation says so. Differential testing puts
+  the safe band at roughly 1e-6 to 1e5 in coefficient magnitude. Outside it the solver can stop at a
+  suboptimal vertex or report no solution where one exists — and note this does not require an
+  ill-conditioned problem, because the pivoting tolerance is absolute, so a uniformly large but
+  perfectly conditioned problem fails too. Every answer is verified against the original constraints to
+  a relative 1e-6 before being returned.
 
   Verified in the browser: the full pipeline was published to `browser-wasm` and executed, producing
   11 macro solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. (Plain
