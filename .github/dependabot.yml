@@ -21,6 +21,14 @@ updates:
       microsoft-extensions:
         patterns:
           - Microsoft.Extensions.*
+    ignore:
+      # The only dependency of a shipped package, and its version is a *floor*, not a pin: raising it
+      # forces every consumer onto a later runtime patch for no benefit. Bump it deliberately, and only
+      # when the target framework moves — never automatically.
+      #
+      # This does not cover Microsoft.Extensions.DependencyInjection (no .Abstractions suffix), which is
+      # test-only and free to move with the group above.
+      - dependency-name: Microsoft.Extensions.DependencyInjection.Abstractions
 
   - package-ecosystem: github-actions
     directory: /
