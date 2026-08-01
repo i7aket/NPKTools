@@ -61,6 +61,46 @@ using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
 Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
 ```
 
+## Account for your source water
+
+Tap and well water is rarely blank, and whatever it carries is added on top of everything the
+fertilizers contribute. Deduct it before optimizing:
+
+```csharp
+WaterProfile tap = new WaterProfileBuilder()
+    .AddCa(45).AddMg(15).AddS(20).AddNa(25).AddCl(30).AddNitrate(6)
+    .Build();
+
+WaterAdjustedTarget adjusted = target.AdjustFor(tap);
+Solutions solutions = optimizer.FindMacroSolutions(adjusted.Target);
+```
+
+This is not a refinement. On the water above, a mix calculated against the raw target overshoots
+**calcium by 45%**, magnesium by 30% and sulfur by 33% — because the water supplies that much again on
+top. Deducting first lands every element exactly on target:
+
+| Element | Target | From mix | From water | Total | Deviation |
+| --- | --- | --- | --- | --- | --- |
+| Ca | 100 | 55 | 45 | 100 | 0% |
+| Mg | 50 | 35 | 15 | 50 | 0% |
+| S | 60 | 40 | 20 | 60 | 0% |
+
+Use `WaterProfile.Pure` for reverse osmosis, distilled or rain water; it leaves the target untouched.
+
+If the water already supplies more of something than you asked for, that element is reported rather
+than silently truncated — fertilizer only adds, so no mix can bring it down:
+
+```csharp
+foreach (NutrientExcess excess in adjusted.Excesses)
+{
+    Console.WriteLine($"{excess.Element}: water has {excess.InWater}, target {excess.Target}");
+}
+```
+
+The remedies are outside the calculation — raise the target, or dilute the source water — which is why
+this surfaces instead of being hidden. `adjusted.Target` is an ordinary `PpmTarget`, so nothing
+downstream needs to know water was involved.
+
 ## Dependency injection
 
 Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.

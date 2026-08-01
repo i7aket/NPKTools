@@ -3,6 +3,34 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Source water is deducted from the target.** `WaterProfile` describes what the tap or well water
+  already contains, and `target.AdjustFor(water)` returns the target the fertilizers actually have to
+  meet.
+
+  This is a correctness fix disguised as a feature. Whatever the water carries is added on top of
+  everything the fertilizers contribute, so on an ordinary municipal analysis — Ca 45, Mg 15, S 20 — a
+  mix calculated against the raw target overshoots calcium by **45%**, magnesium by 30% and sulfur by
+  33%. Deducting first lands every element on target exactly. It is also the feature every serious
+  competitor has and this library did not.
+
+  The deduction happens ahead of the optimizer rather than inside it: the result is an ordinary
+  `PpmTarget`, so the solver, mapper and bundles are untouched, and the arithmetic stays inspectable.
+  `WaterProfile.Pure` is the all-zero profile for reverse osmosis and leaves a target unchanged, which
+  is asserted as a regression guard for callers who do not use the feature.
+
+  Where the water already oversupplies an element, that element is clamped to zero and reported in
+  `WaterAdjustedTarget.Excesses` rather than silently truncated. Fertilizer only adds, so no mix can
+  bring it down — the remedies are to raise the target or dilute the water, both outside the
+  calculation. Hard water against a low calcium target is the everyday case.
+
+  `WaterProfile` carries all 16 elements, symmetric with `PpmTarget`, and reuses the existing `*Ppm`
+  value objects rather than introducing sixteen more. It has no water volume, because a water analysis
+  is a concentration and holds regardless of how much is used.
+
 ## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
