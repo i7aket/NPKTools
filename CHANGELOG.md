@@ -51,6 +51,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Together these close the standing complaint about comparable tools: that they compute a recipe but
   say nothing about whether it is a sensible one.
 
+- **A source-water analysis reads its own alkalinity.** `water.AsPpm()` runs a `WaterProfile` through the
+  solution analyses, and `water.EstimatedAlkalinity()` reports the bicarbonate its cation-anion gap implies.
+
+  This fell out of the charge balance rather than being designed. A finished recipe's cations equal its
+  anions; a water analysis's do not, and that is not an error in the analysis — bicarbonate is what balances
+  real water, it is not a plant nutrient, and so it has nowhere to be entered. The gap left over is a
+  measurement of it. On an ordinary municipal analysis (Ca 45, Mg 12, S 18, Na 20, Cl 25) the surplus is
+  2.27 meq/L, which is 139 ppm of HCO₃⁻ or 114 as CaCO₃ — and also the acid needed per litre to neutralise
+  the water, which is the number that decides whether hard water pushes root-zone pH up all season.
+
+  The water's own EC comes with it, and is the quickest check that an analysis was typed in correctly:
+  compare it against the meter reading the grower already has. The same tap water above reads 358 µS/cm.
+
+  An estimate from what the analysis contains rather than a substitute for a measured alkalinity figure — it
+  cannot distinguish bicarbonate from carbonate or from an ion nobody entered, and it clamps at zero, since
+  negative alkalinity is not a thing.
+
 - **EC estimation from the ions.** `ppm.EstimateConductivity()` predicts what a conductivity meter will
   read, and `AsTdsPpm(scale)` converts that to the "ppm" a TDS meter shows.
 

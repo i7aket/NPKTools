@@ -181,6 +181,29 @@ alone suggests. Negative means it pushes pH up. Across the built-in catalogue, f
 macro salts come out at exactly zero; the three that do not are precisely the three with acid-base
 character.
 
+### Your water's alkalinity, for free
+
+`water.AsPpm()` runs a source-water analysis through the same tools, and there the charge balance measures
+something a recipe's cannot. Real water is electrically neutral, but the ion that usually balances it —
+bicarbonate — is not one of the sixteen nutrients and so has nowhere to be entered. The cation surplus left
+over is therefore a measurement of it, not an error:
+
+```csharp
+WaterProfile tap = new WaterProfileBuilder()
+    .AddCa(45).AddMg(12).AddS(18).AddNa(20).AddCl(25)
+    .Build();
+
+double meq = tap.EstimatedAlkalinity();                       // 2.27 meq/L
+Console.WriteLine($"{meq * 61:F0} ppm HCO3-");                // 139
+Console.WriteLine($"{meq * 50:F0} ppm as CaCO3");             // 114 — how water reports usually state it
+Console.WriteLine(tap.AsPpm().EstimateConductivity()
+    .MicroSiemensPerCm.ToString("F0"));                       // 358 µS/cm
+```
+
+That is also the acid needed per litre to neutralise the water, which is why it is worth surfacing: hard
+water pushes root-zone pH up all season if it is not accounted for. And the water's own EC is the quickest
+check that an analysis was typed in correctly — compare it with the meter reading you already have.
+
 Micronutrients are left out of the charge figures on purpose. Iron may be Fe²⁺ or Fe³⁺ and in chelated
 form the complex is an anion rather than a cation, so a charge for it would be a guess — and at under
 5 ppm in total they would move the balance by less than 0.1 meq/L against a typical 25–30. Boron and
