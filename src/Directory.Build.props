@@ -4,7 +4,7 @@
 
   <!-- Package metadata shared by every shipped library. -->
   <PropertyGroup>
-    <Version>1.0.0-preview.2</Version>
+    <Version>1.0.0-preview.3</Version>
     <Authors>Anatoliy Yermakov; Artem Frolov</Authors>
     <Company>SYT</Company>
     <Copyright>Copyright (c) Anatoliy Yermakov</Copyright>

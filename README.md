@@ -17,7 +17,7 @@ the browser under WebAssembly.
 dotnet add package SYT.NPKTools
 ```
 
-> **This is `1.0.0-preview.2`.** It supersedes the `NPKTools.*` packages, which are no longer
+> **This is `1.0.0-preview.3`.** It supersedes the `NPKTools.*` packages, which are no longer
 > updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
 
 ## Quick start
@@ -60,6 +60,430 @@ and once ignoring it — so pass a token if you need to bail out:
 using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
 Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
 ```
+
+## Account for your source water
+
+Tap and well water is rarely blank, and whatever it carries is added on top of everything the
+fertilizers contribute. Deduct it before optimizing:
+
+```csharp
+WaterProfile tap = new WaterProfileBuilder()
+    .AddCa(45).AddMg(15).AddS(20).AddNa(25).AddCl(30).AddNitrate(6)
+    .Build();
+
+WaterAdjustedTarget adjusted = target.AdjustFor(tap);
+Solutions solutions = optimizer.FindMacroSolutions(adjusted.Target);
+```
+
+This is not a refinement. On the water above, a mix calculated against the raw target overshoots
+**calcium by 45%**, magnesium by 30% and sulfur by 33% — because the water supplies that much again on
+top. Deducting first lands every element exactly on target:
+
+| Element | Target | From mix | From water | Total | Deviation |
+| --- | --- | --- | --- | --- | --- |
+| Ca | 100 | 55 | 45 | 100 | 0% |
+| Mg | 50 | 35 | 15 | 50 | 0% |
+| S | 60 | 40 | 20 | 60 | 0% |
+
+Use `WaterProfile.Pure` for reverse osmosis, distilled or rain water; it leaves the target untouched.
+
+If the water already supplies more of something than you asked for, that element is reported rather
+than silently truncated — fertilizer only adds, so no mix can bring it down:
+
+```csharp
+foreach (NutrientExcess excess in adjusted.Excesses)
+{
+    Console.WriteLine($"{excess.Element}: water has {excess.InWater}, target {excess.Target}");
+}
+```
+
+The remedies are outside the calculation — raise the target, or dilute the source water — which is why
+this surfaces instead of being hidden. `adjusted.Target` is an ordinary `PpmTarget`, so nothing
+downstream needs to know water was involved.
+
+## Judge the mix, not just compute it
+
+Absolute ppm figures say how strong a solution is; the ratios say what it will do.
+
+```csharp
+NutrientRatios ratios = calculator.CalculatePpm(mix, mix.WaterLiters).Ratios();
+
+Console.WriteLine($"NO3:NH4 {ratios.NitrateToAmmonium}");   // pH drift at the root
+Console.WriteLine($"K:Ca    {ratios.PotassiumToCalcium}");  // these compete for uptake
+Console.WriteLine($"Ca:Mg   {ratios.CalciumToMagnesium}");
+```
+
+`NitrateToAmmonium` is the one to watch most closely, because it predicts pH movement rather than
+nutrition: ammonium uptake acidifies the root zone, nitrate uptake alkalizes it. A ratio whose
+denominator is zero is `null` rather than zero or infinity — a nitrate-only mix is the everyday case,
+and reporting `0` or `∞` for it would mislead.
+
+To see which salt supplied what:
+
+```csharp
+foreach (FertilizerContribution part in mix.Breakdown(calculator))
+{
+    Console.WriteLine($"{part.Fertilizer.Name.Value}: S {part.Contribution.Sulfur.Value:F1} ppm");
+}
+```
+
+This answers what a bare recipe cannot — which salt is responsible for the sulfur you did not ask for:
+
+```
+salt                                     g      N      P      K     Ca     Mg      S
+Calcium Nitrate Tetrahydrate          58.9   69.9    0.0    0.0  100.0    0.0    0.0
+Potassium Nitrate                     35.4   49.0    0.0  136.9    0.0    0.0    0.0
+Magnesium Sulfate Heptahydrate        23.4    0.0    0.0    0.0    0.0   23.0   30.4
+Potassium Dihydrogen Phosphate        22.0    0.0   50.0   63.1    0.0    0.0    0.0
+Magnesium Nitrate Hexahydrate         28.4   31.1    0.0    0.0    0.0   27.0    0.0
+```
+
+Every salt brings a counter-ion along with the nutrient you wanted, so an unrequested element is rarely
+a mistake — it is the price of the element next to it. Contributions are measured through the same
+calculator as the whole mix, so the parts always sum to the total.
+
+## mM and meq/L, and what the charge balance tells you
+
+Ppm is a mass unit, so it flatters the light elements. 40 ppm of calcium and 40 ppm of magnesium look
+alike and are not: 1.00 mM against 1.65 mM, two-thirds again as many magnesium ions. Every published
+formulation — Steiner, Hoagland, the Dutch advisory tables — is stated in mM for that reason, so working
+from a paper recipe means converting.
+
+```csharp
+MolarProfile mM = ppm.AsMillimolar();     // all 16 elements, plus the three nitrogen forms
+IonBalance ions = ppm.IonBalance();       // charge, in milliequivalents per litre
+```
+
+```
+element    ppm      mM     meq/L
+NO3-N    150.0   10.71   10.71
+P         50.0    1.61    1.61
+K        210.0    5.37    5.37
+Ca       160.0    3.99    7.98
+Mg        50.0    2.06    4.11
+S         65.0    2.03    4.05
+
+cations 17.47  anions 16.38  total 33.85 meq/L
+```
+
+**The gap between the two sides is not an error.** Every salt is electrically neutral, so a recipe of
+nothing but salts balances exactly — and where it does not, the gap is the acid or base the recipe itself
+contributes. `AcidEquivalents` is that number, in meq/L of H⁺:
+
+| salt | AcidEquivalents | why |
+| --- | --- | --- |
+| monopotassium phosphate | 0.00 | K⁺ against H₂PO₄⁻, one charge each |
+| phosphoric acid | **+10.20** | supplies H₂PO₄⁻ with a proton, not a metal |
+| dipotassium phosphate | **−5.74** | two K⁺ against HPO₄²⁻, which takes up a proton at working pH |
+
+Positive means the recipe pulls pH down by itself, so less pH-down is needed than the water's alkalinity
+alone suggests. Negative means it pushes pH up. Across the built-in catalogue, fourteen of the seventeen
+macro salts come out at exactly zero; the three that do not are precisely the three with acid-base
+character.
+
+### Your water's alkalinity, for free
+
+`water.AsPpm()` runs a source-water analysis through the same tools, and there the charge balance measures
+something a recipe's cannot. Real water is electrically neutral, but the ion that usually balances it —
+bicarbonate — is not one of the sixteen nutrients and so has nowhere to be entered. The cation surplus left
+over is therefore a measurement of it, not an error:
+
+```csharp
+WaterProfile tap = new WaterProfileBuilder()
+    .AddCa(45).AddMg(12).AddS(18).AddNa(20).AddCl(25)
+    .Build();
+
+double meq = tap.EstimatedAlkalinity();                       // 2.27 meq/L
+Console.WriteLine($"{meq * 61:F0} ppm HCO3-");                // 139
+Console.WriteLine($"{meq * 50:F0} ppm as CaCO3");             // 114 — how water reports usually state it
+
+// the water's own EC, bicarbonate included
+Console.WriteLine(tap.EstimateConductivity()
+    .MicroSiemensPerCm.ToString("F0"));                       // 454 µS/cm
+```
+
+Use `water.EstimateConductivity()` rather than `water.AsPpm().EstimateConductivity()` — the second leaves
+bicarbonate out and reads 358 against the 454 a meter would show. Inferring the bicarbonate is only
+defensible here: in a water analysis the cation surplus *is* the alkalinity, whereas in a recipe the same
+gap is the salts' own acid-base character and has nothing to do with bicarbonate.
+
+That is also the acid needed per litre to neutralise the water, which is why it is worth surfacing: hard
+water pushes root-zone pH up all season if it is not accounted for. And the water's own EC is the quickest
+check that an analysis was typed in correctly — compare it with the meter reading you already have.
+
+Micronutrients are left out of the charge figures on purpose. Iron may be Fe²⁺ or Fe³⁺ and in chelated
+form the complex is an anion rather than a cation, so a charge for it would be a guess — and at under
+5 ppm in total they would move the balance by less than 0.1 meq/L against a typical 25–30. Boron and
+silicon are excluded for a firmer reason: as boric and silicic acid they are undissociated at
+nutrient-solution pH and carry no charge at all. Urea likewise contributes nitrogen in mM and nothing in
+meq, because it is a neutral molecule.
+
+Phosphorus is counted as H₂PO₄⁻ at one charge, the dominant species between pH 5.5 and 6.5 where these
+solutions are run. Above pH 7.2 half of it is HPO₄²⁻. This library does not model pH, so the assumption
+is stated rather than computed — and it is what makes the acid-base figures above come out in whole
+protons.
+
+## Predict what the EC meter will say
+
+EC is the number a grower actually measures, so predicting it is what connects a calculated recipe to the
+meter in the reservoir.
+
+```csharp
+ConductivityEstimate ec = ppm.EstimateConductivity();
+
+Console.WriteLine($"{ec.MilliSiemensPerCm:F2} mS/cm");   // 2.04
+Console.WriteLine($"{ec.AsTdsPpm(500):F0} ppm TDS");     // 1020 on a 500-scale meter
+```
+
+**Include the source water, or the number is not the reservoir's.** Every analysis here describes the
+profile it is handed, so a mix's own ppm answers a question nobody asked — what the salts would read in
+pure water. On a hard supply that is a fifth low:
+
+```csharp
+Ppm salts = calculator.CalculatePpm(mix, mix.WaterLiters);
+
+// what is actually in the reservoir
+Ppm tank = salts.Plus(tap);
+ConductivityEstimate ec = tank.EstimateConductivity(tap.EstimatedAlkalinity());
+```
+
+| what you measure | mS/cm |
+| --- | --- |
+| the salts alone | 1.81 |
+| salts + the water's nutrients | 2.13 |
+| **+ the water's bicarbonate — what the meter shows** | **2.21** |
+
+`Plus` exists because composing the two by hand is easy to get wrong: it is a nutrient at a time, and
+forgetting that nitrogen has three forms drops the ammonium silently. That mistake was made while writing
+this documentation, which is why there is now a method and a test for it.
+
+The bicarbonate is a separate argument rather than part of the profile because HCO₃⁻ is not a plant
+nutrient — it belongs in no `Ppm`. It still conducts, and in tap water it carries most of the negative
+charge. Acidifying the reservoir removes some of it, and with it some of the EC; that is not modelled.
+
+It is computed the way conductivity works — each ion's own molar conductivity times how much of it there
+is — not by scaling total dissolved solids by a fitted factor. That distinction is not academic: a mole of
+sulfate conducts more than twice what a mole of dihydrogen phosphate does, so two solutions of identical
+ppm can read differently, and a single factor cannot know which one it was handed.
+
+Which also means you can see what is driving the reading:
+
+```
+ion       µS/cm   share
+NO3         765   34.2%
+Ca          475   21.3%
+K           395   17.7%
+SO4         324   14.5%
+Mg          218    9.8%
+H2PO4        58    2.6%
+```
+
+**How accurate.** Checked against the certified KCl conductivity standards at 25 °C — the same reference
+solutions meters are calibrated against:
+
+| KCl | ideal sum | estimate | certified | error |
+| --- | --- | --- | --- | --- |
+| 0.001 M | 150 | 147 | 147 | **+0.1%** |
+| 0.01 M | 1498 | 1416 | 1412 | **+0.3%** |
+| 0.1 M | 14980 | 12375 | 12880 | −3.9% |
+
+The first two bracket the ionic strength of a real feed (0.02–0.04 M); the third is ten times stronger than
+anything you would grow in, and is shown to mark where the model stops being good.
+
+`IdealMicroSiemensPerCm` is the raw sum of limiting molar conductivities — exact for infinitely dilute
+water, and increasingly high above it because ions interfere with each other as they crowd.
+`MicroSiemensPerCm` applies a Kohlrausch-form correction for that, `Correction` is the factor it used
+(≈0.91 for a normal feed, i.e. the ideal sum runs 9% high), and `IonicStrength` is the exactly-computable
+quantity that decides it. Nothing is hidden behind a magic number: the one coefficient in the model comes
+from those certified standards, not from fitting to fertilizer recipes.
+
+Expect a few percent, not a meter replacement. The remaining error is not all the model's — meter
+calibration drifts and temperature compensation is itself approximate.
+
+**Check `IsWithinValidatedRange` if you might be measuring a concentrate.** The correction is anchored on
+reference solutions up to an ionic strength of 0.1 M; a working feed sits near 0.025, but the same feed in a
+1:100 tank is near 2.5 — an order of magnitude past anything the model was checked against. The estimate
+stays monotonic there, so more salt always reads as more conductivity, but it runs increasingly high and
+should be treated as an ordering rather than a measurement.
+
+**Urea reads as pure water.** 150 ppm of nitrogen as urea gives an EC of exactly 0, because an uncharged
+molecule carries no current. That is not a bug to work around; it is the reason EC is a poor proxy for feed
+strength whenever urea is in the mix, and worth knowing before trusting a meter to tell you how strong a
+solution is.
+
+## Use the salts you already have
+
+The preset catalogue offers eighteen macro bundles and therefore a dozen recipes to compare. Someone
+working from their own shelf used to get one, because one list of salts is one bundle. Now the bundles
+are generated:
+
+```csharp
+Fertilizer[] shelf = [calciumNitrate, potassiumNitrate, magnesiumSulfate, mkp, sop, mag];
+
+IFertilizerOptimizationService service = NpkTools.CreateOptimizationService(shelf);
+Solutions recipes = service.FindMacroSolutions(target);   // several, not one
+```
+
+The first bundle holds everything on the shelf; each of the others leaves out one salt. That is the
+whole rule, and it is the one that measured best — alternatives can only come from taking something
+away, because handing the optimizer more salts than it needs yields the same best mix again. Removing
+one forces the linear program to route around it, which is both a different recipe and the question a
+grower actually asks: *what does this look like without the MKP?*
+
+Measured against the hand-written catalogue on three macro targets, counting distinct recipes returned:
+
+| bundle strategy | distinct recipes |
+| --- | --- |
+| one source per element, cross product | 5 |
+| hand-written catalogue (18 bundles) | 19 |
+| **hold one out** | **21** |
+| hold out pairs and triples as well | 21 |
+
+Holding out pairs adds nothing, because a smaller subset either reproduces a recipe already found or
+solves nothing at all. Building bundles up from per-element choices does badly for a reason worth
+knowing: six simultaneous element targets need at least six salts to satisfy at non-negative weights, and
+a bundle assembled as one-source-per-element rarely has that many once the overlaps collapse.
+
+To see what generation could not do, ask the repository rather than the service:
+
+```csharp
+CustomFertilizerBundleRepository bundles = NpkTools.CreateBundleRepository(shelf);
+
+if (!bundles.MacroGeneration.IsComplete)
+{
+    // ["Mg"] — no salt on the shelf supplies magnesium, so no bundle can meet a magnesium target
+    Console.WriteLine(string.Join(", ", bundles.MacroGeneration.UncoveredElements));
+}
+
+// Salts that carry nothing any target can ask for — table salt is the honest example
+Console.WriteLine(string.Join(", ", bundles.UnusableSalts));
+```
+
+This matters more than it looks. Without it a missing magnesium source shows up as "no solutions", which
+sends someone hunting through their shelf for a mistake that is not there.
+
+Macro and micro are split the way the preset catalogue splits them: carrying any micronutrient makes a
+salt a micro salt, even when it also carries a macro element. Iron sulfate's sulfur is incidental —
+dosing it to meet a sulfur target would mean iron at a hundred times the intended rate.
+
+Labelling a recipe is a set difference against the first bundle:
+
+```csharp
+string omitted = bundles.Macro()[0].Except(chosenBundle).Single().Name.Value;   // "without the SOP"
+```
+
+## Mix once a month, not every watering
+
+Weighing six salts every time you water is what stops people using a calculated recipe. A concentrate
+solves that, and the two tanks exist for a chemical reason: calcium sulfate and the higher calcium
+phosphates are barely soluble, so what stays dissolved at working strength falls out of solution at
+100×.
+
+```csharp
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1);
+
+Console.WriteLine($"1:{plan.DilutionRatio:F0}");          // 1:100
+Console.WriteLine($"{plan.MillilitresPerLiter:F0} ml");   // 10 ml of each tank per liter
+
+foreach (ConcentrateComponent c in plan.TankA.Components)
+{
+    Console.WriteLine($"{c.Fertilizer.Name.Value}: {c.Grams:F1} g ({c.GramsPerLiter:F1} g/L)");
+}
+```
+
+The whole recipe's salt goes into the smaller volume, so a 100-liter recipe concentrated into 1 liter is
+1:100. Concentrating changes how much water the salt goes into, never how much salt is needed — the
+weights are the working recipe's weights, which is why the finished solution still lands on target:
+
+```
+=== working mix, 100 L ===
+  Calcium Nitrate Tetrahydrate                  67.76 g  tank A
+  Potassium Nitrate                             37.98 g  tank A
+  Magnesium Sulfate Heptahydrate (MGS)          36.13 g  tank B
+  Ammonium Nitrate                               4.08 g  tank A
+  Potassium Dihydrogen Phosphate (MKP)          21.97 g  tank B
+  Magnesium Nitrate Hexahydrate (MAG)            2.50 g  tank A
+
+=== concentrate, 1 L per tank -> 1:100 ===
+dose: 10.0 ml of A + 10.0 ml of B per liter
+
+TANK A  (112.3 g/L total)
+TANK B  (58.1 g/L total)
+```
+
+Each salt's tank comes from its own `ConcentrateType`, which the preset catalogue already carries. A
+custom salt has none unless you set one, so a tank is inferred from its composition and the inference is
+reported in `Warnings` — guessing silently is how someone's own sulfate ends up next to calcium.
+
+`GramsPerLiter` is the figure to check against a salt's solubility. A recipe that dissolves happily at
+working strength can be impossible at 100×, and that limit binds per salt long before the tank total
+does.
+
+**On the precipitation check.** `HasPrecipitationRisk` flags calcium meeting sulfate or phosphate in one
+tank *from different salts*. It is a rule of thumb, not a solubility calculation. A single salt carrying
+both internally is not flagged — monocalcium phosphate is a soluble compound, not two reagents that
+happen to be adjacent, and a check that fired on it would teach you to ignore the check. Predicting
+actual precipitation needs solubility products, pH and temperature, none of which this library models.
+
+### Will it actually dissolve?
+
+The other way a concentrate fails is simpler: there is more salt than the water can hold.
+
+```csharp
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1);
+
+if (plan.ExceedsSolubility)
+{
+    Console.WriteLine($"too strong — go no further than 1:{plan.MaxDilutionRatio:F0}");
+}
+```
+
+Two checks run, and they catch different mistakes:
+
+- **One salt past its own limit.** Certain — arithmetic against a published figure. Monocalcium phosphate
+  at 18 g/L is the one that bites first in practice, against potassium nitrate's 316 and calcium nitrate's
+  1290.
+- **The tank saturated as a whole.** `SaturationFraction` adds each salt's share of its own limit; above 1
+  the tank cannot dissolve. Without this, four salts each at 40% of their limit pass individually and fail
+  in the bucket, because they compete for the same water. It is a first-order screen — exact for a single
+  salt, slightly optimistic for a mixture, since salts sharing an ion crowd each other out more than the
+  sum suggests.
+
+`MaxDilutionRatio` is the answer to "then how strong *can* I make it": a 1:1000 concentrate that cannot
+dissolve may be fine at 1:600. Salts listed in `UnknownSolubility` are not part of that bound — there is no
+figure to bound them with — so when that list is non-empty the ceiling is an optimistic one and the two must
+be read together.
+
+**On the basis of these figures**, because it is where they go wrong. Each is grams of the salt *as the
+catalogue names it* — water of crystallisation included — per litre of water at 20 °C, and the source
+"g per 100 mL" entry sits in a comment beside every value so it can be re-checked. Handbooks report a
+hydrate two ways, as the hydrate or as the anhydrous salt inside it, and for magnesium sulfate those differ
+by a factor of two. Three of the table's figures were wrong on first writing for exactly that reason; all 21
+are now pinned by test against published values.
+
+**A salt with no published figure is reported, not assumed.** `SolubilityTable.Default` covers 21 of the
+catalogue's 34 salts. The rest — calcium chloride hexahydrate, urea phosphate, the EDTA chelates, sodium
+silicate and selenate, the nitrate micro salts — carry no entry, because the figures in circulation for
+them disagree by more than the check would be worth. A chelate's solubility depends on the formulation; a
+deliquescent hydrate's on which hydrate it actually is. Guessing would be worse than declining: a wrong
+limit either blocks a tank that would have mixed or passes one that will not.
+
+```csharp
+foreach (string salt in plan.UnknownSolubility)
+{
+    Console.WriteLine($"{salt}: no figure, nothing checked");
+}
+```
+
+For a salt of your own, take the figure off the bag:
+
+```csharp
+SolubilityTable table = SolubilityTable.Default.With("My Own Salt", gramsPerLitreAt20C: 320);
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1, table);
+```
+
+The figures are for 20 °C in pure water. Solubility rises steeply with temperature, so a cold garage is
+the pessimistic case and a warm room the forgiving one.
 
 ## Dependency injection
 
@@ -128,7 +552,8 @@ runs.
 | --- | --- |
 | `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
-| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, `MolarProfile`, `IonBalance`, `ConductivityEstimate`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Concentrates` | `ConcentratePlan` and the A/B tank split |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
 
 ## Runs in the browser
@@ -278,8 +703,8 @@ Publishing is triggered by a version tag, not by pushes to `main`. Bump `<Versio
 `src/Directory.Build.props`, commit it, then tag:
 
 ```bash
-git tag v1.0.0-preview.2
-git push origin v1.0.0-preview.2
+git tag v1.0.0-preview.3
+git push origin v1.0.0-preview.3
 ```
 
 The workflow refuses to publish if the tag is not valid SemVer or does not match the committed
