@@ -51,6 +51,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Together these close the standing complaint about comparable tools: that they compute a recipe but
   say nothing about whether it is a sensible one.
 
+- **mM and meq/L, and the charge balance.** `ppm.AsMillimolar()` converts a profile to millimoles per
+  litre; `ppm.IonBalance()` expresses it as charge in milliequivalents and reports how the two sides
+  compare.
+
+  Ppm is a mass unit and so flatters the light elements: 40 ppm of calcium and 40 ppm of magnesium are
+  1.00 mM and 1.65 mM. Every published formulation — Steiner, Hoagland, the Dutch advisory tables — is
+  stated in mM, so working from a paper recipe meant converting sixteen numbers by hand.
+
+  The charge balance turned out to be more interesting than expected, and the first version of this entry
+  described it wrongly as an error check. It is not: every salt is electrically neutral, so a recipe of
+  nothing but salts balances exactly, and where it does not the gap is the acid or base the recipe itself
+  contributes. `AcidEquivalents` reports that in meq/L of H⁺ — positive pulls pH down, negative pushes it
+  up. Measured across the catalogue, fourteen of the seventeen macro salts come out at exactly zero;
+  phosphoric acid at +1 proton per phosphorus, urea phosphate likewise, and dipotassium phosphate at −1,
+  which are exactly the three salts with acid-base character. So the figure says whether a recipe needs
+  more or less pH-down than the water alone would suggest.
+
+  Micronutrients are excluded from the charge figures deliberately. Iron may be Fe²⁺ or Fe³⁺ and in
+  chelated form the complex is an anion rather than a cation, so any charge for it is a guess, and at under
+  5 ppm in total they would move the balance by less than 0.1 meq/L against a typical 25–30 — uncertainty
+  added to a figure whose worth is that it is exact. Boron and silicon are excluded for a firmer reason: as
+  boric and silicic acid they are undissociated at nutrient-solution pH. Urea contributes nitrogen in mM
+  and nothing in meq, being a neutral molecule.
+
+  Phosphorus is counted as H₂PO₄⁻ at one charge, the dominant species between pH 5.5 and 6.5. Above pH 7.2
+  half of it is HPO₄²⁻; the library does not model pH, so the assumption is documented rather than
+  computed. It is also what makes the acid-base figures come out in whole protons.
+
 - **Bundles are generated from your own salts.** `NpkTools.CreateOptimizationService(shelf)` takes a list
   of salts and searches it the way the service searches the preset catalogue.
 

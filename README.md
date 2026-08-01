@@ -142,6 +142,57 @@ Every salt brings a counter-ion along with the nutrient you wanted, so an unrequ
 a mistake — it is the price of the element next to it. Contributions are measured through the same
 calculator as the whole mix, so the parts always sum to the total.
 
+## mM and meq/L, and what the charge balance tells you
+
+Ppm is a mass unit, so it flatters the light elements. 40 ppm of calcium and 40 ppm of magnesium look
+alike and are not: 1.00 mM against 1.65 mM, two-thirds again as many magnesium ions. Every published
+formulation — Steiner, Hoagland, the Dutch advisory tables — is stated in mM for that reason, so working
+from a paper recipe means converting.
+
+```csharp
+MolarProfile mM = ppm.AsMillimolar();     // all 16 elements, plus the three nitrogen forms
+IonBalance ions = ppm.IonBalance();       // charge, in milliequivalents per litre
+```
+
+```
+element    ppm      mM     meq/L
+NO3-N    150.0   10.71   10.71
+P         50.0    1.61    1.61
+K        210.0    5.37    5.37
+Ca       160.0    3.99    7.98
+Mg        50.0    2.06    4.11
+S         65.0    2.03    4.05
+
+cations 17.47  anions 16.38  total 33.85 meq/L
+```
+
+**The gap between the two sides is not an error.** Every salt is electrically neutral, so a recipe of
+nothing but salts balances exactly — and where it does not, the gap is the acid or base the recipe itself
+contributes. `AcidEquivalents` is that number, in meq/L of H⁺:
+
+| salt | AcidEquivalents | why |
+| --- | --- | --- |
+| monopotassium phosphate | 0.00 | K⁺ against H₂PO₄⁻, one charge each |
+| phosphoric acid | **+10.20** | supplies H₂PO₄⁻ with a proton, not a metal |
+| dipotassium phosphate | **−5.74** | two K⁺ against HPO₄²⁻, which takes up a proton at working pH |
+
+Positive means the recipe pulls pH down by itself, so less pH-down is needed than the water's alkalinity
+alone suggests. Negative means it pushes pH up. Across the built-in catalogue, fourteen of the seventeen
+macro salts come out at exactly zero; the three that do not are precisely the three with acid-base
+character.
+
+Micronutrients are left out of the charge figures on purpose. Iron may be Fe²⁺ or Fe³⁺ and in chelated
+form the complex is an anion rather than a cation, so a charge for it would be a guess — and at under
+5 ppm in total they would move the balance by less than 0.1 meq/L against a typical 25–30. Boron and
+silicon are excluded for a firmer reason: as boric and silicic acid they are undissociated at
+nutrient-solution pH and carry no charge at all. Urea likewise contributes nitrogen in mM and nothing in
+meq, because it is a neutral molecule.
+
+Phosphorus is counted as H₂PO₄⁻ at one charge, the dominant species between pH 5.5 and 6.5 where these
+solutions are run. Above pH 7.2 half of it is HPO₄²⁻. This library does not model pH, so the assumption
+is stated rather than computed — and it is what makes the acid-base figures above come out in whole
+protons.
+
 ## Use the salts you already have
 
 The preset catalogue offers eighteen macro bundles and therefore a dozen recipes to compare. Someone
@@ -323,7 +374,7 @@ runs.
 | --- | --- |
 | `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
-| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, `MolarProfile`, `IonBalance`, the ppm calculator and the target parser |
 | `SYT.NPKTools.Concentrates` | `ConcentratePlan` and the A/B tank split |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
 
