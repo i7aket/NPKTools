@@ -142,6 +142,59 @@ Every salt brings a counter-ion along with the nutrient you wanted, so an unrequ
 a mistake — it is the price of the element next to it. Contributions are measured through the same
 calculator as the whole mix, so the parts always sum to the total.
 
+## Mix once a month, not every watering
+
+Weighing six salts every time you water is what stops people using a calculated recipe. A concentrate
+solves that, and the two tanks exist for a chemical reason: calcium sulfate and the higher calcium
+phosphates are barely soluble, so what stays dissolved at working strength falls out of solution at
+100×.
+
+```csharp
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1);
+
+Console.WriteLine($"1:{plan.DilutionRatio:F0}");          // 1:100
+Console.WriteLine($"{plan.MillilitresPerLiter:F0} ml");   // 10 ml of each tank per liter
+
+foreach (ConcentrateComponent c in plan.TankA.Components)
+{
+    Console.WriteLine($"{c.Fertilizer.Name.Value}: {c.Grams:F1} g ({c.GramsPerLiter:F1} g/L)");
+}
+```
+
+The whole recipe's salt goes into the smaller volume, so a 100-liter recipe concentrated into 1 liter is
+1:100. Concentrating changes how much water the salt goes into, never how much salt is needed — the
+weights are the working recipe's weights, which is why the finished solution still lands on target:
+
+```
+=== working mix, 100 L ===
+  Calcium Nitrate Tetrahydrate                  67.76 g  tank A
+  Potassium Nitrate                             37.98 g  tank A
+  Magnesium Sulfate Heptahydrate (MGS)          36.13 g  tank B
+  Ammonium Nitrate                               4.08 g  tank A
+  Potassium Dihydrogen Phosphate (MKP)          21.97 g  tank B
+  Magnesium Nitrate Hexahydrate (MAG)            2.50 g  tank A
+
+=== concentrate, 1 L per tank -> 1:100 ===
+dose: 10.0 ml of A + 10.0 ml of B per liter
+
+TANK A  (112.3 g/L total)
+TANK B  (58.1 g/L total)
+```
+
+Each salt's tank comes from its own `ConcentrateType`, which the preset catalogue already carries. A
+custom salt has none unless you set one, so a tank is inferred from its composition and the inference is
+reported in `Warnings` — guessing silently is how someone's own sulfate ends up next to calcium.
+
+`GramsPerLiter` is the figure to check against a salt's solubility. A recipe that dissolves happily at
+working strength can be impossible at 100×, and that limit binds per salt long before the tank total
+does.
+
+**On the precipitation check.** `HasPrecipitationRisk` flags calcium meeting sulfate or phosphate in one
+tank *from different salts*. It is a rule of thumb, not a solubility calculation. A single salt carrying
+both internally is not flagged — monocalcium phosphate is a soluble compound, not two reagents that
+happen to be adjacent, and a check that fired on it would teach you to ignore the check. Predicting
+actual precipitation needs solubility products, pH and temperature, none of which this library models.
+
 ## Dependency injection
 
 Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.
@@ -209,7 +262,8 @@ runs.
 | --- | --- |
 | `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
-| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, `WaterProfile`, `NutrientRatios`, the ppm calculator and the target parser |
+| `SYT.NPKTools.Concentrates` | `ConcentratePlan` and the A/B tank split |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
 
 ## Runs in the browser

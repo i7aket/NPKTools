@@ -51,6 +51,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Together these close the standing complaint about comparable tools: that they compute a recipe but
   say nothing about whether it is a sensible one.
 
+- **A/B concentrates.** `mix.AsConcentrate(concentrateLiters)` splits a working-strength recipe into two
+  stock tanks and reports the dilution ratio and the dose per liter.
+
+  This is what makes a calculated recipe usable more than once. Weighing six salts every watering is
+  what stops people using one; mixing two tanks a month and dosing 10 ml of each is not. The whole
+  recipe's salt goes into the smaller volume, so a 100-liter recipe in a 1-liter tank is 1:100 —
+  concentrating changes how much water the salt goes into, never how much salt is needed, which is why
+  the finished solution still lands on the same target the optimizer solved for.
+
+  Two tanks rather than one for a chemical reason: calcium sulfate and the higher calcium phosphates are
+  barely soluble, so what stays dissolved at working strength falls out of solution at 100×. Each salt's
+  tank comes from its own `ConcentrateType`, which the preset catalogue already carries, so the split is
+  data rather than re-derived chemistry. A custom salt has none unless its author sets one, so a tank is
+  inferred from composition and the inference is reported — guessing silently is how someone's own
+  sulfate ends up beside calcium.
+
+  `HasPrecipitationRisk` flags calcium meeting sulfate or phosphate in one tank **from different salts**,
+  and is documented as a rule of thumb rather than a solubility calculation. A single salt carrying both
+  internally is deliberately not flagged: an audit of the catalogue found `Calcium Monobasic Phosphate`
+  (Ca 15.9%, P 24.6% in one compound), which the naive rule would have false-positived. A check that
+  fires on a legitimately soluble salt teaches users to ignore the check, so the guard is asserted in
+  both directions — the false positive must not fire, and an internally-mixed salt must not suppress a
+  genuine collision beside it.
+
+  `GramsPerLiter` per component is the figure to check against a salt's solubility. The reference
+  solubility values are not in the library yet, so nothing compares against it automatically; that is the
+  next step and is called out rather than implied.
+
 ## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
