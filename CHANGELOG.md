@@ -16,7 +16,8 @@ The find-and-replace table for moving off the old packages is in
 ### One package instead of six
 
 `NPKTools.Core`, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
-`NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`.
+`NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`, plus one optional add-on for the
+DI one-liner (see below).
 
 The split cost consumers something and bought them nothing. Five of the six projects had the same
 single external dependency and came to 161 KB of IL together, so nobody was avoiding a meaningful
@@ -34,17 +35,17 @@ apart.
   `(Solutions Macro, Solutions Micro)` tuple, so the shape is named, documented and extensible.
   It carries `Empty` and `IsEmpty`.
 
-### No dependencies at all
+### `SYT.NPKTools` has no dependencies
 
 The four `AddNpkTools*()` extension methods are replaced by a `NpkTools` factory —
 `CreateOptimizationService()`, `CreateOptimizer()`, `CreatePpmCalculator()`, `CreateTargetParser()`,
-`CreateBundleRepository()` — and the dependency on
-`Microsoft.Extensions.DependencyInjection.Abstractions` is gone. The package now depends on nothing.
+`CreateBundleRepository()` — and `Microsoft.Extensions.DependencyInjection.Abstractions` is no longer
+a dependency of the library. It depends on nothing at all.
 
 An `IServiceCollection` extension method requires that package, and it was the only thing in the
-library that did. It was never actually necessary: `IServiceCollection` belongs to the consuming
-application, which already has it, so container registration is one line per service against the
-factory. Documented in the README.
+library that did. It was never necessary for the library to carry it: `IServiceCollection` belongs to
+the consuming application, which already has it, so registration is one line per service against the
+factory.
 
 Two things improve as a side effect:
 
@@ -54,9 +55,32 @@ Two things improve as a side effect:
 - **Nothing in the package can conflict with a consumer's version graph**, because there is nothing in
   it to conflict.
 
-For reference, the removed dependency was cheap — 66 KB, no transitive dependencies of its own, and
-already present in the `Microsoft.AspNetCore.App` shared framework and in any Blazor application. This
-change is about the library not imposing a hosting concern, not about download size.
+For the record the removed dependency was cheap — 66 KB, no transitive dependencies of its own under
+`net10.0`, and already present in the `Microsoft.AspNetCore.App` shared framework and in any Blazor
+application. This change is about the library not imposing a hosting concern on callers who did not ask
+for one, not about download size.
+
+### A second, optional package for the one-liner
+
+**New: `SYT.NPKTools.DependencyInjection`.** It contains one extension method:
+
+```csharp
+services.AddNpkTools();          // or AddNpkTools(mySolver)
+```
+
+This is the only legitimate reason to split a package — isolating a dependency — and it is why the
+main package can be dependency-free while a one-line registration still exists. Take it if you want
+the extension method; skip it and register the factory results yourself, losing nothing.
+
+Notes on its design:
+
+- It lives in the `Microsoft.Extensions.DependencyInjection` namespace, the convention for
+  `IServiceCollection` extensions, so a typical `Program.cs` needs no extra `using`.
+- The solver is a parameter, not a registration-order rule, so the footgun the old
+  `AddNpkToolsOrToolsSolver()` mechanism had does not come back. `TryAdd` is used only to make calling
+  the method twice idempotent.
+- Registrations are factory delegates, so nothing is constructed for a service the application never
+  resolves.
 
 ### Google OR-Tools is no longer shipped
 
@@ -76,7 +100,8 @@ a complete worked example of doing that.
 
 ### Packaging
 
-- Package id `SYT.NPKTools`, title `SYT NPKTools`, matching the other `SYT.*` packages.
+- Package ids `SYT.NPKTools` and `SYT.NPKTools.DependencyInjection`, titled `SYT NPKTools` and
+  `SYT NPKTools Dependency Injection`, matching the other `SYT.*` packages.
 - The licence ships as a file inside the package rather than as an SPDX expression, so the exact text
   is in what consumers downloaded.
 - One README, packed from the repository root, so the NuGet page and the GitHub landing page cannot

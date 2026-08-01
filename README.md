@@ -10,8 +10,8 @@ Fertilizer nutrient management for .NET. Give it a target nutrient profile in pp
 you have, and it works out how much of each to use by solving the mix as a linear program. It also
 calculates the ppm of a mixture you already have.
 
-Targets **.NET 10**. One package, no native dependencies, so the whole pipeline runs server-side or
-in the browser under WebAssembly.
+Targets **.NET 10**. No dependencies and nothing native, so the whole pipeline runs server-side or in
+the browser under WebAssembly.
 
 ```bash
 dotnet add package SYT.NPKTools
@@ -63,10 +63,10 @@ Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
 
 ## Dependency injection
 
-There is no `AddNpkTools()` extension method, because providing one would mean depending on
-`Microsoft.Extensions.DependencyInjection.Abstractions` and **this package has no dependencies at
-all**. You do not need one: `IServiceCollection` belongs to your application, so registering these
-services is one line each.
+Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.
+
+**Register the factory results yourself.** No extra package — `IServiceCollection` belongs to your
+application, so this needs nothing from us:
 
 ```csharp
 services.AddSingleton(NpkTools.CreateOptimizationService());
@@ -74,8 +74,29 @@ services.AddSingleton(NpkTools.CreatePpmCalculator());
 services.AddSingleton(NpkTools.CreateTargetParser());
 ```
 
-Singletons are correct: everything here is stateless, apart from the bundle repository's immutable
-lazy cache.
+**Or take the optional extension package** and do it in one line:
+
+```bash
+dotnet add package SYT.NPKTools.DependencyInjection
+```
+
+```csharp
+services.AddNpkTools();
+```
+
+That is the entire reason the second package exists: an `IServiceCollection` extension method requires
+`Microsoft.Extensions.DependencyInjection.Abstractions`, and keeping it out of `SYT.NPKTools` is what
+makes the main package dependency-free. The extension lives in the
+`Microsoft.Extensions.DependencyInjection` namespace, so a typical `Program.cs` needs no extra `using`.
+
+It also takes the solver, so substitution stays an argument rather than a registration order:
+
+```csharp
+services.AddNpkTools(new MyGlopSolver());
+```
+
+Singletons are correct either way: everything here is stateless, apart from the bundle repository's
+immutable lazy cache.
 
 The factory is a convenience over public constructors, not a requirement — you can always assemble the
 graph yourself:
@@ -94,15 +115,21 @@ IFertilizerOptimizationService service =
 
 ## What's in the box
 
+| Package | Dependencies | Take it if |
+| --- | --- | --- |
+| [`SYT.NPKTools`](https://www.nuget.org/packages/SYT.NPKTools/) | **none** | always |
+| [`SYT.NPKTools.DependencyInjection`](https://www.nuget.org/packages/SYT.NPKTools.DependencyInjection/) | the above + `Microsoft.Extensions.DependencyInjection.Abstractions` | you want `services.AddNpkTools()` in one line |
+
+`SYT.NPKTools` has **no dependencies at all**. Not "few" — none. There is nothing in it to conflict
+with whatever versions your application already resolves, and nothing native, so it runs wherever .NET
+runs.
+
 | Namespace | Contents |
 | --- | --- |
 | `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
 | `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
-
-**No dependencies.** Not "few" — none. Nothing to conflict with whatever versions your application
-already resolves.
 
 ## Runs in the browser
 
@@ -207,9 +234,9 @@ part of the move is a find-and-replace:
 | `NPKTools.Core.Domain.PartsPerMillion*`, `.PpmTarget*`, `NPKTools.PPMCalc`, `NPKTools.Optimizer.PpmTargetParser` | `SYT.NPKTools.Nutrients` |
 | `NPKTools.Core.Domain.SolutionsFinderSettings*`, `NPKTools.Optimizer.Components`, `.Contracts` | `SYT.NPKTools.Optimization` |
 | `NPKTools.Core.Domain.Collections`, `NPKTools.Optimizer.Preset` | `SYT.NPKTools` |
-| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | `NpkTools.CreateOptimizationService()`, `.CreatePpmCalculator()`, `.CreateTargetParser()` — register them yourself, see [Dependency injection](#dependency-injection) |
-| `AddNpkToolsOrToolsSolver()` | pass the solver: `NpkTools.CreateOptimizationService(mySolver)` |
-| dependency on `Microsoft.Extensions.DependencyInjection.Abstractions` | none — the package has no dependencies |
+| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | one `AddNpkTools()` from `SYT.NPKTools.DependencyInjection`, or register the `NpkTools` factory results yourself — see [Dependency injection](#dependency-injection) |
+| `AddNpkToolsOrToolsSolver()` | pass the solver: `AddNpkTools(mySolver)` or `NpkTools.CreateOptimizationService(mySolver)` |
+| `Microsoft.Extensions.DependencyInjection.Abstractions` was a dependency of the library | only of the optional DI package; `SYT.NPKTools` has no dependencies |
 | `IFertilizerBundleRepository.Marco()` | `.Macro()` |
 | `PpmTargetBuilder.AddLitters(...)` | `.AddLiters(...)` |
 | `FindSolutions` returned `(Solutions Macro, Solutions Micro)` | returns `FertilizerSolutions` |
