@@ -3,7 +3,17 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0-preview.3] - 2026-08-01
+
+**The calculator, not just the solver.** Everything below turns a recipe into something a grower can act on:
+the source water is accounted for, the mix can be judged rather than only computed, a person's own salts are
+searched like the catalogue, and the result can be stored as an A/B concentrate that is checked for whether it
+will physically dissolve.
+
+Three of the numeric claims in this release are checkable against external authorities, and the tests check
+them: the EC model against the certified KCl conductivity standards, the solubility figures against published
+handbook values, and the physical constants against the IUPAC and CRC tables. Where a figure could not be
+sourced with confidence it was left out and is reported as unchecked rather than assumed safe.
 
 ### Added
 
@@ -260,6 +270,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the one with real spread in the literature — 31.8 to 36 depending on source — which moves total EC by under
   half a percent, since phosphate is about 2% of a feed's conductivity. A test also asserts the divalent
   values are per mole of ion rather than per equivalent, the distinction that would otherwise halve them.
+
+### Found by pre-release review
+
+An adversarial review of this release, run before publishing, turned up three defects in the new code. All
+three were reproduced, fixed and pinned by regression test. The existing suite had passed over all of them.
+
+- **`MaxDilutionRatio` discarded the limits it knew when a tank held one salt it did not.** A tank with a
+  custom salt beside an over-limit MKP reported no constraint of its own, so the ceiling came from the other
+  tank entirely: 1:1290 for a tank whose MKP stops dissolving near 1:45, a factor of 28 in the direction that
+  ruins a batch. The ceiling is now computed from the salts with known limits and ignores the rest, which
+  loosens the bound but never discards a constraint. Salts left out of it are named in `UnknownSolubility`, so
+  a non-empty list means the ceiling is optimistic. This is the one place the reasoning differs from
+  `SaturationFraction`, which stays null on an unknown because a partial sum there would read as a verdict on
+  the tank.
+
+- **The conductivity estimate went non-monotonic and reached zero.** The Kohlrausch correction was applied
+  unbounded, so it turned the estimate downwards past an ionic strength of about 1.1 and hit exactly zero
+  near 3.3 — a saturated solution reported no conductivity at all, silently, with no NaN or exception. That
+  range is reachable through the library's own flagship path: a working feed in a 1:100 concentrate tank sits
+  near 2.5. The correction is now frozen at the top of the range it was anchored on, which keeps the figure
+  monotonic and non-zero, and the new `IsWithinValidatedRange` says when it should be read as an ordering
+  rather than a measurement. Nothing inside the anchored range moved — the KCl standards still come out at
+  +0.1%, +0.3% and −3.9%.
+
+- **A stale figure in the shipped XML documentation.** The remark on `WaterProfile.EstimateConductivity`
+  quoted 456 µS/cm where the code, the README and the tests all say 454, left over from an earlier
+  coefficient. It would have reached users through IntelliSense.
 
 ## [1.0.0-preview.2] - 2026-08-01
 

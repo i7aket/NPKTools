@@ -150,19 +150,26 @@ public static class ConcentrateExtensions
     /// Works out how far a tank can be concentrated before it saturates.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Saturation rises in proportion to the dilution ratio — twice the ratio is twice the strength — so
-    /// the ceiling is where the summed fractions reach 1. Returns null when any salt's limit is unknown, or
-    /// when nothing in the tank has a finite limit to bind against.
+    /// the ceiling is where the summed fractions reach 1. Returns null only when nothing in the tank has a
+    /// finite known limit to bind against.
+    /// </para>
+    /// <para>
+    /// Salts with no known limit are skipped rather than making the whole tank unbounded. Skipping them
+    /// loosens the bound, which is a shame; treating the tank as unconstrained would <em>discard</em> the
+    /// limits that are known, which is a defect — a tank holding one custom salt beside an over-limit MKP
+    /// would report a ceiling taken from the other tank entirely, tens of times too high. This is the one
+    /// place where the reasoning differs from <see cref="ConcentrateTank.SaturationFraction"/>, which is
+    /// null on an unknown because a partial sum there would read as a verdict on the tank. Here a partial
+    /// bound is still a bound, and the salts left out of it are named in
+    /// <see cref="ConcentratePlan.UnknownSolubility"/>.
+    /// </para>
     /// </remarks>
     private static double? CeilingFor(ConcentrateTank tank, double workingLiters)
     {
-        if (tank.IsEmpty || tank.Components.Any(c => c.SolubilityLimit is null))
-        {
-            return null;
-        }
-
         double saturationPerUnitRatio = tank.Components
-            .Where(c => double.IsFinite(c.SolubilityLimit!.Value))
+            .Where(c => c.SolubilityLimit is not null && double.IsFinite(c.SolubilityLimit.Value))
             .Sum(c => c.Grams / (workingLiters * c.SolubilityLimit!.Value));
 
         return saturationPerUnitRatio > 0 ? 1 / saturationPerUnitRatio : null;

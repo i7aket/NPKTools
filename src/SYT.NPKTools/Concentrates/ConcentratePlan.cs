@@ -86,14 +86,20 @@ public sealed record ConcentratePlan(
                                  or ConcentrateWarningKind.TankSaturated);
 
     /// <summary>
-    /// Gets the largest concentrate volume ratio the solubility figures allow, or null when no salt has a
-    /// known limit.
+    /// Gets the largest dilution ratio the known solubility figures allow, or null when no salt in either
+    /// tank has a finite known limit.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The actionable number when <see cref="ExceedsSolubility"/> is true: a 1:100 concentrate that cannot
-    /// dissolve may well work at 1:40, and this says where the ceiling is. It is an upper bound on
-    /// <see cref="DilutionRatio"/> and shares the caveats of the table it comes from — the true ceiling in
-    /// a mixture is lower, so leave headroom.
+    /// dissolve may well work at 1:40, and this says where the ceiling is. It shares the caveats of the
+    /// table it comes from — the true ceiling in a mixture is lower, so leave headroom.
+    /// </para>
+    /// <para>
+    /// Salts named in <see cref="UnknownSolubility"/> are not part of this bound, because there is no figure
+    /// to bound them with. That makes the ceiling an optimistic one whenever that list is non-empty: the real
+    /// limit may be lower, and it is the caller's job to read the two together.
+    /// </para>
     /// </remarks>
     public double? MaxDilutionRatio { get; init; }
 }

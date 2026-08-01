@@ -121,9 +121,15 @@ public static class PpmExtensions
             + bicarbonateMeqPerLitre
             + 4 * (mM.Calcium + mM.Magnesium + mM.Sulfur)) / 2000;
 
-        double correction = Math.Max(
-            0,
-            1 - MolarConductivities.InteractionCoefficient * Math.Sqrt(ionicStrength));
+        // The correction is anchored on KCl standards up to 0.1 M and the square-root form only holds while
+        // the solution is dilute. Left unclamped it keeps growing: it turns the estimate downwards past
+        // I ≈ 1.1 and reaches exactly zero at I ≈ 3.3, so a concentrate tank — a working feed at 1:100 sits
+        // near I = 2.5 — would report less conductivity the more salt it held, and eventually none. Freezing
+        // the correction at the top of the anchored range keeps the figure monotonic and non-zero; it is
+        // then too high rather than absurd, and IsWithinValidatedRange says not to trust it.
+        double correctionStrength = Math.Min(ionicStrength, ConductivityEstimate.ValidatedIonicStrength);
+        double correction =
+            1 - MolarConductivities.InteractionCoefficient * Math.Sqrt(correctionStrength);
 
         return new ConductivityEstimate(
             potassium: mM.Potassium * MolarConductivities.Potassium,

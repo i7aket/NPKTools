@@ -216,6 +216,95 @@ public class ConductivityTests
             .Should().BeGreaterThan(asPhosphate.EstimateConductivity().IdealMicroSiemensPerCm * 3);
     }
 
+    // ---------------------------------------------------------------- outside the validated range
+
+    /// <summary>
+    /// More salt must always read as more conductivity. The correction was a defect here: left to grow with
+    /// √I it turned the estimate downwards past I ≈ 1.1 and reached exactly zero at I ≈ 3.3, so a strong
+    /// solution reported less conductivity than a weak one and eventually none at all — silently, with no
+    /// NaN and no exception.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EstimateConductivity_AcrossThreeOrdersOfConcentration_NeverDecreases()
+    {
+        // Arrange
+        double[] molarities = [0.001, 0.01, 0.1, 0.5, 1.0, 2.5, 3.5, 10.0];
+
+        // Act
+        double[] readings = [.. molarities.Select(m =>
+            PotassiumChloride(m).EstimateConductivity().MicroSiemensPerCm)];
+
+        // Assert
+        readings.Should().BeInAscendingOrder();
+        readings.Should().AllSatisfy(r => r.Should().BeGreaterThan(0));
+    }
+
+    /// <summary>
+    /// The case that makes this matter: reading the EC of a concentrate tank rather than the finished feed.
+    /// A working solution at 1:100 sits an order of magnitude past anything the model was anchored on, so the
+    /// flag has to say so — there is no useful number to give there.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EstimateConductivity_AConcentrateTank_IsReportedAsOutsideTheValidatedRange()
+    {
+        // Arrange — the documentation's feed, and the same feed at concentrate strength
+        Ppm feed = new PpmBuilder()
+            .AddNitrate(150).AddP(50).AddK(210).AddCa(160).AddMg(50).AddS(65)
+            .AddLiters(100)
+            .Build();
+        Ppm concentrate = new PpmBuilder()
+            .AddNitrate(15000).AddP(5000).AddK(21000).AddCa(16000).AddMg(5000).AddS(6500)
+            .AddLiters(100)
+            .Build();
+
+        // Act
+        ConductivityEstimate atWorkingStrength = feed.EstimateConductivity();
+        ConductivityEstimate atTankStrength = concentrate.EstimateConductivity();
+
+        // Assert
+        atWorkingStrength.IsWithinValidatedRange.Should().BeTrue();
+        atTankStrength.IsWithinValidatedRange.Should().BeFalse();
+        atTankStrength.IonicStrength.Should()
+            .BeGreaterThan(ConductivityEstimate.ValidatedIonicStrength * 10);
+    }
+
+    /// <summary>
+    /// The correction stops changing at the top of the anchored range, so it can never reach zero — the value
+    /// that produced an EC of 0 µS/cm for a saturated solution.
+    /// </summary>
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(3.5)]
+    [InlineData(50.0)]
+    [Trait("Category", "Unit")]
+    public void EstimateConductivity_FarOutsideTheRange_KeepsTheCorrectionFrozenRatherThanZero(double molarity)
+    {
+        // Act
+        ConductivityEstimate result = PotassiumChloride(molarity).EstimateConductivity();
+
+        // Assert — the correction at I = 0.1, held constant above it
+        result.Correction.Should().BeApproximately(1 - 0.55 * Math.Sqrt(0.1), 1e-9);
+        result.MicroSiemensPerCm.Should().BeGreaterThan(0);
+        result.IsWithinValidatedRange.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Freezing the correction must not disturb the anchored range, which is where every real solution lives
+    /// and where the model's accuracy claims come from.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EstimateConductivity_InsideTheRange_IsUnaffectedByTheClamp()
+    {
+        // Act & Assert — the two certified standards that bracket a real feed, unchanged
+        (PotassiumChloride(0.001).EstimateConductivity().MicroSiemensPerCm / 147).Should()
+            .BeApproximately(1, 0.005);
+        (PotassiumChloride(0.01).EstimateConductivity().MicroSiemensPerCm / 1412).Should()
+            .BeApproximately(1, 0.005);
+    }
+
     // ---------------------------------------------------------------- TDS
 
     /// <summary>

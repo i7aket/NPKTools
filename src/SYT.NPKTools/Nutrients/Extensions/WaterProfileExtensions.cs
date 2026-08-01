@@ -98,7 +98,7 @@ public static class WaterProfileExtensions
     /// <remarks>
     /// <para>
     /// Prefer this over <c>water.AsPpm().EstimateConductivity()</c>, which leaves bicarbonate out and so reads
-    /// about a quarter low on a moderately hard supply — 358 µS/cm against the roughly 456 a meter would show.
+    /// about a quarter low on a moderately hard supply — 358 µS/cm against the roughly 454 a meter would show.
     /// The bicarbonate comes from <see cref="EstimatedAlkalinity"/>, and inferring it is only defensible here:
     /// in a water analysis the cation surplus is the alkalinity, whereas in a recipe the same gap is the
     /// acid-base character of the salts and has nothing to do with bicarbonate.

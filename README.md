@@ -17,7 +17,7 @@ the browser under WebAssembly.
 dotnet add package SYT.NPKTools
 ```
 
-> **This is `1.0.0-preview.2`.** It supersedes the `NPKTools.*` packages, which are no longer
+> **This is `1.0.0-preview.3`.** It supersedes the `NPKTools.*` packages, which are no longer
 > updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
 
 ## Quick start
@@ -297,9 +297,14 @@ water, and increasingly high above it because ions interfere with each other as 
 quantity that decides it. Nothing is hidden behind a magic number: the one coefficient in the model comes
 from those certified standards, not from fitting to fertilizer recipes.
 
-Expect a few percent, not a meter replacement. The remaining error is not all the model's — the source
-water's bicarbonate conducts and is not modelled, meter calibration drifts, and temperature compensation
-is itself approximate.
+Expect a few percent, not a meter replacement. The remaining error is not all the model's — meter
+calibration drifts and temperature compensation is itself approximate.
+
+**Check `IsWithinValidatedRange` if you might be measuring a concentrate.** The correction is anchored on
+reference solutions up to an ionic strength of 0.1 M; a working feed sits near 0.025, but the same feed in a
+1:100 tank is near 2.5 — an order of magnitude past anything the model was checked against. The estimate
+stays monotonic there, so more salt always reads as more conductivity, but it runs increasingly high and
+should be treated as an ordering rather than a measurement.
 
 **Urea reads as pure water.** 150 ppm of nitrogen as urea gives an EC of exactly 0, because an uncharged
 molecule carries no current. That is not a bug to work around; it is the reason EC is a poor proxy for feed
@@ -445,7 +450,9 @@ Two checks run, and they catch different mistakes:
   sum suggests.
 
 `MaxDilutionRatio` is the answer to "then how strong *can* I make it": a 1:1000 concentrate that cannot
-dissolve may be fine at 1:600.
+dissolve may be fine at 1:600. Salts listed in `UnknownSolubility` are not part of that bound — there is no
+figure to bound them with — so when that list is non-empty the ceiling is an optimistic one and the two must
+be read together.
 
 **On the basis of these figures**, because it is where they go wrong. Each is grams of the salt *as the
 catalogue names it* — water of crystallisation included — per litre of water at 20 °C, and the source
@@ -696,8 +703,8 @@ Publishing is triggered by a version tag, not by pushes to `main`. Bump `<Versio
 `src/Directory.Build.props`, commit it, then tag:
 
 ```bash
-git tag v1.0.0-preview.2
-git push origin v1.0.0-preview.2
+git tag v1.0.0-preview.3
+git push origin v1.0.0-preview.3
 ```
 
 The workflow refuses to publish if the tag is not valid SemVer or does not match the committed

@@ -119,9 +119,38 @@ public sealed record ConductivityEstimate
     /// </summary>
     /// <remarks>
     /// Exposed rather than hidden, because it is the one modelled quantity in the estimate. Around 0.91 for
-    /// a typical feed — that is, the ideal sum runs about 9% high before correction.
+    /// a typical feed — that is, the ideal sum runs about 9% high before correction. It stops changing above
+    /// <see cref="ValidatedIonicStrength"/>; see <see cref="IsWithinValidatedRange"/>.
     /// </remarks>
     public double Correction { get; }
+
+    /// <summary>
+    /// The ionic strength, in mol/L, up to which this estimate is anchored on certified reference solutions.
+    /// </summary>
+    /// <remarks>
+    /// The highest of the three KCl conductivity standards the correction is fitted against. A working
+    /// nutrient solution sits around 0.02–0.04, comfortably inside it.
+    /// </remarks>
+    public const double ValidatedIonicStrength = 0.1;
+
+    /// <summary>
+    /// Gets a value indicating whether the solution is dilute enough for this estimate to mean anything.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// False above <see cref="ValidatedIonicStrength"/>, where no simple model works and this one has no
+    /// reference solution to have been checked against. The figure is still monotonic there — more salt
+    /// always reads as more conductivity — but it runs increasingly high and should be treated as an
+    /// ordering, not a measurement.
+    /// </para>
+    /// <para>
+    /// The case that makes this worth checking is a concentrate. Reading the EC of a tank rather than of the
+    /// finished feed puts the ionic strength an order of magnitude past anything the model was anchored on: a
+    /// working solution at 1:100 lands near I = 2.5. There is no useful estimate to give there, so the honest
+    /// signal is this flag.
+    /// </para>
+    /// </remarks>
+    public bool IsWithinValidatedRange => IonicStrength <= ValidatedIonicStrength;
 
     /// <summary>
     /// Gets the conductivity ignoring ion-ion interaction, in µS/cm. An upper bound.

@@ -165,6 +165,76 @@ public class SolubilityTests
         solution.AsConcentrate(100 / (ceiling * 1.02)).ExceedsSolubility.Should().BeTrue();
     }
 
+    /// <summary>
+    /// A salt with no known limit must not cancel the limits that <em>are</em> known. This was a defect: a tank
+    /// holding one custom salt beside an over-limit MKP reported no constraint of its own, so the ceiling came
+    /// from the other tank entirely and came out 28× too high — the grower is told to go to 1:1290 for a tank
+    /// that stops dissolving near 1:45.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void AsConcentrate_UnknownSaltBesideAKnownOne_DoesNotCancelTheKnownLimit()
+    {
+        // Arrange — tank A comfortable, tank B far over on MKP, plus a custom salt with no figure
+        Fertilizer calciumNitrate = new FertilizerBuilder()
+            .AddName("Calcium Nitrate Tetrahydrate").AddType(ConcentrateType.A)
+            .AddNo3(11.86).AddCaNonChelated(16.97).AddWeight(100).Build();
+        Fertilizer mkp = new FertilizerBuilder()
+            .AddName("Potassium Dihydrogen Phosphate (MKP)").AddType(ConcentrateType.B)
+            .AddP(22.76).AddK(28.73).AddWeight(500).Build();
+        Fertilizer custom = Salt("My Custom Sulfate", grams: 10, ConcentrateType.B);
+
+        Solution withUnknown = new([calciumNitrate, mkp, custom], waterLiters: 100);
+        Solution knownOnly = new([calciumNitrate, mkp], waterLiters: 100);
+
+        // Act
+        double? ceilingWithUnknown = withUnknown.AsConcentrate(1).MaxDilutionRatio;
+        double? ceilingKnownOnly = knownOnly.AsConcentrate(1).MaxDilutionRatio;
+
+        // Assert — the unknown salt loosens nothing; MKP still sets the ceiling
+        ceilingWithUnknown.Should().BeApproximately(ceilingKnownOnly!.Value, 1e-9);
+        ceilingWithUnknown.Should().BeApproximately(45.2, 0.1);
+    }
+
+    /// <summary>
+    /// The invariant behind the ceiling: at the ratio it reports, no salt with a known limit may already be
+    /// over that limit. Otherwise the number is not a ceiling but an invitation.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void AsConcentrate_AtTheReportedCeiling_NoKnownLimitIsAlreadyExceeded()
+    {
+        // Arrange
+        Fertilizer mkp = new FertilizerBuilder()
+            .AddName("Potassium Dihydrogen Phosphate (MKP)").AddType(ConcentrateType.B)
+            .AddP(22.76).AddK(28.73).AddWeight(500).Build();
+        Solution solution = new([mkp, Salt("My Custom Sulfate", grams: 10, ConcentrateType.B)], waterLiters: 100);
+
+        // Act — a hair inside the ceiling means a slightly larger tank, so a weaker one
+        double ceiling = solution.AsConcentrate(1).MaxDilutionRatio!.Value;
+        ConcentratePlan justInside = solution.AsConcentrate(100 / ceiling * 1.01);
+
+        // Assert
+        justInside.TankB.Components
+            .Where(c => c.SolubilityLimit is not null)
+            .Should().AllSatisfy(c => c.ExceedsSolubility.Should().BeFalse());
+    }
+
+    /// <summary>
+    /// A tank whose only salt has no figure genuinely cannot be bounded, and null is the right answer there —
+    /// the distinction being that nothing was discarded, there was nothing to discard.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void AsConcentrate_NothingWithAKnownLimitAnywhere_HasNoCeiling()
+    {
+        // Arrange
+        Solution solution = new([Salt("My Own Mystery Salt", grams: 100)], waterLiters: 100);
+
+        // Act & Assert
+        solution.AsConcentrate(1).MaxDilutionRatio.Should().BeNull();
+    }
+
     // ---------------------------------------------------------------- unknown is not safe
 
     /// <summary>
