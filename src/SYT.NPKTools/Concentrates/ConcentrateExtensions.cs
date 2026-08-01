@@ -17,6 +17,11 @@ public static class ConcentrateExtensions
     /// The volume of each tank. The whole recipe's salt goes into this much water, so a 100-liter recipe
     /// concentrated into 1 liter gives a 1:100 dilution.
     /// </param>
+    /// <param name="solubility">
+    /// The solubility figures to check each salt's tank strength against. Defaults to
+    /// <see cref="SolubilityTable.Default"/>, which covers the preset catalogue; add your own salts with
+    /// <see cref="SolubilityTable.With"/>, since a salt with no figure can only be reported as unchecked.
+    /// </param>
     /// <returns>The tanks, the dilution ratio, and anything worth checking before mixing.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="solution"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -38,10 +43,15 @@ public static class ConcentrateExtensions
     /// needs solubility products, pH and temperature, none of which this library models.
     /// </para>
     /// </remarks>
-    public static ConcentratePlan AsConcentrate(this Solution solution, double concentrateLiters)
+    public static ConcentratePlan AsConcentrate(
+        this Solution solution,
+        double concentrateLiters,
+        SolubilityTable? solubility = null)
     {
         ArgumentNullException.ThrowIfNull(solution);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(concentrateLiters);
+
+        solubility ??= SolubilityTable.Default;
 
         if (concentrateLiters >= solution.WaterLiters)
         {
@@ -70,8 +80,10 @@ public static class ConcentrateExtensions
                         + "composition. Set ConcentrateType explicitly to be sure."));
             }
 
-            ConcentrateComponent component =
-                new(fertilizer, fertilizer.Weight.Value / concentrateLiters);
+            ConcentrateComponent component = new(
+                fertilizer,
+                fertilizer.Weight.Value / concentrateLiters,
+                solubility.Limit(fertilizer.Name.Value));
 
             if (tank == ConcentrateType.B)
             {
@@ -86,13 +98,78 @@ public static class ConcentrateExtensions
         warnings.AddRange(FindPrecipitationRisks(ConcentrateType.A, tankA));
         warnings.AddRange(FindPrecipitationRisks(ConcentrateType.B, tankB));
 
+        ConcentrateTank tankOfA = new(ConcentrateType.A, tankA);
+        ConcentrateTank tankOfB = new(ConcentrateType.B, tankB);
+
+        List<string> unknownSolubility = [];
+        double? maxRatio = null;
+
+        foreach (ConcentrateTank tank in new[] { tankOfA, tankOfB })
+        {
+            unknownSolubility.AddRange(tank.Components
+                .Where(c => c.SolubilityLimit is null)
+                .Select(c => c.Fertilizer.Name.Value));
+
+            warnings.AddRange(tank.Components
+                .Where(c => c.ExceedsSolubility)
+                .Select(c => new ConcentrateWarning(
+                    ConcentrateWarningKind.SolubilityExceeded,
+                    tank.Tank,
+                    [c.Fertilizer.Name.Value],
+                    $"Tank {tank.Tank} needs {c.GramsPerLiter:F1} g/L of '{c.Fertilizer.Name.Value}', "
+                        + $"which dissolves to {c.SolubilityLimit:F0} g/L at 20 °C. Use a larger "
+                        + "concentrate volume, or a more soluble source of that element.")));
+
+            if (tank.IsSaturated)
+            {
+                warnings.Add(new ConcentrateWarning(
+                    ConcentrateWarningKind.TankSaturated,
+                    tank.Tank,
+                    [.. tank.Components.Select(c => c.Fertilizer.Name.Value)],
+                    $"Tank {tank.Tank} is at {tank.SaturationFraction:P0} of saturation: its salts "
+                        + "together need more water than the tank holds, because they compete for the "
+                        + "same water. Use a larger concentrate volume."));
+            }
+
+            maxRatio = Smaller(maxRatio, CeilingFor(tank, solution.WaterLiters));
+        }
+
         return new ConcentratePlan(
-            new ConcentrateTank(ConcentrateType.A, tankA),
-            new ConcentrateTank(ConcentrateType.B, tankB),
+            tankOfA,
+            tankOfB,
             concentrateLiters,
             solution.WaterLiters,
-            warnings);
+            warnings,
+            unknownSolubility)
+        {
+            MaxDilutionRatio = maxRatio
+        };
     }
+
+    /// <summary>
+    /// Works out how far a tank can be concentrated before it saturates.
+    /// </summary>
+    /// <remarks>
+    /// Saturation rises in proportion to the dilution ratio — twice the ratio is twice the strength — so
+    /// the ceiling is where the summed fractions reach 1. Returns null when any salt's limit is unknown, or
+    /// when nothing in the tank has a finite limit to bind against.
+    /// </remarks>
+    private static double? CeilingFor(ConcentrateTank tank, double workingLiters)
+    {
+        if (tank.IsEmpty || tank.Components.Any(c => c.SolubilityLimit is null))
+        {
+            return null;
+        }
+
+        double saturationPerUnitRatio = tank.Components
+            .Where(c => double.IsFinite(c.SolubilityLimit!.Value))
+            .Sum(c => c.Grams / (workingLiters * c.SolubilityLimit!.Value));
+
+        return saturationPerUnitRatio > 0 ? 1 / saturationPerUnitRatio : null;
+    }
+
+    private static double? Smaller(double? left, double? right) =>
+        left is null ? right : right is null ? left : Math.Min(left.Value, right.Value);
 
     /// <summary>
     /// Picks a tank for a fertilizer that does not declare one, from what it contains.

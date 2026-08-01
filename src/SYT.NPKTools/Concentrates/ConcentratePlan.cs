@@ -15,6 +15,10 @@ namespace SYT.NPKTools.Concentrates;
 /// <param name="ConcentrateLiters">The volume of each tank.</param>
 /// <param name="WorkingLiters">The volume of working solution the original recipe was for.</param>
 /// <param name="Warnings">Anything worth checking before mixing. Empty is the good case.</param>
+/// <param name="UnknownSolubility">
+/// Names of salts the solubility table had no figure for, so nothing could be checked. Reported rather
+/// than passed over: "we do not know whether this dissolves" must not read as "this dissolves".
+/// </param>
 /// <remarks>
 /// <para>
 /// A concentrate exists so that mixing happens once a month instead of every watering. The catch is
@@ -32,7 +36,8 @@ public sealed record ConcentratePlan(
     ConcentrateTank TankB,
     double ConcentrateLiters,
     double WorkingLiters,
-    IReadOnlyList<ConcentrateWarning> Warnings)
+    IReadOnlyList<ConcentrateWarning> Warnings,
+    IReadOnlyList<string> UnknownSolubility)
 {
     /// <summary>
     /// Gets how many parts of water each part of concentrate is diluted into.
@@ -67,4 +72,28 @@ public sealed record ConcentratePlan(
     /// </remarks>
     public bool HasPrecipitationRisk =>
         Warnings.Any(w => w.Kind == ConcentrateWarningKind.PrecipitationRisk);
+
+    /// <summary>
+    /// Gets a value indicating whether any salt is asked to dissolve past its solubility.
+    /// </summary>
+    /// <remarks>
+    /// The other flag worth blocking on, and the more certain of the two: precipitation is a prediction,
+    /// whereas this is arithmetic against a published figure. Dilute the concentrate — a larger tank at a
+    /// smaller ratio — or pick a more soluble source of the element.
+    /// </remarks>
+    public bool ExceedsSolubility =>
+        Warnings.Any(w => w.Kind is ConcentrateWarningKind.SolubilityExceeded
+                                 or ConcentrateWarningKind.TankSaturated);
+
+    /// <summary>
+    /// Gets the largest concentrate volume ratio the solubility figures allow, or null when no salt has a
+    /// known limit.
+    /// </summary>
+    /// <remarks>
+    /// The actionable number when <see cref="ExceedsSolubility"/> is true: a 1:100 concentrate that cannot
+    /// dissolve may well work at 1:40, and this says where the ceiling is. It is an upper bound on
+    /// <see cref="DilutionRatio"/> and shares the caveats of the table it comes from — the true ceiling in
+    /// a mixture is lower, so leave headroom.
+    /// </remarks>
+    public double? MaxDilutionRatio { get; init; }
 }

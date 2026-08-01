@@ -186,8 +186,8 @@ public class ConcentrateTests
 
         // Assert
         plan.HasPrecipitationRisk.Should().BeTrue();
-        ConcentrateWarning warning = plan.Warnings.Single();
-        warning.Kind.Should().Be(ConcentrateWarningKind.PrecipitationRisk);
+        ConcentrateWarning warning = plan.Warnings
+            .Single(w => w.Kind == ConcentrateWarningKind.PrecipitationRisk);
         warning.Tank.Should().Be(ConcentrateType.A);
         warning.Fertilizers.Should().BeEquivalentTo(
             ["Calcium Nitrate Tetrahydrate", "Magnesium Sulfate Heptahydrate"]);
@@ -249,8 +249,10 @@ public class ConcentrateTests
 
         // Assert
         plan.HasPrecipitationRisk.Should().BeTrue();
-        plan.Warnings.Single().Fertilizers.Should().BeEquivalentTo(
-            ["Calcium Nitrate Tetrahydrate", "Potassium Sulfate"]);
+        plan.Warnings
+            .Single(w => w.Kind == ConcentrateWarningKind.PrecipitationRisk)
+            .Fertilizers.Should().BeEquivalentTo(
+                ["Calcium Nitrate Tetrahydrate", "Potassium Sulfate"]);
     }
 
     // ---------------------------------------------------------------- inferred tanks
@@ -277,8 +279,8 @@ public class ConcentrateTests
 
         // Assert
         plan.TankB.Components.Should().HaveCount(1);
-        ConcentrateWarning warning = plan.Warnings.Single();
-        warning.Kind.Should().Be(ConcentrateWarningKind.TankInferred);
+        ConcentrateWarning warning = plan.Warnings
+            .Single(w => w.Kind == ConcentrateWarningKind.TankInferred);
         warning.Tank.Should().Be(ConcentrateType.B);
         warning.Fertilizers.Should().BeEquivalentTo(["My Own Sulfate"]);
     }
@@ -304,7 +306,9 @@ public class ConcentrateTests
 
         // Assert
         plan.TankA.Components.Should().HaveCount(1);
-        plan.Warnings.Single().Tank.Should().Be(ConcentrateType.A);
+        plan.Warnings
+            .Single(w => w.Kind == ConcentrateWarningKind.TankInferred)
+            .Tank.Should().Be(ConcentrateType.A);
     }
 
     // ---------------------------------------------------------------- guards

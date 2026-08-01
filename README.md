@@ -307,6 +307,57 @@ both internally is not flagged — monocalcium phosphate is a soluble compound, 
 happen to be adjacent, and a check that fired on it would teach you to ignore the check. Predicting
 actual precipitation needs solubility products, pH and temperature, none of which this library models.
 
+### Will it actually dissolve?
+
+The other way a concentrate fails is simpler: there is more salt than the water can hold.
+
+```csharp
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1);
+
+if (plan.ExceedsSolubility)
+{
+    Console.WriteLine($"too strong — go no further than 1:{plan.MaxDilutionRatio:F0}");
+}
+```
+
+Two checks run, and they catch different mistakes:
+
+- **One salt past its own limit.** Certain — arithmetic against a published figure. Monocalcium phosphate
+  at 18 g/L is the one that bites first in practice, against potassium nitrate's 316 and calcium nitrate's
+  1290.
+- **The tank saturated as a whole.** `SaturationFraction` adds each salt's share of its own limit; above 1
+  the tank cannot dissolve. Without this, four salts each at 40% of their limit pass individually and fail
+  in the bucket, because they compete for the same water. It is a first-order screen — exact for a single
+  salt, slightly optimistic for a mixture, since salts sharing an ion crowd each other out more than the
+  sum suggests.
+
+`MaxDilutionRatio` is the answer to "then how strong *can* I make it": a 1:1000 concentrate that cannot
+dissolve may be fine at 1:600.
+
+**A salt with no published figure is reported, not assumed.** `SolubilityTable.Default` covers 21 of the
+catalogue's 34 salts. The rest — calcium chloride hexahydrate, urea phosphate, the EDTA chelates, sodium
+silicate and selenate, the nitrate micro salts — carry no entry, because the figures in circulation for
+them disagree by more than the check would be worth. A chelate's solubility depends on the formulation; a
+deliquescent hydrate's on which hydrate it actually is. Guessing would be worse than declining: a wrong
+limit either blocks a tank that would have mixed or passes one that will not.
+
+```csharp
+foreach (string salt in plan.UnknownSolubility)
+{
+    Console.WriteLine($"{salt}: no figure, nothing checked");
+}
+```
+
+For a salt of your own, take the figure off the bag:
+
+```csharp
+SolubilityTable table = SolubilityTable.Default.With("My Own Salt", gramsPerLitreAt20C: 320);
+ConcentratePlan plan = mix.AsConcentrate(concentrateLiters: 1, table);
+```
+
+The figures are for 20 °C in pure water. Solubility rises steeply with temperature, so a cold garage is
+the pessimistic case and a warm room the forgiving one.
+
 ## Dependency injection
 
 Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.

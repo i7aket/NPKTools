@@ -130,9 +130,35 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   both directions — the false positive must not fire, and an internally-mixed salt must not suppress a
   genuine collision beside it.
 
-  `GramsPerLiter` per component is the figure to check against a salt's solubility. The reference
-  solubility values are not in the library yet, so nothing compares against it automatically; that is the
-  next step and is called out rather than implied.
+- **Concentrates are checked against solubility.** `SolubilityTable` holds how much of each salt a litre of
+  water takes at 20 °C, and `AsConcentrate` now reports whether the tanks can physically be mixed.
+
+  Two checks, catching different mistakes. A single salt past its own limit is certain — arithmetic against
+  a published figure — and monocalcium phosphate at 18 g/L is what binds first in practice, against
+  potassium nitrate's 316 and calcium nitrate's 1290. The second is the tank as a whole:
+  `ConcentrateTank.SaturationFraction` adds each salt's share of its own limit, and above 1 the tank cannot
+  dissolve. That one was added after measurement, not by design: a 1:500 concentrate reaching 610 g/L in one
+  tank passed the per-salt check with every salt comfortably inside its own limit, which is too permissive
+  to be useful. Salts in a tank compete for the same water. The sum of fractions is the standard first-order
+  screen — exact for a single salt, slightly optimistic for a mixture, since salts sharing an ion crowd each
+  other out more than the sum suggests.
+
+  `ConcentratePlan.MaxDilutionRatio` answers the question the warning raises: a 1:1000 concentrate that
+  cannot dissolve may be fine at 1:600.
+
+  **A salt with no published figure is reported rather than assumed safe.** The table covers 21 of the
+  catalogue's 34 salts; the rest — calcium chloride hexahydrate, urea phosphate, the EDTA chelates, sodium
+  silicate and selenate, the nitrate micro salts — carry no entry, because the figures in circulation for
+  them disagree by more than the check would be worth. A chelate's solubility depends on the formulation, a
+  deliquescent hydrate's on which hydrate it is. Guessing would be worse than declining: a wrong limit
+  either blocks a tank that would have mixed or passes one that will not. Those salts come back in
+  `ConcentratePlan.UnknownSolubility`, `SaturationFraction` is null rather than a partial sum, and no
+  ceiling is computed — the missing salt could be the one that binds. `SolubilityTable.With` takes a figure
+  off a bag label for a salt of your own.
+
+  A test asserts that every name in the table resolves to a real catalogue salt. It exists because the
+  first version of the table misspelled five micro-salt names, and a name that matches nothing fails
+  silently: the salt reports as unchecked and the check appears to work.
 
 ## [1.0.0-preview.2] - 2026-08-01
 
