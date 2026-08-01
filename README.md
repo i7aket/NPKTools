@@ -588,6 +588,18 @@ It is a demonstration rather than a claim: there is no server, no backend and no
 simplex genuinely runs in the browser. It is also not packed — `dotnet pack` across the solution emits
 the two libraries and nothing else.
 
+The whole site is **5.2 MB of files, 1.7 MB in brotli**, and reaches the first recipe about 1.2 s after
+the request on a warm local server. Globalization data is left out: the interface is English and every
+number is parsed and formatted through the invariant culture on purpose, so the three ICU files were
+2.5 MB on disk and 1.1 MB of first load buying nothing. Removing them moved no figure — the documented
+tap-water anchor still reads 454 µS/cm, 2.27 meq/L and 139 ppm HCO₃⁻ in the published build.
+
+`.github/workflows/pages.yml` deploys it to GitHub Pages on a push to `main` that touches `web/` or
+`src/`. To turn it on, set **Settings → Pages → Source** to **GitHub Actions**; until that is done the
+deploy step fails on the Pages API rather than for want of permissions. The workflow rewrites the
+`<base href>` to the project subpath, writes `.nojekyll` so the `_framework` directory is not dropped,
+and serves `index.html` as `404.html` so a refreshed deep link reaches the router instead of a dead end.
+
 ### How a setup is kept, and how it moves between browsers
 
 Three mechanisms, and they are not alternatives — each answers a question the others cannot:

@@ -320,6 +320,21 @@ the simplex runs client-side. `IsPackable=false` keeps it out of `dotnet pack`.
   would otherwise select the wrong salts silently; instead its salt selection is dropped and reported, and
   the rest of the link still applies.
 
+- **The app deploys itself to GitHub Pages**, which is the only way "runs in the browser" becomes
+  something a grower can check rather than a developer's claim. A static host needs three things a Blazor
+  app does not get for free, and each is a blank page if missed: the `<base href>` has to name the project
+  subpath, `.nojekyll` has to exist or Jekyll drops `_framework` for starting with an underscore, and
+  `index.html` has to be served as `404.html` or a refreshed deep link dies. The base href is rewritten in
+  the workflow rather than committed, so `dotnet run` locally still serves from the root.
+
+- **Globalization data is left out of the app.** The three ICU files were 2.5 MB on disk and 1.1 MB of
+  first load, and this app has no use for them: the interface is English and every number is parsed and
+  formatted through the invariant culture deliberately. The published site is now 5.2 MB of files and
+  1.7 MB in brotli. Verified to have moved no figure — the documented tap-water anchor still reads exactly
+  454 µS/cm, 2.27 meq/L and 139 ppm HCO₃⁻ in the published build served from a project subpath. It also
+  makes a comma decimal separator impossible to misread as one, which is the safer failure: 1,5 grams
+  taken as 15 would be a tenfold weighing error.
+
 - **Pasting a link into an already-open tab now applies it**, which is how a shared link actually gets
   used. A fragment-only change does not reload the page, so reading the address once at startup ignored
   exactly that case — the app was correct when the link opened a new tab and silently did nothing when it

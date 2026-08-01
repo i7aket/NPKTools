@@ -2,8 +2,19 @@
 
   <PropertyGroup>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
-    <!-- Published to GitHub Pages under /NPKTools/, so assets cannot assume the site root. -->
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+
+    <!--
+      No ICU. The three globalization data files are 2.5 MB on disk and 1.1 MB of first load, and this
+      app has no use for them: the interface is English, every number is parsed and formatted through
+      the invariant culture on purpose, and the library was fixed to do the same in its reports. Leaving
+      them in would mean a grower on a phone downloading a collation table for Chinese to work out how
+      much calcium nitrate to weigh.
+
+      This makes a comma decimal separator not merely ignored but impossible to interpret as one, which
+      is the safer failure: 1,5 grams read as 15 would be a tenfold weighing error.
+    -->
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
