@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-preview.1] - 2026-08-01
+## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
 further updates. The version resets to 1.0.0 because the package identity is new; in terms of code
@@ -18,24 +18,45 @@ The find-and-replace table for moving off the old packages is in
 `NPKTools.Core`, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
 `NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`.
 
-The split cost consumers something and bought them nothing. Five of the six projects had identical
-external dependencies — `Microsoft.Extensions.DependencyInjection.Abstractions` alone — and together
-came to 161 KB of IL, so nobody was avoiding a meaningful download by taking a subset. Meanwhile a
-first-time user had to know which three of six packages made a working setup, and every release
-multiplied version-matrix combinations that were never tested apart.
+The split cost consumers something and bought them nothing. Five of the six projects had the same
+single external dependency and came to 161 KB of IL together, so nobody was avoiding a meaningful
+download by taking a subset. Meanwhile a first-time user had to know which three of six packages made
+a working setup, and every release multiplied version-matrix combinations that were never tested
+apart.
 
 - **Namespaces are flattened** from 24 to 4: `SYT.NPKTools`, `.Fertilizers`, `.Nutrients`,
   `.Optimization`. The old tree had namespaces named after the type inside them
   (`NPKTools.Core.Domain.PpmTarget` containing `PpmTarget`), which forced awkward qualification.
-- **One `AddNpkTools()`** replaces `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`,
-  `AddNpkToolsPpmCalc()` and `AddNpkToolsPpmTargetParser()`. Registration order between the four was
-  load-bearing and undocumented; now there is no order to get wrong.
 - **`ThrowIf`, `ReportFormatter`, `Labels`, `Names` and `OptimizationSettings` are `internal`.** They
   were public only because they had to cross package boundaries. `ElementFieldBase` and the
   `*BuilderBase<T>` types stay public — the public value objects and builders derive from them.
 - **`FindSolutions` returns `FertilizerSolutions`** instead of a
   `(Solutions Macro, Solutions Micro)` tuple, so the shape is named, documented and extensible.
   It carries `Empty` and `IsEmpty`.
+
+### No dependencies at all
+
+The four `AddNpkTools*()` extension methods are replaced by a `NpkTools` factory —
+`CreateOptimizationService()`, `CreateOptimizer()`, `CreatePpmCalculator()`, `CreateTargetParser()`,
+`CreateBundleRepository()` — and the dependency on
+`Microsoft.Extensions.DependencyInjection.Abstractions` is gone. The package now depends on nothing.
+
+An `IServiceCollection` extension method requires that package, and it was the only thing in the
+library that did. It was never actually necessary: `IServiceCollection` belongs to the consuming
+application, which already has it, so container registration is one line per service against the
+factory. Documented in the README.
+
+Two things improve as a side effect:
+
+- **Substituting a solver is an explicit argument**, `CreateOptimizationService(mySolver)`, rather than
+  "register yours before `AddNpkTools()` or `TryAdd` silently keeps the default". That ordering rule
+  needed two tests to pin down and could fail quietly; an argument cannot.
+- **Nothing in the package can conflict with a consumer's version graph**, because there is nothing in
+  it to conflict.
+
+For reference, the removed dependency was cheap — 66 KB, no transitive dependencies of its own, and
+already present in the `Microsoft.AspNetCore.App` shared framework and in any Blazor application. This
+change is about the library not imposing a hosting concern, not about download size.
 
 ### Google OR-Tools is no longer shipped
 
@@ -49,9 +70,9 @@ installed. Now every published byte is managed code.
 
 Nothing is lost in validation terms: the oracle is exactly how the managed solver's correctness is
 established, and it is also the benchmark baseline, which is why it is its own project rather than a
-file inside a test assembly. `IOptimizationProblemSolver` remains public and the default is registered
-with `TryAdd`, so a consumer who wants GLOP at runtime registers their own implementation first — the
-oracle is a complete worked example of doing that.
+file inside a test assembly. `IOptimizationProblemSolver` remains public, so a consumer who wants GLOP
+at runtime passes their own implementation to `NpkTools.CreateOptimizationService(...)` — the oracle is
+a complete worked example of doing that.
 
 ### Packaging
 
@@ -68,7 +89,7 @@ oracle is a complete worked example of doing that.
 
 ## Inherited from the NPKTools line
 
-Everything below shipped in the `NPKTools.*` packages and is present in `SYT.NPKTools 1.0.0-preview.1`.
+Everything below shipped in the `NPKTools.*` packages and is present in `SYT.NPKTools 1.0.0-preview.2`.
 It is kept here because it is the actual history of this code, not of a package id.
 
 ### Fixed

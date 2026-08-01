@@ -17,32 +17,21 @@ in the browser under WebAssembly.
 dotnet add package SYT.NPKTools
 ```
 
-> **This is `1.0.0-preview.1`.** It supersedes the `NPKTools.*` packages, which are no longer
+> **This is `1.0.0-preview.2`.** It supersedes the `NPKTools.*` packages, which are no longer
 > updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
 
 ## Quick start
 
-`AddNpkTools()` registers everything. `ServiceCollection` itself comes from
-**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions — so in a
-console app add that too:
-
-```bash
-dotnet add package Microsoft.Extensions.DependencyInjection
-```
+Nothing to configure and nothing else to install — `NpkTools` builds the services for you.
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
 using SYT.NPKTools;
 using SYT.NPKTools.Fertilizers;
 using SYT.NPKTools.Nutrients;
 
-ServiceProvider provider = new ServiceCollection()
-    .AddNpkTools()
-    .BuildServiceProvider();
-
-IPpmTargetParser parser = provider.GetRequiredService<IPpmTargetParser>();
-IFertilizerOptimizationService optimizer = provider.GetRequiredService<IFertilizerOptimizationService>();
-IPpmCalculationService calculator = provider.GetRequiredService<IPpmCalculationService>();
+IPpmTargetParser parser = NpkTools.CreateTargetParser();
+IFertilizerOptimizationService optimizer = NpkTools.CreateOptimizationService();
+IPpmCalculationService calculator = NpkTools.CreatePpmCalculator();
 
 // Elements are separated by spaces or commas; L is the water volume in liters.
 PpmTarget target = parser.Parse("N=150 P=50 K=200 Ca=100 Mg=50 L=100");
@@ -72,7 +61,24 @@ using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
 Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
 ```
 
-Without a DI container, construct the pieces directly:
+## Dependency injection
+
+There is no `AddNpkTools()` extension method, because providing one would mean depending on
+`Microsoft.Extensions.DependencyInjection.Abstractions` and **this package has no dependencies at
+all**. You do not need one: `IServiceCollection` belongs to your application, so registering these
+services is one line each.
+
+```csharp
+services.AddSingleton(NpkTools.CreateOptimizationService());
+services.AddSingleton(NpkTools.CreatePpmCalculator());
+services.AddSingleton(NpkTools.CreateTargetParser());
+```
+
+Singletons are correct: everything here is stateless, apart from the bundle repository's immutable
+lazy cache.
+
+The factory is a convenience over public constructors, not a requirement — you can always assemble the
+graph yourself:
 
 ```csharp
 using SYT.NPKTools;
@@ -90,14 +96,13 @@ IFertilizerOptimizationService service =
 
 | Namespace | Contents |
 | --- | --- |
-| `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and `AddNpkTools()` |
+| `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
 | `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
 
-The only dependency is
-[**Microsoft.Extensions.DependencyInjection.Abstractions**](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/),
-and only for `AddNpkTools()`.
+**No dependencies.** Not "few" — none. Nothing to conflict with whatever versions your application
+already resolves.
 
 ## Runs in the browser
 
@@ -139,16 +144,15 @@ round-off can make it stop at a suboptimal vertex or report no solution where on
 it returns is verified against the original constraints before being handed back, so it will never
 return a mix that violates them.
 
-If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public and the default
-is registered with `TryAdd` — so register your own first and it wins:
+If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public — pass your own
+implementation and it is used for every solve:
 
 ```csharp
-services.AddSingleton<IOptimizationProblemSolver, MyGlopSolver>()
-        .AddNpkTools();
+IFertilizerOptimizationService service = NpkTools.CreateOptimizationService(new MyGlopSolver());
 ```
 
-The repository's oracle at `tests/SYT.NPKTools.OrToolsOracle` is a complete worked example of exactly
-that, backed by GLOP.
+An explicit argument rather than a registration order, so it cannot be silently ineffective. The
+repository's oracle at `tests/SYT.NPKTools.OrToolsOracle` is a complete worked example, backed by GLOP.
 
 ## How it works
 
@@ -203,8 +207,9 @@ part of the move is a find-and-replace:
 | `NPKTools.Core.Domain.PartsPerMillion*`, `.PpmTarget*`, `NPKTools.PPMCalc`, `NPKTools.Optimizer.PpmTargetParser` | `SYT.NPKTools.Nutrients` |
 | `NPKTools.Core.Domain.SolutionsFinderSettings*`, `NPKTools.Optimizer.Components`, `.Contracts` | `SYT.NPKTools.Optimization` |
 | `NPKTools.Core.Domain.Collections`, `NPKTools.Optimizer.Preset` | `SYT.NPKTools` |
-| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | one `AddNpkTools()` |
-| `AddNpkToolsOrToolsSolver()` | gone — see [About the solver](#about-the-solver) |
+| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | `NpkTools.CreateOptimizationService()`, `.CreatePpmCalculator()`, `.CreateTargetParser()` — register them yourself, see [Dependency injection](#dependency-injection) |
+| `AddNpkToolsOrToolsSolver()` | pass the solver: `NpkTools.CreateOptimizationService(mySolver)` |
+| dependency on `Microsoft.Extensions.DependencyInjection.Abstractions` | none — the package has no dependencies |
 | `IFertilizerBundleRepository.Marco()` | `.Macro()` |
 | `PpmTargetBuilder.AddLitters(...)` | `.AddLiters(...)` |
 | `FindSolutions` returned `(Solutions Macro, Solutions Micro)` | returns `FertilizerSolutions` |
@@ -237,8 +242,8 @@ Publishing is triggered by a version tag, not by pushes to `main`. Bump `<Versio
 `src/Directory.Build.props`, commit it, then tag:
 
 ```bash
-git tag v1.0.0-preview.1
-git push origin v1.0.0-preview.1
+git tag v1.0.0-preview.2
+git push origin v1.0.0-preview.2
 ```
 
 The workflow refuses to publish if the tag is not valid SemVer or does not match the committed

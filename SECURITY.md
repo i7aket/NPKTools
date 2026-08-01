@@ -38,7 +38,7 @@ intended to fail gracefully rather than exhaust the host.
 
 ## Dependencies
 
-`SYT.NPKTools` depends only on `Microsoft.Extensions.DependencyInjection.Abstractions`, and carries no
-native binaries. `Google.OrTools` is a test-only dependency — it backs the differential oracle the
-shipped solver is validated against and is never distributed to consumers. Dependency updates are
-tracked automatically by Dependabot.
+`SYT.NPKTools` has **no dependencies** and carries no native binaries, so it adds nothing to your
+supply chain beyond itself. `Google.OrTools` is a test-only dependency — it backs the differential
+oracle the shipped solver is validated against, and is never distributed to consumers. Dependency
+updates are tracked automatically by Dependabot.
