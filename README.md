@@ -286,6 +286,13 @@ The workflow refuses to publish if the tag is not valid SemVer or does not match
 `<Version>`, because a version pushed to NuGet.org can be unlisted but never replaced. It then builds,
 runs the full test suite, and pushes to NuGet.org and GitHub Packages.
 
+Authentication to NuGet.org uses **trusted publishing** rather than a stored API key: the job requests
+an OIDC token from GitHub, NuGet.org validates it against a policy and issues a key that expires in an
+hour. There is no long-lived secret in this repository to leak or rotate. The policy must match the
+workflow exactly — repository owner, repository name, workflow file `release.yml`, and environment
+`nuget` — so renaming this file or changing that environment breaks publishing until the policy is
+updated to match.
+
 Always release through the workflow. `dotnet pack` records the current branch in the nuspec's
 `<repository>` element, so a package built locally on a feature branch carries that branch name in its
 public metadata; packing from a tag ref records the tag.
