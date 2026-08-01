@@ -49,9 +49,11 @@ public sealed record ConductivityEstimate
         double phosphate,
         double sulfate,
         double chloride,
+        double bicarbonate,
         double ionicStrength,
         double correction)
     {
+        Bicarbonate = bicarbonate;
         Potassium = potassium;
         Calcium = calcium;
         Magnesium = magnesium;
@@ -93,6 +95,16 @@ public sealed record ConductivityEstimate
     public double Chloride { get; }
 
     /// <summary>
+    /// Gets HCO₃⁻'s share of the ideal conductivity, in µS/cm. Zero unless bicarbonate was supplied.
+    /// </summary>
+    /// <remarks>
+    /// Bicarbonate is not a plant nutrient and so cannot live in a <see cref="Ppm"/> profile, but it conducts
+    /// and in ordinary tap water it carries most of the negative charge. Omitting it understates a moderately
+    /// hard supply by around a quarter.
+    /// </remarks>
+    public double Bicarbonate { get; }
+
+    /// <summary>
     /// Gets the solution's ionic strength in moles per litre, ½Σcz².
     /// </summary>
     /// <remarks>
@@ -116,7 +128,7 @@ public sealed record ConductivityEstimate
     /// </summary>
     public double IdealMicroSiemensPerCm =>
         Potassium + Calcium + Magnesium + Ammonium + Sodium
-        + Nitrate + Phosphate + Sulfate + Chloride;
+        + Nitrate + Phosphate + Sulfate + Chloride + Bicarbonate;
 
     /// <summary>
     /// Gets the estimated conductivity in µS/cm — the figure to compare with a meter.

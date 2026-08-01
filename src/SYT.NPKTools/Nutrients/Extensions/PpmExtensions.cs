@@ -88,6 +88,14 @@ public static class PpmExtensions
     /// Estimates the electrical conductivity a meter would read for this solution.
     /// </summary>
     /// <param name="ppm">The measured concentrations.</param>
+    /// <param name="bicarbonateMeqPerLitre">
+    /// Bicarbonate present in the solution, in meq/L. Defaults to zero, which is right for a mix of salts in
+    /// pure water. For tap water it is not: bicarbonate carries most of the negative charge in a hard supply
+    /// and omitting it reads about a quarter low, so pass
+    /// <see cref="WaterProfileExtensions.EstimatedAlkalinity"/> when the source water is in the profile. It is
+    /// an argument rather than a field because HCO₃⁻ is not a plant nutrient and has no place in a
+    /// <see cref="Ppm"/>.
+    /// </param>
     /// <returns>The estimate, its ideal upper bound, and each ion's share.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="ppm"/> is null.</exception>
     /// <remarks>
@@ -96,16 +104,21 @@ public static class PpmExtensions
     /// identical ppm can read differently, and a single factor cannot tell which it was given. See
     /// <see cref="ConductivityEstimate"/> for the accuracy and what is excluded.
     /// </remarks>
-    public static ConductivityEstimate EstimateConductivity(this Ppm ppm)
+    public static ConductivityEstimate EstimateConductivity(
+        this Ppm ppm,
+        double bicarbonateMeqPerLitre = 0)
     {
         ArgumentNullException.ThrowIfNull(ppm);
+        ArgumentOutOfRangeException.ThrowIfNegative(bicarbonateMeqPerLitre);
 
         MolarProfile mM = ppm.AsMillimolar();
 
         // Ionic strength is half the sum of cz², in moles per litre. The mM figures are divided by 1000 to
         // get there, and the divalent ions contribute four times their concentration.
+        // Bicarbonate is monovalent, so its meq/L and mmol/L are the same number.
         double ionicStrength = (
             mM.Potassium + mM.Ammonium + mM.Sodium + mM.Nitrate + mM.Phosphorus + mM.Chlorine
+            + bicarbonateMeqPerLitre
             + 4 * (mM.Calcium + mM.Magnesium + mM.Sulfur)) / 2000;
 
         double correction = Math.Max(
@@ -122,8 +135,61 @@ public static class PpmExtensions
             phosphate: mM.Phosphorus * MolarConductivities.DihydrogenPhosphate,
             sulfate: mM.Sulfur * MolarConductivities.Sulfate,
             chloride: mM.Chlorine * MolarConductivities.Chloride,
+            bicarbonate: bicarbonateMeqPerLitre * MolarConductivities.Bicarbonate,
             ionicStrength: ionicStrength,
             correction: correction);
+    }
+
+    /// <summary>
+    /// Adds a source water's own nutrients to a mix's, giving what is actually in the reservoir.
+    /// </summary>
+    /// <param name="solution">The concentrations the fertilizers supply.</param>
+    /// <param name="water">The source water's analysis.</param>
+    /// <returns>The combined profile.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="solution"/> or <paramref name="water"/> is null.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Every analysis in this library — the ratios, mM, the charge balance, EC — describes the profile it is
+    /// given. Hand a mix's own ppm to any of them and the answer omits the water, which for calcium in a hard
+    /// supply can be a third of what is really there. This is the step that composes the two, and it exists
+    /// because composing them by hand is easy to get wrong: it is a nutrient at a time, and forgetting that
+    /// nitrogen has three forms drops the ammonium silently.
+    /// </para>
+    /// <para>
+    /// Bicarbonate is not carried, having no place in a <see cref="Ppm"/>. For the reservoir's conductivity,
+    /// pass the water's alkalinity alongside:
+    /// <c>mix.Plus(water).EstimateConductivity(water.EstimatedAlkalinity())</c>. Acidifying the reservoir
+    /// removes some of that bicarbonate and with it some of the EC, which this does not model.
+    /// </para>
+    /// </remarks>
+    public static Ppm Plus(this Ppm solution, WaterProfile water)
+    {
+        ArgumentNullException.ThrowIfNull(solution);
+        ArgumentNullException.ThrowIfNull(water);
+
+        return new PpmBuilder()
+            .AddNitrate(solution.Nitrogen.Nitrate + water.Nitrogen.Nitrate)
+            .AddAmmonium(solution.Nitrogen.Ammonium + water.Nitrogen.Ammonium)
+            .AddAmine(solution.Nitrogen.Amine + water.Nitrogen.Amine)
+            .AddP(solution.Phosphorus.Value + water.Phosphorus.Value)
+            .AddK(solution.Potassium.Value + water.Potassium.Value)
+            .AddCa(solution.Calcium.Value + water.Calcium.Value)
+            .AddMg(solution.Magnesium.Value + water.Magnesium.Value)
+            .AddS(solution.Sulfur.Value + water.Sulfur.Value)
+            .AddFe(solution.Iron.Value + water.Iron.Value)
+            .AddCu(solution.Copper.Value + water.Copper.Value)
+            .AddMn(solution.Manganese.Value + water.Manganese.Value)
+            .AddZn(solution.Zinc.Value + water.Zinc.Value)
+            .AddB(solution.Boron.Value + water.Boron.Value)
+            .AddMo(solution.Molybdenum.Value + water.Molybdenum.Value)
+            .AddCl(solution.Chlorine.Value + water.Chlorine.Value)
+            .AddSi(solution.Silicon.Value + water.Silicon.Value)
+            .AddSe(solution.Selenium.Value + water.Selenium.Value)
+            .AddNa(solution.Sodium.Value + water.Sodium.Value)
+            .AddLiters(solution.Liters.Value)
+            .Build();
     }
 
     /// <summary>

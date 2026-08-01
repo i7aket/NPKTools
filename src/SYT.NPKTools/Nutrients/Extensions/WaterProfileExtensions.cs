@@ -88,4 +88,30 @@ public static class WaterProfileExtensions
 
         return Math.Max(0, -balance.AcidEquivalents);
     }
+
+    /// <summary>
+    /// Estimates the conductivity of the source water itself, bicarbonate included.
+    /// </summary>
+    /// <param name="water">The source water's analysis.</param>
+    /// <returns>The estimate, comparable directly with a meter reading of the untreated water.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="water"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Prefer this over <c>water.AsPpm().EstimateConductivity()</c>, which leaves bicarbonate out and so reads
+    /// about a quarter low on a moderately hard supply — 358 µS/cm against the roughly 456 a meter would show.
+    /// The bicarbonate comes from <see cref="EstimatedAlkalinity"/>, and inferring it is only defensible here:
+    /// in a water analysis the cation surplus is the alkalinity, whereas in a recipe the same gap is the
+    /// acid-base character of the salts and has nothing to do with bicarbonate.
+    /// </para>
+    /// <para>
+    /// This is the quickest check that an analysis was entered correctly — compare it against the meter
+    /// reading the grower already has for their tap.
+    /// </para>
+    /// </remarks>
+    public static ConductivityEstimate EstimateConductivity(this WaterProfile water)
+    {
+        ArgumentNullException.ThrowIfNull(water);
+
+        return water.AsPpm().EstimateConductivity(water.EstimatedAlkalinity());
+    }
 }

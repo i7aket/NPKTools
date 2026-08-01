@@ -31,6 +31,17 @@ internal static class MolarConductivities
     public const double Chloride = 76.3;
 
     /// <summary>
+    /// Bicarbonate, HCO₃⁻.
+    /// </summary>
+    /// <remarks>
+    /// Not a plant nutrient, so it has no place in a <see cref="Nutrients.Ppm"/> profile — but it conducts,
+    /// and in ordinary tap water it carries most of the negative charge. Leaving it out understates the
+    /// conductivity of a moderately hard supply by around a quarter, which is why the conductivity estimate
+    /// takes it as a separate argument rather than pretending it is absent.
+    /// </remarks>
+    public const double Bicarbonate = 44.5;
+
+    /// <summary>
     /// The coefficient in the Kohlrausch-form correction for ion-ion interaction.
     /// </summary>
     /// <remarks>

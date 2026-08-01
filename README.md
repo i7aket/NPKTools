@@ -196,9 +196,16 @@ WaterProfile tap = new WaterProfileBuilder()
 double meq = tap.EstimatedAlkalinity();                       // 2.27 meq/L
 Console.WriteLine($"{meq * 61:F0} ppm HCO3-");                // 139
 Console.WriteLine($"{meq * 50:F0} ppm as CaCO3");             // 114 — how water reports usually state it
-Console.WriteLine(tap.AsPpm().EstimateConductivity()
-    .MicroSiemensPerCm.ToString("F0"));                       // 358 µS/cm
+
+// the water's own EC, bicarbonate included
+Console.WriteLine(tap.EstimateConductivity()
+    .MicroSiemensPerCm.ToString("F0"));                       // 454 µS/cm
 ```
+
+Use `water.EstimateConductivity()` rather than `water.AsPpm().EstimateConductivity()` — the second leaves
+bicarbonate out and reads 358 against the 454 a meter would show. Inferring the bicarbonate is only
+defensible here: in a water analysis the cation surplus *is* the alkalinity, whereas in a recipe the same
+gap is the salts' own acid-base character and has nothing to do with bicarbonate.
 
 That is also the acid needed per litre to neutralise the water, which is why it is worth surfacing: hard
 water pushes root-zone pH up all season if it is not accounted for. And the water's own EC is the quickest
@@ -227,6 +234,32 @@ ConductivityEstimate ec = ppm.EstimateConductivity();
 Console.WriteLine($"{ec.MilliSiemensPerCm:F2} mS/cm");   // 2.04
 Console.WriteLine($"{ec.AsTdsPpm(500):F0} ppm TDS");     // 1020 on a 500-scale meter
 ```
+
+**Include the source water, or the number is not the reservoir's.** Every analysis here describes the
+profile it is handed, so a mix's own ppm answers a question nobody asked — what the salts would read in
+pure water. On a hard supply that is a fifth low:
+
+```csharp
+Ppm salts = calculator.CalculatePpm(mix, mix.WaterLiters);
+
+// what is actually in the reservoir
+Ppm tank = salts.Plus(tap);
+ConductivityEstimate ec = tank.EstimateConductivity(tap.EstimatedAlkalinity());
+```
+
+| what you measure | mS/cm |
+| --- | --- |
+| the salts alone | 1.81 |
+| salts + the water's nutrients | 2.13 |
+| **+ the water's bicarbonate — what the meter shows** | **2.21** |
+
+`Plus` exists because composing the two by hand is easy to get wrong: it is a nutrient at a time, and
+forgetting that nitrogen has three forms drops the ammonium silently. That mistake was made while writing
+this documentation, which is why there is now a method and a test for it.
+
+The bicarbonate is a separate argument rather than part of the profile because HCO₃⁻ is not a plant
+nutrient — it belongs in no `Ppm`. It still conducts, and in tap water it carries most of the negative
+charge. Acidifying the reservoir removes some of it, and with it some of the EC; that is not modelled.
 
 It is computed the way conductivity works — each ion's own molar conductivity times how much of it there
 is — not by scaling total dissolved solids by a fitted factor. That distinction is not academic: a mole of

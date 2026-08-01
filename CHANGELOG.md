@@ -68,6 +68,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   cannot distinguish bicarbonate from carbonate or from an ion nobody entered, and it clamps at zero, since
   negative alkalinity is not a thing.
 
+- **The reservoir's profile, water included.** `salts.Plus(water)` composes a mix with its source water, and
+  `EstimateConductivity` takes an optional bicarbonate term.
+
+  Every analysis in this library describes the profile it is handed, so handing it a mix's own ppm silently
+  answers a different question — what the salts would read in pure water. On a moderately hard supply the
+  reservoir reads 2.21 mS/cm where the salts alone give 1.81, a 22% gap: two-thirds of it the water's
+  nutrients, the rest its bicarbonate. Anyone comparing a meter against the salts-only figure would conclude
+  their feed was weak and push it harder.
+
+  `Plus` exists because composing the two by hand is error-prone in a specific way — it is a nutrient at a
+  time, and forgetting that nitrogen has three forms drops the ammonium silently. That mistake was made
+  while writing the documentation for the previous entry, so there is now a method and a test for it.
+
+  Bicarbonate is an argument to `EstimateConductivity` rather than a field on `Ppm`, because HCO₃⁻ is not a
+  plant nutrient and belongs in no nutrient profile — but it conducts, and in tap water it carries most of
+  the negative charge. `water.EstimateConductivity()` fills it in from `EstimatedAlkalinity()`, which is
+  defensible only for a water analysis: there the cation surplus is the alkalinity, whereas in a recipe the
+  same gap is the salts' acid-base character. Without it the water alone reads 358 µS/cm against the ~454 a
+  meter shows — a quarter low. Acidifying the reservoir removes some of that bicarbonate and some of the EC;
+  that is not modelled.
+
 - **EC estimation from the ions.** `ppm.EstimateConductivity()` predicts what a conductivity meter will
   read, and `AsTdsPpm(scale)` converts that to the "ppm" a TDS meter shows.
 
