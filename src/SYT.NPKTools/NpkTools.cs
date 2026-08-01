@@ -1,3 +1,4 @@
+using SYT.NPKTools.Fertilizers;
 using SYT.NPKTools.Nutrients;
 using SYT.NPKTools.Optimization;
 
@@ -77,4 +78,50 @@ public static class NpkTools
     /// </remarks>
     public static IFertilizerBundleRepository CreateBundleRepository() =>
         new FertilizerBundleRepository();
+
+    /// <summary>
+    /// Creates an optimization service that searches a person's own salts instead of the preset
+    /// catalogue.
+    /// </summary>
+    /// <param name="salts">
+    /// The salts on hand, in any order and any mix of macro and micro. Weights are irrelevant — the
+    /// optimizer computes them — so a salt need only carry its composition.
+    /// </param>
+    /// <param name="settings">
+    /// Bounds on how many bundles to generate from those salts. Defaults to
+    /// <see cref="BundleGenerationSettings.Default"/>.
+    /// </param>
+    /// <param name="solver">The linear solver to use. Defaults to <see cref="SimplexOptimizationSolver"/>.</param>
+    /// <returns>An <see cref="IFertilizerOptimizationService"/> over the supplied salts.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="salts"/> is null.</exception>
+    /// <remarks>
+    /// To see what generation left out — an element none of the salts supply, a salt that carries
+    /// nothing usable — construct <see cref="CustomFertilizerBundleRepository"/> directly and read its
+    /// properties, then pass it to <see cref="FertilizerOptimizationService"/>. This overload is for the
+    /// common case where the salts are known to be sufficient.
+    /// </remarks>
+    public static IFertilizerOptimizationService CreateOptimizationService(
+        IEnumerable<Fertilizer> salts,
+        BundleGenerationSettings? settings = null,
+        IOptimizationProblemSolver? solver = null) =>
+        new FertilizerOptimizationService(
+            CreateOptimizer(solver),
+            new CustomFertilizerBundleRepository(salts, settings));
+
+    /// <summary>
+    /// Creates a bundle repository over a person's own salts, generating the bundles from them.
+    /// </summary>
+    /// <param name="salts">The salts on hand.</param>
+    /// <param name="settings">
+    /// Bounds on how many bundles to generate. Defaults to <see cref="BundleGenerationSettings.Default"/>.
+    /// </param>
+    /// <returns>
+    /// The repository. Its concrete type is returned rather than the interface so that callers can read
+    /// what generation left out.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="salts"/> is null.</exception>
+    public static CustomFertilizerBundleRepository CreateBundleRepository(
+        IEnumerable<Fertilizer> salts,
+        BundleGenerationSettings? settings = null) =>
+        new(salts, settings);
 }

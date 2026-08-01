@@ -51,6 +51,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Together these close the standing complaint about comparable tools: that they compute a recipe but
   say nothing about whether it is a sensible one.
 
+- **Bundles are generated from your own salts.** `NpkTools.CreateOptimizationService(shelf)` takes a list
+  of salts and searches it the way the service searches the preset catalogue.
+
+  This is the answer to "I want to use what I have". The catalogue offers eighteen macro bundles and so a
+  dozen recipes to compare; a custom shelf used to be one bundle and therefore one recipe. Everything
+  downstream is unchanged, because `CustomFertilizerBundleRepository` is an ordinary
+  `IFertilizerBundleRepository` — the same solver, the same ppm calculator, the same concentrate split.
+
+  The generation rule is hold-one-out: the first bundle holds every salt, and each of the others leaves
+  out exactly one. It was chosen by measurement, not taste. Counting distinct recipes returned across
+  three macro targets: one-source-per-element cross product scored 5, the hand-written catalogue 19,
+  hold-one-out **21**, and holding out pairs and triples as well also 21. Depth beyond one buys nothing —
+  a smaller subset either reproduces a recipe already found or solves nothing — so it is not implemented.
+
+  The reason building bundles up scores so badly is worth recording: six simultaneous element targets need
+  at least six salts to satisfy at non-negative weights, and a bundle assembled as one source per element
+  rarely has six once overlapping salts collapse. The first version of this feature did exactly that and
+  scored 5 against the catalogue's 19; it was replaced rather than tuned.
+
+  `GeneratedBundles` reports what generation could not do: `UncoveredElements` names elements no supplied
+  salt contains, and `CustomFertilizerBundleRepository.UnusableSalts` names salts carrying nothing any
+  target can ask for. Without the first, a missing magnesium source appears as "no solutions" and sends
+  someone hunting through their shelf for a mistake that is not there.
+
+  Macro and micro split as the catalogue splits them — any micronutrient makes a salt a micro salt, so
+  iron sulfate's incidental sulfur cannot be recruited to meet a sulfur target.
+
 - **A/B concentrates.** `mix.AsConcentrate(concentrateLiters)` splits a working-strength recipe into two
   stock tanks and reports the dilution ratio and the dose per liter.
 

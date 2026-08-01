@@ -142,6 +142,67 @@ Every salt brings a counter-ion along with the nutrient you wanted, so an unrequ
 a mistake — it is the price of the element next to it. Contributions are measured through the same
 calculator as the whole mix, so the parts always sum to the total.
 
+## Use the salts you already have
+
+The preset catalogue offers eighteen macro bundles and therefore a dozen recipes to compare. Someone
+working from their own shelf used to get one, because one list of salts is one bundle. Now the bundles
+are generated:
+
+```csharp
+Fertilizer[] shelf = [calciumNitrate, potassiumNitrate, magnesiumSulfate, mkp, sop, mag];
+
+IFertilizerOptimizationService service = NpkTools.CreateOptimizationService(shelf);
+Solutions recipes = service.FindMacroSolutions(target);   // several, not one
+```
+
+The first bundle holds everything on the shelf; each of the others leaves out one salt. That is the
+whole rule, and it is the one that measured best — alternatives can only come from taking something
+away, because handing the optimizer more salts than it needs yields the same best mix again. Removing
+one forces the linear program to route around it, which is both a different recipe and the question a
+grower actually asks: *what does this look like without the MKP?*
+
+Measured against the hand-written catalogue on three macro targets, counting distinct recipes returned:
+
+| bundle strategy | distinct recipes |
+| --- | --- |
+| one source per element, cross product | 5 |
+| hand-written catalogue (18 bundles) | 19 |
+| **hold one out** | **21** |
+| hold out pairs and triples as well | 21 |
+
+Holding out pairs adds nothing, because a smaller subset either reproduces a recipe already found or
+solves nothing at all. Building bundles up from per-element choices does badly for a reason worth
+knowing: six simultaneous element targets need at least six salts to satisfy at non-negative weights, and
+a bundle assembled as one-source-per-element rarely has that many once the overlaps collapse.
+
+To see what generation could not do, ask the repository rather than the service:
+
+```csharp
+CustomFertilizerBundleRepository bundles = NpkTools.CreateBundleRepository(shelf);
+
+if (!bundles.MacroGeneration.IsComplete)
+{
+    // ["Mg"] — no salt on the shelf supplies magnesium, so no bundle can meet a magnesium target
+    Console.WriteLine(string.Join(", ", bundles.MacroGeneration.UncoveredElements));
+}
+
+// Salts that carry nothing any target can ask for — table salt is the honest example
+Console.WriteLine(string.Join(", ", bundles.UnusableSalts));
+```
+
+This matters more than it looks. Without it a missing magnesium source shows up as "no solutions", which
+sends someone hunting through their shelf for a mistake that is not there.
+
+Macro and micro are split the way the preset catalogue splits them: carrying any micronutrient makes a
+salt a micro salt, even when it also carries a macro element. Iron sulfate's sulfur is incidental —
+dosing it to meet a sulfur target would mean iron at a hundred times the intended rate.
+
+Labelling a recipe is a set difference against the first bundle:
+
+```csharp
+string omitted = bundles.Macro()[0].Except(chosenBundle).Single().Name.Value;   // "without the SOP"
+```
+
 ## Mix once a month, not every watering
 
 Weighing six salts every time you water is what stops people using a calculated recipe. A concentrate
