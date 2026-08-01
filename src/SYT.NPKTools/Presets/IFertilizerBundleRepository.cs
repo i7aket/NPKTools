@@ -12,7 +12,7 @@ public interface IFertilizerBundleRepository
     /// Retrieves collections of fertilizer models optimized for macro nutrient needs.
     /// </summary>
     /// <returns>A list of lists, each representing a group of fertilizers for macro nutrient optimization.</returns>
-    /// <remarks>Renamed from the misspelled <c>Marco()</c> in 2.0.0.</remarks>
+    /// <remarks>Renamed from the misspelled <c>Marco()</c> of the NPKTools.* packages.</remarks>
     IReadOnlyList<IReadOnlyList<Fertilizer>> Macro();
 
     /// <summary>

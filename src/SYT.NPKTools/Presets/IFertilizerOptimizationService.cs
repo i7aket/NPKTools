@@ -8,7 +8,8 @@ namespace SYT.NPKTools;
 /// <remarks>
 /// These methods each run a linear program per fertilizer bundle, so a single call can take a
 /// noticeable amount of time. Pass a <see cref="CancellationToken"/> to abandon the search early.
-/// Before 2.0.0 they returned null when nothing was found; they now return <see cref="Solutions.Empty"/>.
+/// In the NPKTools.* packages they returned null when nothing was found; they now return
+/// <see cref="Solutions.Empty"/>.
 /// </remarks>
 public interface IFertilizerOptimizationService
 {

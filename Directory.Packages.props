@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <!--
-    The only dependency of the shipped package. Declared at 10.0.0 rather than the newest patch on
-    purpose: for a library this is a floor, and raising it would force consumers onto a later runtime
-    patch for no benefit.
+    Used only by SYT.NPKTools.DependencyInjection, which exists so that SYT.NPKTools itself can have no
+    dependencies at all. Declared at 10.0.0 rather than the newest patch on purpose: for a library this
+    is a floor, and raising it would force consumers onto a later runtime patch for no benefit.
   -->
   <ItemGroup Label="Product">
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />

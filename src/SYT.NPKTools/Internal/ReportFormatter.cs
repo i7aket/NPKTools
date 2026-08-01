@@ -8,7 +8,7 @@ namespace SYT.NPKTools.Internal;
 /// </summary>
 /// <remarks>
 /// Reports always use <see cref="CultureInfo.InvariantCulture"/> so that the same solution
-/// renders identically regardless of the machine's regional settings. Before 2.0.0 the
+/// renders identically regardless of the machine's regional settings. In the NPKTools.* packages the
 /// decimal branch honoured the current culture, which produced "100,000" on some machines
 /// and "100.000" on others for the same fertilizer.
 /// </remarks>

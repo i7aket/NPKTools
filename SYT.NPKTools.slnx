@@ -3,6 +3,7 @@
     <Project Path="benchmarks/SYT.NPKTools.Benchmarks/SYT.NPKTools.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/SYT.NPKTools.DependencyInjection/SYT.NPKTools.DependencyInjection.csproj" />
     <Project Path="src/SYT.NPKTools/SYT.NPKTools.csproj" />
   </Folder>
   <Folder Name="/tests/">

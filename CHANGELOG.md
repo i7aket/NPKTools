@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-preview.1] - 2026-08-01
+## [1.0.0-preview.2] - 2026-08-01
 
 **A new package line.** `SYT.NPKTools` replaces the six `NPKTools.*` packages, which receive no
 further updates. The version resets to 1.0.0 because the package identity is new; in terms of code
@@ -16,26 +16,71 @@ The find-and-replace table for moving off the old packages is in
 ### One package instead of six
 
 `NPKTools.Core`, `NPKTools.Optimizer`, `NPKTools.Optimizer.Preset`, `NPKTools.Optimizer.PPMCalc` and
-`NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`.
+`NPKTools.Optimizer.PpmTargetParser` are now a single `SYT.NPKTools`, plus one optional add-on for the
+DI one-liner (see below).
 
-The split cost consumers something and bought them nothing. Five of the six projects had identical
-external dependencies — `Microsoft.Extensions.DependencyInjection.Abstractions` alone — and together
-came to 161 KB of IL, so nobody was avoiding a meaningful download by taking a subset. Meanwhile a
-first-time user had to know which three of six packages made a working setup, and every release
-multiplied version-matrix combinations that were never tested apart.
+The split cost consumers something and bought them nothing. Five of the six projects had the same
+single external dependency and came to 161 KB of IL together, so nobody was avoiding a meaningful
+download by taking a subset. Meanwhile a first-time user had to know which three of six packages made
+a working setup, and every release multiplied version-matrix combinations that were never tested
+apart.
 
 - **Namespaces are flattened** from 24 to 4: `SYT.NPKTools`, `.Fertilizers`, `.Nutrients`,
   `.Optimization`. The old tree had namespaces named after the type inside them
   (`NPKTools.Core.Domain.PpmTarget` containing `PpmTarget`), which forced awkward qualification.
-- **One `AddNpkTools()`** replaces `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`,
-  `AddNpkToolsPpmCalc()` and `AddNpkToolsPpmTargetParser()`. Registration order between the four was
-  load-bearing and undocumented; now there is no order to get wrong.
 - **`ThrowIf`, `ReportFormatter`, `Labels`, `Names` and `OptimizationSettings` are `internal`.** They
   were public only because they had to cross package boundaries. `ElementFieldBase` and the
   `*BuilderBase<T>` types stay public — the public value objects and builders derive from them.
 - **`FindSolutions` returns `FertilizerSolutions`** instead of a
   `(Solutions Macro, Solutions Micro)` tuple, so the shape is named, documented and extensible.
   It carries `Empty` and `IsEmpty`.
+
+### `SYT.NPKTools` has no dependencies
+
+The four `AddNpkTools*()` extension methods are replaced by a `NpkTools` factory —
+`CreateOptimizationService()`, `CreateOptimizer()`, `CreatePpmCalculator()`, `CreateTargetParser()`,
+`CreateBundleRepository()` — and `Microsoft.Extensions.DependencyInjection.Abstractions` is no longer
+a dependency of the library. It depends on nothing at all.
+
+An `IServiceCollection` extension method requires that package, and it was the only thing in the
+library that did. It was never necessary for the library to carry it: `IServiceCollection` belongs to
+the consuming application, which already has it, so registration is one line per service against the
+factory.
+
+Two things improve as a side effect:
+
+- **Substituting a solver is an explicit argument**, `CreateOptimizationService(mySolver)`, rather than
+  "register yours before `AddNpkTools()` or `TryAdd` silently keeps the default". That ordering rule
+  needed two tests to pin down and could fail quietly; an argument cannot.
+- **Nothing in the package can conflict with a consumer's version graph**, because there is nothing in
+  it to conflict.
+
+For the record the removed dependency was cheap — 66 KB, no transitive dependencies of its own under
+`net10.0`, and already present in the `Microsoft.AspNetCore.App` shared framework and in any Blazor
+application. This change is about the library not imposing a hosting concern on callers who did not ask
+for one, not about download size.
+
+### A second, optional package for the one-liner
+
+**New: `SYT.NPKTools.DependencyInjection`.** It contains one extension method:
+
+```csharp
+services.AddNpkTools();          // or AddNpkTools(mySolver)
+```
+
+This is the only legitimate reason to split a package — isolating a dependency — and it is why the
+main package can be dependency-free while a one-line registration still exists. Take it if you want
+the extension method; skip it and register the factory results yourself, losing nothing.
+
+Notes on its design:
+
+- It lives in the `Microsoft.Extensions.DependencyInjection` namespace, the convention for
+  `IServiceCollection` extensions, so a typical `Program.cs` needs no extra `using`.
+- The solver is a parameter, not a registration-order rule, so the footgun the old
+  `AddNpkToolsOrToolsSolver()` mechanism had does not come back. `TryAdd` is used only to make calling
+  the method twice idempotent.
+- Registrations are factory delegates, so nothing is constructed for a service the application never
+  resolves.
 
 ### Google OR-Tools is no longer shipped
 
@@ -49,26 +94,27 @@ installed. Now every published byte is managed code.
 
 Nothing is lost in validation terms: the oracle is exactly how the managed solver's correctness is
 established, and it is also the benchmark baseline, which is why it is its own project rather than a
-file inside a test assembly. `IOptimizationProblemSolver` remains public and the default is registered
-with `TryAdd`, so a consumer who wants GLOP at runtime registers their own implementation first — the
-oracle is a complete worked example of doing that.
+file inside a test assembly. `IOptimizationProblemSolver` remains public, so a consumer who wants GLOP
+at runtime passes their own implementation to `NpkTools.CreateOptimizationService(...)` — the oracle is
+a complete worked example of doing that.
 
 ### Packaging
 
-- Package id `SYT.NPKTools`, title `SYT NPKTools`, matching the other `SYT.*` packages.
+- Package ids `SYT.NPKTools` and `SYT.NPKTools.DependencyInjection`, titled `SYT NPKTools` and
+  `SYT NPKTools Dependency Injection`, matching the other `SYT.*` packages.
 - The licence ships as a file inside the package rather than as an SPDX expression, so the exact text
   is in what consumers downloaded.
 - One README, packed from the repository root, so the NuGet page and the GitHub landing page cannot
   drift apart. Its images use absolute URLs because NuGet does not resolve relative paths.
 - Test projects consolidated from six to three — `SYT.NPKTools.Tests`,
   `SYT.NPKTools.IntegrationTests`, `SYT.NPKTools.OrTools.Tests` — because the old split mirrored
-  package boundaries that no longer exist. **405 tests**, unchanged in coverage.
+  package boundaries that no longer exist. **418 tests**, unchanged in coverage.
 
 ---
 
 ## Inherited from the NPKTools line
 
-Everything below shipped in the `NPKTools.*` packages and is present in `SYT.NPKTools 1.0.0-preview.1`.
+Everything below shipped in the `NPKTools.*` packages and is present in `SYT.NPKTools 1.0.0-preview.2`.
 It is kept here because it is the actual history of this code, not of a package id.
 
 ### Fixed
@@ -100,6 +146,21 @@ It is kept here because it is the actual history of this code, not of a package 
   now rejected with `ArgumentException`.
 - **The managed solver silently ignored coefficients naming an undeclared variable**, so a typo
   became a zero. It now throws `KeyNotFoundException`, as the OR-Tools backend already did.
+- **An infinite coefficient produced a wrong answer reported as success.** `1 ≤ ∞·x ≤ 2` returned
+  `{x = 0}` while GLOP correctly reported infeasible: the guard checked only for NaN, and verification
+  could not catch the result either, because `∞ × 0` is NaN and every comparison against NaN is false,
+  so the row looked satisfied. Non-finite coefficients — in constraints and in the objective — are now
+  rejected with `ArgumentException`.
+- **A contradictory infinite bound was accepted as feasible.** A *lower* bound of `+Infinity` means
+  `Ax ≥ +Infinity`, which nothing satisfies, but it was treated as "unbounded on this side" and the row
+  was silently dropped; the same for an upper bound of `-Infinity`. Both now throw. Only the
+  outward-facing directions express a one-sided constraint.
+- **Verification was vacuous for very small rows.** The allowance was
+  `1e-6 × max(1, term magnitude)`, so a row bounded near `1e-7` was permitted a deviation larger than
+  the entire constraint. It is now purely relative to each row's own scale, taken as the larger of the
+  term magnitudes and the finite bounds. Re-checked for false negatives afterwards over 7,200
+  differential problems spanning `1e-5` to `1e5`: none, and the one apparent disagreement turned out to
+  be GLOP returning a point that violated a constraint by 6% relative.
 
 ### Added
 
@@ -113,10 +174,12 @@ It is kept here because it is the actual history of this code, not of a package 
   mapper-generated problems found no disagreement: worst constraint violation 1.4e-14, worst relative
   cost gap 5.8e-16.
 
-  It is not a general-purpose LP solver, and the class documentation says so. On a problem whose
-  coefficients span ten or more orders of magnitude, round-off can make it stop at a suboptimal vertex
-  or report no solution where one exists — but never return an infeasible mix, because every answer is
-  verified first.
+  It is not a general-purpose LP solver, and the class documentation says so. Differential testing puts
+  the safe band at roughly 1e-6 to 1e5 in coefficient magnitude. Outside it the solver can stop at a
+  suboptimal vertex or report no solution where one exists — and note this does not require an
+  ill-conditioned problem, because the pivoting tolerance is absolute, so a uniformly large but
+  perfectly conditioned problem fails too. Every answer is verified against the original constraints to
+  a relative 1e-6 before being returned.
 
   Verified in the browser: the full pipeline was published to `browser-wasm` and executed, producing
   11 macro solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. (Plain

@@ -6,8 +6,14 @@ namespace SYT.NPKTools.Optimization;
 public record OptimizationProblem
 {
     /// <summary>
-    /// Gets or sets the variables for the optimization problem.
+    /// Gets or sets the variables for the optimization problem, keyed by name.
     /// </summary>
+    /// <remarks>
+    /// <b>Only the keys are meaningful.</b> The dictionary's values are ignored by every solver — the
+    /// names declare which variables exist, and each is implicitly bounded below by zero. Pass
+    /// <c>0</c> for each. Every name referenced by a constraint or by the objective must appear here,
+    /// or the solve throws <see cref="KeyNotFoundException"/>.
+    /// </remarks>
     public Dictionary<string, double> Variables { get; init; } = new();
 
     /// <summary>

@@ -10,39 +10,28 @@ Fertilizer nutrient management for .NET. Give it a target nutrient profile in pp
 you have, and it works out how much of each to use by solving the mix as a linear program. It also
 calculates the ppm of a mixture you already have.
 
-Targets **.NET 10**. One package, no native dependencies, so the whole pipeline runs server-side or
-in the browser under WebAssembly.
+Targets **.NET 10**. No dependencies and nothing native, so the whole pipeline runs server-side or in
+the browser under WebAssembly.
 
 ```bash
 dotnet add package SYT.NPKTools
 ```
 
-> **This is `1.0.0-preview.1`.** It supersedes the `NPKTools.*` packages, which are no longer
+> **This is `1.0.0-preview.2`.** It supersedes the `NPKTools.*` packages, which are no longer
 > updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
 
 ## Quick start
 
-`AddNpkTools()` registers everything. `ServiceCollection` itself comes from
-**Microsoft.Extensions.DependencyInjection** — this package references only the abstractions — so in a
-console app add that too:
-
-```bash
-dotnet add package Microsoft.Extensions.DependencyInjection
-```
+Nothing to configure and nothing else to install — `NpkTools` builds the services for you.
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
 using SYT.NPKTools;
 using SYT.NPKTools.Fertilizers;
 using SYT.NPKTools.Nutrients;
 
-ServiceProvider provider = new ServiceCollection()
-    .AddNpkTools()
-    .BuildServiceProvider();
-
-IPpmTargetParser parser = provider.GetRequiredService<IPpmTargetParser>();
-IFertilizerOptimizationService optimizer = provider.GetRequiredService<IFertilizerOptimizationService>();
-IPpmCalculationService calculator = provider.GetRequiredService<IPpmCalculationService>();
+IPpmTargetParser parser = NpkTools.CreateTargetParser();
+IFertilizerOptimizationService optimizer = NpkTools.CreateOptimizationService();
+IPpmCalculationService calculator = NpkTools.CreatePpmCalculator();
 
 // Elements are separated by spaces or commas; L is the water volume in liters.
 PpmTarget target = parser.Parse("N=150 P=50 K=200 Ca=100 Mg=50 L=100");
@@ -72,7 +61,45 @@ using CancellationTokenSource cts = new(TimeSpan.FromSeconds(5));
 Solutions solutions = optimizer.FindMacroSolutions(target, cts.Token);
 ```
 
-Without a DI container, construct the pieces directly:
+## Dependency injection
+
+Two ways, both supported. Pick by whether you would rather have one line or zero dependencies.
+
+**Register the factory results yourself.** No extra package — `IServiceCollection` belongs to your
+application, so this needs nothing from us:
+
+```csharp
+services.AddSingleton(NpkTools.CreateOptimizationService());
+services.AddSingleton(NpkTools.CreatePpmCalculator());
+services.AddSingleton(NpkTools.CreateTargetParser());
+```
+
+**Or take the optional extension package** and do it in one line:
+
+```bash
+dotnet add package SYT.NPKTools.DependencyInjection
+```
+
+```csharp
+services.AddNpkTools();
+```
+
+That is the entire reason the second package exists: an `IServiceCollection` extension method requires
+`Microsoft.Extensions.DependencyInjection.Abstractions`, and keeping it out of `SYT.NPKTools` is what
+makes the main package dependency-free. The extension lives in the
+`Microsoft.Extensions.DependencyInjection` namespace, so a typical `Program.cs` needs no extra `using`.
+
+It also takes the solver, so substitution stays an argument rather than a registration order:
+
+```csharp
+services.AddNpkTools(new MyGlopSolver());
+```
+
+Singletons are correct either way: everything here is stateless, apart from the bundle repository's
+immutable lazy cache.
+
+The factory is a convenience over public constructors, not a requirement — you can always assemble the
+graph yourself:
 
 ```csharp
 using SYT.NPKTools;
@@ -88,16 +115,21 @@ IFertilizerOptimizationService service =
 
 ## What's in the box
 
+| Package | Dependencies | Take it if |
+| --- | --- | --- |
+| [`SYT.NPKTools`](https://www.nuget.org/packages/SYT.NPKTools/) | **none** | always |
+| [`SYT.NPKTools.DependencyInjection`](https://www.nuget.org/packages/SYT.NPKTools.DependencyInjection/) | the above + `Microsoft.Extensions.DependencyInjection.Abstractions` | you want `services.AddNpkTools()` in one line |
+
+`SYT.NPKTools` has **no dependencies at all**. Not "few" — none. There is nothing in it to conflict
+with whatever versions your application already resolves, and nothing native, so it runs wherever .NET
+runs.
+
 | Namespace | Contents |
 | --- | --- |
-| `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and `AddNpkTools()` |
+| `SYT.NPKTools` | `Solution`, `Solutions`, `FertilizerSolutions`, the preset catalogue and the `NpkTools` factory |
 | `SYT.NPKTools.Fertilizers` | `Fertilizer`, its nutrient value objects and builders |
 | `SYT.NPKTools.Nutrients` | `Ppm`, `PpmTarget`, the ppm calculator and the target parser |
 | `SYT.NPKTools.Optimization` | The linear program, the solver, the mapper and the settings |
-
-The only dependency is
-[**Microsoft.Extensions.DependencyInjection.Abstractions**](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/),
-and only for `AddNpkTools()`.
 
 ## Runs in the browser
 
@@ -111,8 +143,11 @@ macronutrient bundle is at most 16 variables and 7 range constraints, and a full
 such problems.
 
 Verified end to end: the pipeline was published to `browser-wasm` and executed, producing 11 macro
-solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target. Transfer cost is roughly
-1.1 MB gzipped, almost entirely the .NET runtime — the library itself is about 51 KB.
+solutions landing exactly on an `N=150 P=50 K=200 Ca=100 Mg=50 S=60` target.
+
+The library's own contribution to a download is **128 KB, or about 46 KB gzipped**. Everything else is
+the .NET runtime: a minimal WebAssembly app came to roughly 1.1 MB gzipped in total, and a full Blazor
+app with UI assets is naturally larger than that.
 
 ## About the solver
 
@@ -132,23 +167,28 @@ dominates. Measured on a full macro-plus-micro search:
 
 Reproduce with `dotnet run -c Release --project benchmarks/SYT.NPKTools.Benchmarks`.
 
-**It is not a general-purpose LP solver.** There is no scaling, equilibration or iterative refinement.
-Within this library's regime — nutrient percentages and ppm/10 right-hand sides, about three orders of
-magnitude apart — it is exact. Given a problem whose coefficients span ten or more orders of magnitude,
-round-off can make it stop at a suboptimal vertex or report no solution where one exists. Every answer
-it returns is verified against the original constraints before being handed back, so it will never
-return a mix that violates them.
+**It is not a general-purpose LP solver.** There is no scaling, equilibration or iterative refinement,
+and the pivoting tolerance is absolute. Differential testing puts the safe band at roughly **1e-6 to
+1e5** in coefficient and right-hand-side magnitude, where agreement with GLOP is exact; this library's
+own problems — nutrient percentages and ppm/10 right-hand sides — sit comfortably inside it.
 
-If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public and the default
-is registered with `TryAdd` — so register your own first and it wins:
+Outside that band it can stop at a suboptimal vertex or report no solution where one exists. This does
+*not* require an ill-conditioned problem: because the tolerance is absolute, a perfectly conditioned
+problem that is merely uniformly large fails too — at a scale of 1e9 a genuine improving direction can
+have a reduced cost below the tolerance and be mistaken for optimality. Every answer is verified against
+the original constraints before being returned, to a relative tolerance of 1e-6, so a returned mix
+satisfies its constraints to about six significant digits; the failure mode is a missed or suboptimal
+solution rather than a badly violated one.
+
+If you need robustness across arbitrary scaling, `IOptimizationProblemSolver` is public — pass your own
+implementation and it is used for every solve:
 
 ```csharp
-services.AddSingleton<IOptimizationProblemSolver, MyGlopSolver>()
-        .AddNpkTools();
+IFertilizerOptimizationService service = NpkTools.CreateOptimizationService(new MyGlopSolver());
 ```
 
-The repository's oracle at `tests/SYT.NPKTools.OrToolsOracle` is a complete worked example of exactly
-that, backed by GLOP.
+An explicit argument rather than a registration order, so it cannot be silently ineffective. The
+repository's oracle at `tests/SYT.NPKTools.OrToolsOracle` is a complete worked example, backed by GLOP.
 
 ## How it works
 
@@ -203,8 +243,9 @@ part of the move is a find-and-replace:
 | `NPKTools.Core.Domain.PartsPerMillion*`, `.PpmTarget*`, `NPKTools.PPMCalc`, `NPKTools.Optimizer.PpmTargetParser` | `SYT.NPKTools.Nutrients` |
 | `NPKTools.Core.Domain.SolutionsFinderSettings*`, `NPKTools.Optimizer.Components`, `.Contracts` | `SYT.NPKTools.Optimization` |
 | `NPKTools.Core.Domain.Collections`, `NPKTools.Optimizer.Preset` | `SYT.NPKTools` |
-| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | one `AddNpkTools()` |
-| `AddNpkToolsOrToolsSolver()` | gone — see [About the solver](#about-the-solver) |
+| `AddNpkToolsOptimizer()`, `AddNpkToolsPreset()`, `AddNpkToolsPpmCalc()`, `AddNpkToolsPpmTargetParser()` | one `AddNpkTools()` from `SYT.NPKTools.DependencyInjection`, or register the `NpkTools` factory results yourself — see [Dependency injection](#dependency-injection) |
+| `AddNpkToolsOrToolsSolver()` | pass the solver: `AddNpkTools(mySolver)` or `NpkTools.CreateOptimizationService(mySolver)` |
+| `Microsoft.Extensions.DependencyInjection.Abstractions` was a dependency of the library | only of the optional DI package; `SYT.NPKTools` has no dependencies |
 | `IFertilizerBundleRepository.Marco()` | `.Macro()` |
 | `PpmTargetBuilder.AddLitters(...)` | `.AddLiters(...)` |
 | `FindSolutions` returned `(Solutions Macro, Solutions Micro)` | returns `FertilizerSolutions` |
@@ -228,7 +269,7 @@ Requires the .NET 10 SDK (pinned in `global.json`). The build treats warnings as
 `dotnet build` is part of the contract. NuGet versions live in `Directory.Packages.props` and shared
 package metadata in `src/Directory.Build.props`; add references without a `Version` attribute.
 
-405 tests run on Linux, Windows and macOS in CI, with coverage collected via coverlet and formatting
+418 tests run on Linux, Windows and macOS in CI, with coverage collected via coverlet and formatting
 enforced by `dotnet format --verify-no-changes`. CodeQL scanning runs through GitHub's default setup.
 
 ## Releasing
@@ -237,8 +278,8 @@ Publishing is triggered by a version tag, not by pushes to `main`. Bump `<Versio
 `src/Directory.Build.props`, commit it, then tag:
 
 ```bash
-git tag v1.0.0-preview.1
-git push origin v1.0.0-preview.1
+git tag v1.0.0-preview.2
+git push origin v1.0.0-preview.2
 ```
 
 The workflow refuses to publish if the tag is not valid SemVer or does not match the committed
