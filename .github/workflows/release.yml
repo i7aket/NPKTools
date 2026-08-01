@@ -18,10 +18,15 @@ on:
 permissions:
   contents: read
   packages: write
+  # Lets the job ask GitHub for an OIDC token, which NuGet.org exchanges for a short-lived API key.
+  # This is what removes the need for a long-lived NUGET_API_KEY secret.
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Must match the Environment field of the NuGet.org trusted publishing policy, or the token
+    # exchange is rejected.
     environment: nuget
 
     steps:
@@ -86,10 +91,27 @@ jobs:
           name: nupkgs-${{ steps.version.outputs.version }}
           path: ./nupkgs/*
 
+      # Trusted publishing: exchange GitHub's OIDC token for an API key that NuGet.org issues on the
+      # spot and expires in an hour. Nothing long-lived is stored in the repository, so there is no
+      # secret to leak or rotate — and the key's scope comes from the policy's package owner rather
+      # than from a glob pattern, so publishing a new package id needs no extra configuration.
+      #
+      # This step is deliberately here, immediately before the push, rather than at the top of the job:
+      # the key is valid for one hour and the build and test steps above take time.
+      #
+      # `user` is the nuget.org profile name, not an email address. It is a literal rather than a
+      # secret because it is public information — it appears on every package page — and a missing
+      # secret would break the release for no security benefit.
+      - name: Exchange OIDC token for a NuGet API key
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: i7aKeT
+
       - name: Publish to NuGet.org
         run: >
           dotnet nuget push "./nupkgs/*.nupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
 
