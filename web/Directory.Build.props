@@ -1,0 +1,24 @@
+﻿<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!--
+      Nothing under web/ is a NuGet package. This matters more than it looks: the release workflow
+      runs `dotnet pack` across the whole solution without naming a project, so a packable app here
+      would be built into a nupkg and pushed to NuGet.org alongside the library — and a published
+      version can be unlisted but never removed.
+    -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      CS1591 (missing XML doc) is enforced across the repository because the library's public API is
+      its contract. A Blazor component is not public API — it is the application — so requiring
+      doc comments on every parameter would add ceremony without adding meaning.
+    -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

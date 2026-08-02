@@ -574,6 +574,58 @@ The library's own contribution to a download is **128 KB, or about 46 KB gzipped
 the .NET runtime: a minimal WebAssembly app came to roughly 1.1 MB gzipped in total, and a full Blazor
 app with UI assets is naturally larger than that.
 
+## The calculator app
+
+`web/SYT.NPKTools.Calculator` is a Blazor WebAssembly app that puts the whole chain on one page: source
+water in, deducted from the target, the salts you actually own, every recipe that hits the target, and
+each recipe's ppm-against-target, mM, meq/L, ratios, EC, TDS and A/B concentrate with solubility checked.
+
+```bash
+dotnet run --project web/SYT.NPKTools.Calculator
+```
+
+It is a demonstration rather than a claim: there is no server, no backend and no `HttpClient`, so the
+simplex genuinely runs in the browser. It is also not packed — `dotnet pack` across the solution emits
+the two libraries and nothing else.
+
+The whole site is **5.2 MB of files, 1.7 MB in brotli**, and reaches the first recipe about 1.2 s after
+the request on a warm local server. Globalization data is left out: the interface is English and every
+number is parsed and formatted through the invariant culture on purpose, so the three ICU files were
+2.5 MB on disk and 1.1 MB of first load buying nothing. Removing them moved no figure — the documented
+tap-water anchor still reads 454 µS/cm, 2.27 meq/L and 139 ppm HCO₃⁻ in the published build.
+
+`.github/workflows/pages.yml` deploys it to GitHub Pages on a push to `main` that touches `web/` or
+`src/`. To turn it on, set **Settings → Pages → Source** to **GitHub Actions**; until that is done the
+deploy step fails on the Pages API rather than for want of permissions. The workflow rewrites the
+`<base href>` to the project subpath, writes `.nojekyll` so the `_framework` directory is not dropped,
+and serves `index.html` as `404.html` so a refreshed deep link reaches the router instead of a dead end.
+
+### How a setup is kept, and how it moves between browsers
+
+Three mechanisms, and they are not alternatives — each answers a question the others cannot:
+
+| | Answers | Reaches another browser | Survives clearing site data |
+|---|---|---|---|
+| **Automatic** (local storage) | don't lose my work when I close the tab | no | no |
+| **The link** | carry this elsewhere, or send it to someone | yes | yes, if you kept the link |
+| **The file** | keep several of these, and edit them | yes | yes |
+
+Local storage is written on every edit, so closing the tab costs nothing. It is bound to one browser
+profile on one origin — that is how browser storage works, not a shortcoming of the app.
+
+The link carries the whole setup in the fragment, so copying the address *is* the transfer. It stays
+short by storing salts as positions in the catalogue and recording only the ones you unticked: a target,
+a water analysis, a concentrate volume and one excluded salt come to about 140 characters. The catalogue
+size travels with the indices, so a link written against a different version of the library reports that
+its salt selection was dropped instead of silently selecting the wrong salts. Pasting a link into an
+already-open tab applies it, which is the way a shared link actually gets used.
+
+The file is the indented JSON behind **Download file**, spelling out salt names rather than positions
+because someone may open it in a text editor years later. It is the one to use for a recipe you rely on.
+An unreadable file is refused with a message and leaves the setup on screen untouched.
+
+Nothing leaves the device. There is no account to sync to and no request to make.
+
 ## About the solver
 
 `SimplexOptimizationSolver` is a two-phase primal simplex using Bland's rule, on a dense tableau. It

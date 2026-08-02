@@ -1,0 +1,38 @@
+@*
+    Inline SVG rather than an emoji or an icon font. The pre-delivery checklist calls for it, and the
+    reason is practical: an emoji renders differently on every platform and is read aloud by a screen
+    reader as its own name, so it cannot carry a status. These are decorative — the notice next to them
+    always states the condition in words, so they are hidden from assistive technology.
+*@
+
+@if (Kind == IconKind.Warning)
+{
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M10 2.5 18.5 17.5H1.5Z" />
+        <path d="M10 7.5v4.5" />
+        <path d="M10 15h.01" />
+    </svg>
+}
+else if (Kind == IconKind.Error)
+{
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <circle cx="10" cy="10" r="8" />
+        <path d="M7 7l6 6M13 7l-6 6" />
+    </svg>
+}
+else
+{
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <circle cx="10" cy="10" r="8" />
+        <path d="M10 9v5" />
+        <path d="M10 6h.01" />
+    </svg>
+}
+
+@code {
+    [Parameter]
+    public IconKind Kind { get; set; } = IconKind.Info;
+}

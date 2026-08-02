@@ -1,0 +1,98 @@
+name: Calculator
+
+# Publishes web/SYT.NPKTools.Calculator to GitHub Pages. The app is a Blazor WebAssembly build with no
+# server side, which is the whole reason it can live on a static host at all.
+#
+# Before the first run, set Settings -> Pages -> Source to "GitHub Actions". Without that the deploy
+# step fails with a 404 on the Pages API, which reads as a permissions problem and is not one.
+on:
+  push:
+    branches: [main]
+    # The calculator is rebuilt only when something it renders changes. The library is a project
+    # reference, so a change there does reach the app.
+    paths:
+      - 'web/**'
+      - 'src/**'
+      - 'Directory.Packages.props'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Both are required by actions/deploy-pages: the token it mints is scoped to a Pages deployment.
+  pages: write
+  id-token: write
+
+# A newer commit's site should win, but never by cancelling a deployment that is already writing —
+# that can leave the site half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      # Building the app needs nothing extra -- CI builds it on three platforms without this. Publishing
+      # is what relinks the runtime with Emscripten, and Emscripten ships in this workload rather than in
+      # the SDK. Installed explicitly so the publish does not depend on the runner image happening to
+      # carry it.
+      - name: Install the WebAssembly tools
+        run: dotnet workload install wasm-tools
+
+      - name: Publish the calculator
+        run: dotnet publish web/SYT.NPKTools.Calculator -c Release -o publish
+
+      # A project site is served from https://<user>.github.io/<repo>/, so every asset path in the app
+      # is off by that prefix unless the base href says so. Rewritten here rather than committed,
+      # because `dotnet run` locally serves from the root and a committed /NPKTools/ would break it.
+      - name: Point the base href at the project subpath
+        run: |
+          set -euo pipefail
+          BASE="/${GITHUB_REPOSITORY#*/}/"
+          sed -i "s|<base href=\"/\" />|<base href=\"$BASE\" />|" publish/wwwroot/index.html
+          grep -q "<base href=\"$BASE\" />" publish/wwwroot/index.html || {
+            echo "::error::The base href was not rewritten. Check the tag in wwwroot/index.html."
+            exit 1
+          }
+          # index.html is pre-compressed at publish time, so the .br and .gz copies still carry the old
+          # base href. Serving one of those would silently undo the rewrite.
+          rm -f publish/wwwroot/index.html.br publish/wwwroot/index.html.gz
+
+      # Jekyll runs over Pages content by default and drops every path beginning with an underscore,
+      # which is exactly where Blazor puts the runtime. Without this the site serves a blank page.
+      - name: Disable Jekyll
+        run: touch publish/wwwroot/.nojekyll
+
+      # A static host has no routing, so refreshing on any path other than / returns its 404 page.
+      # Serving the app as that page hands the path to the router, which is what makes a deep link work.
+      - name: Serve the app for unknown paths too
+        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

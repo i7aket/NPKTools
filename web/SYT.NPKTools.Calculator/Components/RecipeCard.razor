@@ -1,0 +1,251 @@
+@*
+    One recipe: what to weigh, what it produces, and how to store it.
+
+    The order is deliberate. The weights come first because that is what a person acts on; the achieved
+    ppm second so the claim can be checked against the target; the interpretation — ratios, EC, charge —
+    after that; and the concentrate last, because it is optional.
+*@
+
+<article class="recipe">
+
+    <div class="recipe-head">
+        <span class="n">#@Number</span>
+        <strong>@Recipe.Mix.Count salts</strong>
+        <span class="omits">@Recipe.Mix.Sum(f => f.Weight.Value).ToString("F1") g total</span>
+    </div>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Salt</th>
+                    <th scope="col">Grams</th>
+                    <th scope="col">g/L</th>
+                    <th scope="col">Tank</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Fertilizer salt in Recipe.Mix)
+                {
+                    <tr>
+                        <td>@salt.Name.Value</td>
+                        <td>@salt.Weight.Value.ToString("F2")</td>
+                        <td>@((salt.Weight.Value / Recipe.Mix.WaterLiters).ToString("F3"))</td>
+                        <td>@(salt.Type == ConcentrateType.None ? "—" : salt.Type.ToString())</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total</td>
+                    <td>@Recipe.Mix.Sum(f => f.Weight.Value).ToString("F2")</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    @* ------------------------------------------------------------------ achieved vs target *@
+    <details style="margin-top:8px">
+        <summary>In the reservoir — salts plus source water</summary>
+        <div class="table-scroll" style="margin-top:6px">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Element</th>
+                        <th scope="col">Target</th>
+                        <th scope="col">In tank</th>
+                        <th scope="col">Off by</th>
+                        <th scope="col">mM</th>
+                        <th scope="col">meq/L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ElementRow row in Rows())
+                    {
+                        <tr>
+                            <td>@row.Name</td>
+                            <td>@row.Target.ToString("F1")</td>
+                            <td>@row.Actual.ToString("F1")</td>
+                            <td class="@(row.IsOff ? "deviation" : "ok")">
+                                @(row.Target > 0 ? $"{row.Deviation:+0.0;-0.0;0.0}%" : "—")
+                            </td>
+                            <td>@row.Millimolar.ToString("F2")</td>
+                            <td>@(row.Milliequivalents > 0 ? row.Milliequivalents.ToString("F2") : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </details>
+
+    @* ------------------------------------------------------------------ interpretation *@
+    <div class="metrics" style="margin-top:8px">
+        <div class="metric">
+            <div class="label">EC</div>
+            <div class="value">@Recipe.Conductivity.MilliSiemensPerCm.ToString("F2") <span class="unit">mS/cm</span></div>
+        </div>
+        <div class="metric">
+            <div class="label">TDS ×500</div>
+            <div class="value">@Recipe.Conductivity.AsTdsPpm().ToString("F0") <span class="unit">ppm</span></div>
+        </div>
+        <div class="metric">
+            <div class="label">Acid added</div>
+            <div class="value">@Recipe.Ions.AcidEquivalents.ToString("+0.00;-0.00;0.00") <span class="unit">meq/L</span></div>
+        </div>
+        <div class="metric">
+            <div class="label">Ions</div>
+            <div class="value">@Recipe.Ions.Total.ToString("F1") <span class="unit">meq/L</span></div>
+        </div>
+    </div>
+
+    <div class="chips">
+        @foreach ((string label, double? value) in Ratios())
+        {
+            <span class="chip">@label @(value is null ? "—" : value.Value.ToString("F2"))</span>
+        }
+    </div>
+
+    @if (!Recipe.Conductivity.IsWithinValidatedRange)
+    {
+        <div class="notice warn" role="status">
+            <Icon Kind="IconKind.Warning" />
+            <span>
+                <strong>EC out of range.</strong> This solution is stronger than the reference solutions the
+                EC model was checked against, so treat the figure as an ordering rather than a measurement.
+            </span>
+        </div>
+    }
+
+    @* ------------------------------------------------------------------ concentrate *@
+    @if (Recipe.Concentrate is { } plan)
+    {
+        <details style="margin-top:8px" open="@plan.HasWarnings">
+            <summary>
+                Concentrate — 1:@plan.DilutionRatio.ToString("F0"),
+                @plan.MillilitresPerLiter.ToString("F1") ml of each per litre
+            </summary>
+
+            <div class="grid" style="margin-top:6px">
+                @foreach (ConcentrateTank tank in plan.Tanks.Where(t => !t.IsEmpty))
+                {
+                    <div class="col-4" style="grid-column:span 6">
+                        <div class="metric">
+                            <div class="label">
+                                @Describe(tank)
+                            </div>
+                            @foreach (ConcentrateComponent part in tank.Components)
+                            {
+                                <div style="display:flex; justify-content:space-between; gap:8px; font-size:var(--text-sm)">
+                                    <span>@part.Fertilizer.Name.Value</span>
+                                    <span style="font-family:var(--font-data); font-variant-numeric:tabular-nums; white-space:nowrap">
+                                        @part.GramsPerLiter.ToString("F1") g/L
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (plan.MaxDilutionRatio is { } ceiling)
+            {
+                <p class="card-note">
+                    Solubility allows up to 1:@ceiling.ToString("F0").
+                    @if (plan.UnknownSolubility.Count > 0)
+                    {
+                        <span>
+                            No published figure for @string.Join(", ", plan.UnknownSolubility.Distinct()), so
+                            that ceiling leaves them out and the real one may be lower.
+                        </span>
+                    }
+                </p>
+            }
+
+            @foreach (ConcentrateWarning warning in plan.Warnings)
+            {
+                <div class="notice @(warning.Kind == ConcentrateWarningKind.TankInferred ? "info" : "error")"
+                     role="@(warning.Kind == ConcentrateWarningKind.TankInferred ? "status" : "alert")">
+                    <Icon Kind="@(warning.Kind == ConcentrateWarningKind.TankInferred ? IconKind.Info : IconKind.Error)" />
+                    <span><strong>@Humanise(warning.Kind).</strong> @warning.Message</span>
+                </div>
+            }
+        </details>
+    }
+
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public required RecipeView Recipe { get; set; }
+
+    [Parameter, EditorRequired]
+    public required int Number { get; set; }
+
+    [Parameter, EditorRequired]
+    public required PpmTarget Target { get; set; }
+
+    private sealed record ElementRow(
+        string Name,
+        double Target,
+        double Actual,
+        double Millimolar,
+        double Milliequivalents)
+    {
+        public double Deviation => Target > 0 ? (Actual / Target - 1) * 100 : 0;
+
+        // A percent is the wrong unit for a target of zero, and 1% is inside what a kitchen scale can
+        // weigh anyway, so only a real miss is coloured.
+        public bool IsOff => Target > 0 && Math.Abs(Deviation) > 1;
+    }
+
+    private IEnumerable<ElementRow> Rows()
+    {
+        Ppm tank = Recipe.InTank;
+        MolarProfile molar = tank.AsMillimolar();
+        IonBalance ions = Recipe.Ions;
+
+        yield return new ElementRow("N", Target.N.Value, tank.Nitrogen.Value, molar.Nitrogen, ions.Nitrate + ions.Ammonium);
+        yield return new ElementRow("P", Target.P.Value, tank.Phosphorus.Value, molar.Phosphorus, ions.Phosphate);
+        yield return new ElementRow("K", Target.K.Value, tank.Potassium.Value, molar.Potassium, ions.Potassium);
+        yield return new ElementRow("Ca", Target.Ca.Value, tank.Calcium.Value, molar.Calcium, ions.Calcium);
+        yield return new ElementRow("Mg", Target.Mg.Value, tank.Magnesium.Value, molar.Magnesium, ions.Magnesium);
+        yield return new ElementRow("S", Target.S.Value, tank.Sulfur.Value, molar.Sulfur, ions.Sulfate);
+
+        if (tank.Sodium.Value > 0 || tank.Chlorine.Value > 0)
+        {
+            yield return new ElementRow("Na", Target.Na.Value, tank.Sodium.Value, molar.Sodium, ions.Sodium);
+            yield return new ElementRow("Cl", Target.Cl.Value, tank.Chlorine.Value, molar.Chlorine, ions.Chloride);
+        }
+    }
+
+    private IEnumerable<(string, double?)> Ratios()
+    {
+        NutrientRatios r = Recipe.Ratios;
+        yield return ("NO₃:NH₄", r.NitrateToAmmonium);
+        yield return ("N:K", r.NitrogenToPotassium);
+        yield return ("K:Ca", r.PotassiumToCalcium);
+        yield return ("Ca:Mg", r.CalciumToMagnesium);
+        yield return ("K:Mg", r.PotassiumToMagnesium);
+        yield return ("N:S", r.NitrogenToSulfur);
+        yield return ("N:P", r.NitrogenToPhosphorus);
+    }
+
+    // Built as one string rather than interleaved markup: Razor inserts whitespace around a
+    // conditional block, which left a gap before the comma.
+    private static string Describe(ConcentrateTank tank)
+    {
+        string strength = $"Tank {tank.Tank} — {tank.TotalGramsPerLiter:F0} g/L";
+        return tank.SaturationFraction is { } saturation
+            ? $"{strength}, {saturation:P0} saturated"
+            : $"{strength}, saturation unknown";
+    }
+
+    private static string Humanise(ConcentrateWarningKind kind) => kind switch
+    {
+        ConcentrateWarningKind.PrecipitationRisk => "Will precipitate",
+        ConcentrateWarningKind.SolubilityExceeded => "Will not dissolve",
+        ConcentrateWarningKind.TankSaturated => "Tank saturated",
+        _ => "Tank inferred",
+    };
+}

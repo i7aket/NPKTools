@@ -12,4 +12,7 @@
     <Project Path="tests/SYT.NPKTools.OrToolsOracle/SYT.NPKTools.OrToolsOracle.csproj" />
     <Project Path="tests/SYT.NPKTools.Tests/SYT.NPKTools.Tests.csproj" />
   </Folder>
+  <Folder Name="/web/">
+    <Project Path="web/SYT.NPKTools.Calculator/SYT.NPKTools.Calculator.csproj" />
+  </Folder>
 </Solution>
