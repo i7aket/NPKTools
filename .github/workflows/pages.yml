@@ -44,8 +44,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      # Publishing a Blazor WebAssembly app relinks the runtime with Emscripten, which lives in this
-      # workload rather than the SDK. Without it the publish fails outright rather than falling back.
+      # Building the app needs nothing extra -- CI builds it on three platforms without this. Publishing
+      # is what relinks the runtime with Emscripten, and Emscripten ships in this workload rather than in
+      # the SDK. Installed explicitly so the publish does not depend on the runner image happening to
+      # carry it.
       - name: Install the WebAssembly tools
         run: dotnet workload install wasm-tools
 
