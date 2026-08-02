@@ -3,6 +3,30 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Source water can be described by a meter reading and an optional hardness drop test, not only by a
+  full laboratory analysis. A preset supplies the proportions between ions and the estimator scales
+  them until the computed conductivity matches the meter, so the figures are consistent with the
+  reading rather than invented. GH and KH, when entered, are pinned as measurements and only what is
+  left over is scaled. Readings that cannot describe the same water are reported as such.
+- Four water shapes, including water softened by sodium exchange — high conductivity with the calcium
+  gone, which a meter alone cannot tell apart from hard water and which no other calculator names.
+- The acid needed to neutralise a water's alkalinity, from the carbonate equilibrium rather than a
+  rule of thumb: at pH 5.8 that is about three quarters of the alkalinity, not all of it. The
+  nitrogen, phosphorus or sulfur the acid carries is deducted from the target and reported in the
+  tank, and an acid that would overshoot its own element's target says so and names one that fits.
+- `WaterPreset`, `WaterEstimator`, `AcidDose`, `Acid` and `ElementGroups` in `SYT.NPKTools`, and
+  `GeneralHardness` / `CarbonateHardness` on `WaterProfile`.
+
+### Changed
+
+- The target is entered as a table, with macro and micro in separate cards. The string format is kept,
+  collapsed, and is still what links and files carry — so a typo in it no longer destroys the target.
+- Links carry the water and acid settings. Existing links keep working.
+
 ## [1.0.0-preview.3] - 2026-08-01
 
 **The calculator, not just the solver.** Everything below turns a recipe into something a grower can act on:
