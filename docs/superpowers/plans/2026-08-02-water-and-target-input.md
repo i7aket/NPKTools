@@ -1053,7 +1053,7 @@ public static class WaterEstimator
 - [ ] **Step 5: Run the tests to verify they pass**
 
 Run: `dotnet test tests/SYT.NPKTools.Tests -c Release --filter "FullyQualifiedName~WaterEstimatorTests"`
-Expected: PASS, 12 tests.
+Expected: PASS, 10 tests (four theory cases and six facts).
 
 Two failures are plausible here and both have specific fixes:
 
@@ -1673,11 +1673,13 @@ public class CalculatorStateTests
             ConcentrateLiters = 1,
         };
 
-        CalculatorState? read = CalculatorState.FromFragment(state.ToFragment(Catalogue), Catalogue);
+        (CalculatorState? read, bool saltsUsable) =
+            CalculatorState.FromFragment(state.ToFragment(Catalogue), Catalogue);
 
         read.Should().NotBeNull();
         read!.Target.Should().Be(state.Target);
         read.Salts.Should().Equal("Potassium nitrate");
+        saltsUsable.Should().BeTrue();
     }
 
     /// <summary>
@@ -1692,8 +1694,9 @@ public class CalculatorStateTests
 }
 ```
 
-If `FromFragment` has a different signature, read `web/SYT.NPKTools.Calculator/CalculatorState.cs`
-and match it — this test exists to pin whatever is there today.
+`FromFragment` returns `(CalculatorState? State, bool SaltsUsable)`, not a bare state — the flag says
+whether the catalogue has changed size since the link was written, which would make its salt indices
+mean something else. Deconstruct it, as above.
 
 - [ ] **Step 4: Run the tests**
 
@@ -1936,27 +1939,31 @@ untouched in this task.
     private static string Format(double value) =>
         value.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
 
+    // PpmTarget names its properties by symbol, so the symbol is the property name.
     private static double ValueOf(PpmTarget target, string symbol) => symbol switch
     {
-        "N" => target.Nitrogen.Value,
-        "P" => target.Phosphorus.Value,
-        "K" => target.Potassium.Value,
-        "Ca" => target.Calcium.Value,
-        "Mg" => target.Magnesium.Value,
-        "S" => target.Sulfur.Value,
-        "Fe" => target.Iron.Value,
-        "Cu" => target.Copper.Value,
-        "Mn" => target.Manganese.Value,
-        "Zn" => target.Zinc.Value,
-        "B" => target.Boron.Value,
-        "Mo" => target.Molybdenum.Value,
-        "Cl" => target.Chlorine.Value,
-        "Si" => target.Silicon.Value,
-        "Se" => target.Selenium.Value,
-        "Na" => target.Sodium.Value,
+        "N" => target.N.Value,
+        "P" => target.P.Value,
+        "K" => target.K.Value,
+        "Ca" => target.Ca.Value,
+        "Mg" => target.Mg.Value,
+        "S" => target.S.Value,
+        "Fe" => target.Fe.Value,
+        "Cu" => target.Cu.Value,
+        "Mn" => target.Mn.Value,
+        "Zn" => target.Zn.Value,
+        "B" => target.B.Value,
+        "Mo" => target.Mo.Value,
+        "Cl" => target.Cl.Value,
+        "Si" => target.Si.Value,
+        "Se" => target.Se.Value,
+        "Na" => target.Na.Value,
         _ => 0,
     };
 ```
+
+Note that `WaterProfile` is the opposite — it names the same quantities `Nitrogen`, `Phosphorus`,
+`Calcium` and so on. The two are not interchangeable.
 
 Then, in the constructor, seed the starter target through the setter so there is one definition of it:
 
@@ -2850,9 +2857,11 @@ public class AcidIntegrationTests
         double nitrogenWith = with.Recipes[0].InTank.Nitrogen.Value;
         double nitrogenWithout = without.Recipes[0].InTank.Nitrogen.Value;
 
-        // Both land on the target; the one with acid gets there with less nitrogen from salts.
-        nitrogenWith.Should().BeApproximately(nitrogenWithout, 5);
+        // Both land on the 150 ppm target. The acidified one gets there with ~29 ppm less nitrogen
+        // from salts, because the acid already supplied it — and the reported figure has to say so.
         with.Acid!.NutrientPpm.Should().BeGreaterThan(20);
+        nitrogenWithout.Should().BeApproximately(150, 5);
+        nitrogenWith.Should().BeApproximately(150, 5);
     }
 
     /// <summary>
@@ -2898,11 +2907,27 @@ Properties:
     public AcidPlan? Acid { get; private set; }
 ```
 
+Add a private field for the water the recipe is actually solved against:
+
+```csharp
+    /// <summary>
+    /// The source water plus whatever the acid contributes.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="WaterProfile"/>, which stays the water as it comes out of the tap:
+    /// the alkalinity and the water EC shown on screen describe the untreated supply, and folding the
+    /// acid into them would make both wrong. This is what the recipe is solved against and what the
+    /// reported tank contents are measured from — an acid's nitrogen is in the reservoir exactly as
+    /// the water's is.
+    /// </remarks>
+    private WaterProfile _effectiveWater = WaterProfile.Pure;
+```
+
 In `Recalculate`, after `Alkalinity` is computed and before `AdjustFor`:
 
 ```csharp
         Acid = null;
-        WaterProfile deducted = WaterProfile;
+        _effectiveWater = WaterProfile;
 
         if (AcidEnabled && Alkalinity > 0)
         {
@@ -2910,15 +2935,27 @@ In `Recalculate`, after `Alkalinity` is computed and before `AdjustFor`:
                 ?? Nutrients.Acid.Nitric60;
 
             Acid = AcidDose.Calculate(Alkalinity, WaterPh, TargetPh, acid, Liters);
-            deducted = WithNutrient(WaterProfile, Acid.NutrientSymbol, Acid.NutrientPpm);
+            _effectiveWater = WithNutrient(WaterProfile, Acid.NutrientSymbol, Acid.NutrientPpm);
         }
 ```
 
-and use `deducted` where `WaterProfile` was passed to `AdjustFor`:
+and use it where `WaterProfile` was passed to `AdjustFor`:
 
 ```csharp
-        WaterAdjustedTarget adjusted = target.AdjustFor(deducted);
+        WaterAdjustedTarget adjusted = target.AdjustFor(_effectiveWater);
 ```
+
+**And in `Describe`**, which currently reads `Ppm inTank = fromSalts.Plus(WaterProfile);` — change it
+to `_effectiveWater` too:
+
+```csharp
+        Ppm inTank = fromSalts.Plus(_effectiveWater);
+```
+
+Missing this second change is the subtle half of the bug. The optimizer would solve for a target
+reduced by 29 ppm of nitrogen while the reported tank contents added back only the water, so the
+recipe card would show 121 ppm of nitrogen for a solution that actually holds 150 — understating the
+figure by exactly the amount this feature exists to account for.
 
 Add the helper. It rebuilds rather than mutates, because `WaterProfile` is immutable:
 
@@ -3023,7 +3060,11 @@ Expected: PASS, 4 tests.
                             <strong>This acid overshoots the @plan.NutrientSymbol target on its own.</strong>
                             @plan.NutrientPpm.ToString("F0") ppm against a target of
                             @Model.TargetFields[plan.NutrientSymbol].ToString("F0"). Fertilizer only adds,
-                            so no recipe can bring it back down — use a different acid.
+                            so no recipe can bring it back down.
+                            @if (Fits() is { } better)
+                            {
+                                <text>@better.Label would fit.</text>
+                            }
                         </span>
                     </div>
                 }
@@ -3032,6 +3073,9 @@ Expected: PASS, 4 tests.
                     The @plan.NutrientSymbol above is deducted from the target, like the water.
                     Worked for a closed vessel: an open reservoir loses CO₂ and drifts back up, so the
                     dose you settle on will be nearer the full @Model.Alkalinity.ToString("F2") meq/L.
+                    The EC on each recipe still counts this water's bicarbonate, which the acid removes,
+                    so it reads high once you have acidified — by roughly
+                    @((Model.Alkalinity * 44.5).ToString("F0")) µS/cm.
                 </p>
             }
         }
@@ -3047,6 +3091,17 @@ Expected: PASS, 4 tests.
         Model.TargetFields.TryGetValue(plan.NutrientSymbol, out double target)
         && target > 0
         && plan.NutrientPpm > target;
+
+    // The same neutralisation delivered by a different acid lands on a different element, so there is
+    // usually one that fits. Naming it is more use than telling somebody to go and look.
+    private Acid? Fits() =>
+        Model.Acid is not { } plan
+            ? null
+            : Acid.All.FirstOrDefault(candidate =>
+                Model.TargetFields.TryGetValue(candidate.NutrientSymbol, out double target)
+                && target > 0
+                && plan.MilliequivalentsPerLitre * candidate.MilligramsOfNutrientPerMilliequivalent
+                    <= target);
 
     private Task OnEnabledChanged(ChangeEventArgs e)
     {
@@ -3198,8 +3253,9 @@ public class StateVersionTests
         };
 
         string fragment = written.Capture().ToFragment(Catalogue);
+        (CalculatorState? carried, _) = CalculatorState.FromFragment(fragment, Catalogue);
         CalculatorModel read = new();
-        read.Apply(CalculatorState.FromFragment(fragment, Catalogue)!);
+        read.Apply(carried!);
 
         read.Mode.Should().Be(WaterInputMode.Conductivity);
         read.WaterPresetId.Should().Be(WaterPreset.CalciumBicarbonateHard.Id);
@@ -3249,7 +3305,7 @@ public class StateVersionTests
     [Trait("Category", "Unit")]
     public void FromFragment_ReadsAVersionOneFragment()
     {
-        CalculatorState? read = CalculatorState.FromFragment("v=1&t=N%3D150%20L%3D50", Catalogue);
+        (CalculatorState? read, _) = CalculatorState.FromFragment("v=1&t=N%3D150%20L%3D50", Catalogue);
 
         read.Should().NotBeNull();
         read!.Target.Should().Be("N=150 L=50");
@@ -3427,9 +3483,12 @@ Expected: succeeds, and `/tmp/npk-publish/wwwroot/index.html` exists.
 
 - [ ] **Step 3: Add the changelog entry**
 
-Under the unreleased heading in `CHANGELOG.md`, following the format already there:
+`CHANGELOG.md` has no unreleased heading — its top entry is `## [1.0.0-preview.3] - 2026-08-01`.
+Create one above it, then add the entry, following the format already there:
 
 ```markdown
+## [Unreleased]
+
 ### Added
 
 - Source water can be described by a meter reading and an optional hardness drop test, not only by a

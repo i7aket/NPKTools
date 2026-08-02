@@ -120,7 +120,9 @@ The EC field carries a unit selector: **mS/cm · ppm-500 · ppm-700**. `ppm-500 
 the same water, and growers quote whichever their meter shows. This is what answers "I only know
 the ppm".
 
-Hardness fields take **°dH** with a `ppm CaCO₃` alternative. `1 °dH = 0.3567 meq/L = 17.85 ppm CaCO₃`.
+Hardness fields take **°dH** only — the unit every drop-test kit prints, and the one the estimator
+works in. A ppm-CaCO₃ alternative is not worth a second unit selector for a number nobody's kit
+shows; the conversion is `1 °dH = 0.3567 meq/L = 17.85 ppm CaCO₃` if it is ever wanted.
 
 ### The presets
 
@@ -181,10 +183,13 @@ Three things make this work:
 Validation, in the UI: if the recomputed EC differs from the entered EC by more than 20%, warn.
 Never silently adjust.
 
-The preset also self-checks. Softened water needs a cation surplus of `KH − GH = +3.36 meq`; the
-sodium shape supplies +3.5 meq per unit of scale, and the calcium shapes supply a negative surplus.
-Choose the wrong preset for softened water and the estimate is visibly wrong rather than plausibly
-wrong.
+**How much the preset still matters, honestly.** Softened water needs carbonate hardness above
+general hardness — a cation surplus the calcium in it cannot account for. The sodium shape's
+Na:Cl:SO₄ trio carries a net charge of +3.5 meq per unit of scale and supplies it directly; the
+calcium shapes' trios carry −0.7, so the shortfall lands on the sodium the closure adds instead.
+Either way the estimate ends up sodium-rich and chemically consistent, so with **both** drop tests
+entered the preset choice moves the answer only a little. It matters most in the EC-only rung, where
+it decides everything. That is an argument for entering the drop tests, not for trusting the preset.
 
 ### Output
 
@@ -199,8 +204,10 @@ Shown whenever alkalinity > 0.
 
 ### Inputs
 
-- Acid: nitric 60% / nitric 38% / phosphoric 85% / phosphoric 75% / sulfuric 98% / sulfuric 37% /
-  custom (%w/w + density).
+- Acid: nitric 60% / nitric 38% / phosphoric 85% / phosphoric 75% / sulfuric 98% / sulfuric 37%.
+  The library's `Acid` constructor takes any strength and density, so a custom acid is available to
+  a consumer of the package; the app offers the six off-the-shelf strengths and no custom form,
+  because two more fields to describe a bottle is a worse trade than picking the nearest one.
 - Target pH, default 5.8.
 - Water pH, optional, default 7.6.
 
@@ -304,8 +311,8 @@ inferred: **analysis** if any water value is non-zero, **reverse osmosis** other
 - Each preset produces its documented EC, HCO₃, GH and KH, to the precision printed in the table.
 - `Estimate` reproduces the entered EC within 0.5% whenever feasible.
 - GH and KH, when given, come back out of the estimated profile unchanged.
-- Softened-water shape resolves the positive cation surplus; a calcium shape given the same GH/KH
-  reports infeasible or is visibly driven to a different composition.
+- Softened-water shape resolves the positive cation surplus: sodium high, calcium near zero, and
+  both drop tests still read back exactly.
 - GH/KH implying more EC than entered → `Feasible == false`, nothing silently adjusted.
 - Acid dose reproduces the worked example: 2.09 meq/L, 16.1 mL of 60% nitric per 100 L, 29.3 ppm N.
 - Every acid in the table: eq/L matches %w/w × density ÷ equivalent weight.
