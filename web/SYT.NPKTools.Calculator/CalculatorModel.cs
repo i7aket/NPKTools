@@ -304,6 +304,16 @@ public sealed class CalculatorModel
         Water = new Dictionary<string, double>(Water, StringComparer.Ordinal),
         Salts = [.. Selected],
         ConcentrateLiters = ConcentrateLiters,
+        WaterMode = Mode.ToString(),
+        WaterPresetId = WaterPresetId,
+        WaterEc = WaterEc,
+        WaterEcUnit = WaterEcUnit.ToString(),
+        WaterGh = WaterGh,
+        WaterKh = WaterKh,
+        AcidEnabled = AcidEnabled,
+        AcidId = AcidId,
+        TargetPh = TargetPh,
+        WaterPh = WaterPh,
     };
 
     /// <summary>
@@ -341,6 +351,33 @@ public sealed class CalculatorModel
         }
 
         ConcentrateLiters = state.ConcentrateLiters;
+
+        // Version 1 carried no mode. What the link itself says is the only honest inference: water
+        // values mean somebody typed an analysis, and no water values mean they used osmosis.
+        Mode = Enum.TryParse(state.WaterMode, out WaterInputMode mode)
+            ? mode
+            : Water.Values.Any(value => value > 0) ? WaterInputMode.Analysis : WaterInputMode.Osmosis;
+
+        // An unknown preset or acid is dropped rather than accepted, the same way an unknown salt name
+        // is: a stale file must not introduce something this version does not have.
+        if (state.WaterPresetId is not null && WaterPreset.All.Any(p => p.Id == state.WaterPresetId))
+        {
+            WaterPresetId = state.WaterPresetId;
+        }
+
+        WaterEc = state.WaterEc ?? 0;
+        WaterEcUnit = Enum.TryParse(state.WaterEcUnit, out EcUnit unit) ? unit : EcUnit.MilliSiemensPerCm;
+        WaterGh = state.WaterGh;
+        WaterKh = state.WaterKh;
+
+        AcidEnabled = state.AcidEnabled ?? false;
+        if (state.AcidId is not null && Nutrients.Acid.All.Any(a => a.Id == state.AcidId))
+        {
+            AcidId = state.AcidId;
+        }
+
+        TargetPh = state.TargetPh ?? 5.8;
+        WaterPh = state.WaterPh ?? 7.6;
     }
 
     private WaterProfile BuildWater()

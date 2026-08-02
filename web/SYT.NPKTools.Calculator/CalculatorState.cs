@@ -53,6 +53,46 @@ public sealed class CalculatorState
     [JsonPropertyName("concentrateLiters")]
     public double? ConcentrateLiters { get; set; }
 
+    /// <summary>How the water was described. Absent in version 1, where it is inferred.</summary>
+    [JsonPropertyName("waterMode")]
+    public string? WaterMode { get; set; }
+
+    /// <summary>The chosen water shape.</summary>
+    [JsonPropertyName("waterPreset")]
+    public string? WaterPresetId { get; set; }
+
+    /// <summary>The meter reading, in whatever scale <see cref="WaterEcUnit"/> names.</summary>
+    [JsonPropertyName("waterEc")]
+    public double? WaterEc { get; set; }
+
+    /// <summary>The scale the meter reading is in.</summary>
+    [JsonPropertyName("waterEcUnit")]
+    public string? WaterEcUnit { get; set; }
+
+    /// <summary>General hardness in °dH, when measured.</summary>
+    [JsonPropertyName("waterGh")]
+    public double? WaterGh { get; set; }
+
+    /// <summary>Carbonate hardness in °dKH, when measured.</summary>
+    [JsonPropertyName("waterKh")]
+    public double? WaterKh { get; set; }
+
+    /// <summary>Whether the water is being acidified.</summary>
+    [JsonPropertyName("acidEnabled")]
+    public bool? AcidEnabled { get; set; }
+
+    /// <summary>The chosen acid.</summary>
+    [JsonPropertyName("acidId")]
+    public string? AcidId { get; set; }
+
+    /// <summary>The pH to reach.</summary>
+    [JsonPropertyName("targetPh")]
+    public double? TargetPh { get; set; }
+
+    /// <summary>The pH of the untreated water.</summary>
+    [JsonPropertyName("waterPh")]
+    public double? WaterPh { get; set; }
+
     // ---------------------------------------------------------------- file
 
     /// <summary>
@@ -110,7 +150,7 @@ public sealed class CalculatorState
         ArgumentNullException.ThrowIfNull(catalogue);
 
         StringBuilder builder = new();
-        builder.Append("v=1");
+        builder.Append("v=2");
 
         if (!string.IsNullOrWhiteSpace(Target))
         {
@@ -152,6 +192,24 @@ public sealed class CalculatorState
             builder.Append("&c=").Append(litres.ToString("G", CultureInfo.InvariantCulture));
         }
 
+        // Version 2. Each key is written only when it carries something, following the rule the older
+        // keys already follow: a link has to stay short enough to paste into a chat window.
+        Append(builder, "wm", WaterMode);
+        Append(builder, "wp", WaterPresetId);
+        Append(builder, "we", WaterEc);
+        Append(builder, "wu", WaterEcUnit);
+        Append(builder, "wg", WaterGh);
+        Append(builder, "wk", WaterKh);
+
+        if (AcidEnabled is true)
+        {
+            builder.Append("&ae=1");
+        }
+
+        Append(builder, "ay", AcidId);
+        Append(builder, "ap", TargetPh);
+        Append(builder, "aw", WaterPh);
+
         return builder.ToString();
     }
 
@@ -186,7 +244,9 @@ public sealed class CalculatorState
             }
         }
 
-        if (!parts.TryGetValue("v", out string? version) || version != "1")
+        // Both versions are read. The keys were always optional, so a reader that rejected a version
+        // it did not recognise would be throwing away a link it could in fact understand.
+        if (!parts.TryGetValue("v", out string? version) || (version != "1" && version != "2"))
         {
             return (null, true);
         }
@@ -194,6 +254,16 @@ public sealed class CalculatorState
         CalculatorState state = new()
         {
             Target = parts.GetValueOrDefault("t", string.Empty),
+            WaterMode = parts.GetValueOrDefault("wm"),
+            WaterPresetId = parts.GetValueOrDefault("wp"),
+            WaterEc = Number(parts, "we"),
+            WaterEcUnit = parts.GetValueOrDefault("wu"),
+            WaterGh = Number(parts, "wg"),
+            WaterKh = Number(parts, "wk"),
+            AcidEnabled = parts.ContainsKey("ae") ? true : null,
+            AcidId = parts.GetValueOrDefault("ay"),
+            TargetPh = Number(parts, "ap"),
+            WaterPh = Number(parts, "aw"),
         };
 
         if (parts.TryGetValue("w", out string? water))
@@ -240,4 +310,29 @@ public sealed class CalculatorState
         state.Salts = [.. catalogue.Where((_, index) => !excluded.Contains(index))];
         return (state, true);
     }
+
+    private static void Append(StringBuilder builder, string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            builder.Append('&').Append(key).Append('=').Append(Uri.EscapeDataString(value));
+        }
+    }
+
+    // "R" rather than "G": a round-trippable form, so a meter reading typed to two decimals comes back
+    // as the same double rather than as one a hair below it.
+    private static void Append(StringBuilder builder, string key, double? value)
+    {
+        if (value is { } number)
+        {
+            builder.Append('&').Append(key).Append('=')
+                .Append(number.ToString("R", CultureInfo.InvariantCulture));
+        }
+    }
+
+    private static double? Number(Dictionary<string, string> parts, string key) =>
+        parts.TryGetValue(key, out string? raw) &&
+        double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out double value)
+            ? value
+            : null;
 }
