@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\web\SYT.NPKTools.Calculator\SYT.NPKTools.Calculator.csproj" />
+  </ItemGroup>
+
+</Project>

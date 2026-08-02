@@ -7,6 +7,7 @@
     <Project Path="src/SYT.NPKTools/SYT.NPKTools.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SYT.NPKTools.Calculator.Tests/SYT.NPKTools.Calculator.Tests.csproj" />
     <Project Path="tests/SYT.NPKTools.IntegrationTests/SYT.NPKTools.IntegrationTests.csproj" />
     <Project Path="tests/SYT.NPKTools.OrTools.Tests/SYT.NPKTools.OrTools.Tests.csproj" />
     <Project Path="tests/SYT.NPKTools.OrToolsOracle/SYT.NPKTools.OrToolsOracle.csproj" />
