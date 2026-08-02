@@ -9,12 +9,25 @@
     <div class="col-4 stack">
 
         <section class="card">
-            <h2>Target</h2>
-            <input class="target-input" type="text" value="@Model.TargetText"
-                   @onchange="OnTargetChanged" aria-label="Target nutrient profile in ppm" />
-            <p class="card-note">
-                Element=ppm, separated by spaces. <code>L</code> is the reservoir volume in litres.
-            </p>
+            <h2>Target — macro</h2>
+            <div class="field" style="margin-bottom:var(--grid-gap)">
+                <label for="liters">Reservoir, litres</label>
+                <input id="liters" type="number" min="0" step="1" value="@Model.Liters"
+                       @onchange="OnLitersChanged" />
+            </div>
+            <ElementGrid Elements="ElementGroups.Macro" Values="Model.TargetFields"
+                         Prefix="t" Step="1" Changed="_ => Edited()" />
+
+            <details class="extra">
+                <summary>As a string</summary>
+                <input class="target-input" type="text" value="@Model.TargetText"
+                       @onchange="OnTargetChanged" aria-label="Target nutrient profile in ppm" />
+                <p class="card-note">
+                    Element=ppm, separated by spaces. <code>L</code> is the reservoir volume in litres.
+                    Paste one from a feed chart, or copy this one out.
+                </p>
+            </details>
+
             @if (Model.Error is not null)
             {
                 <div class="notice error" role="alert">
@@ -22,6 +35,18 @@
                     <span><strong>Cannot solve.</strong> @Model.Error</span>
                 </div>
             }
+        </section>
+
+        <section class="card">
+            <h2>Target — micro</h2>
+            <ElementGrid Elements="ElementGroups.Micro" Values="Model.TargetFields"
+                         Prefix="t" Step="0.01" Changed="_ => Edited()" />
+            <div class="group-divider">Counter-ions</div>
+            <p class="card-note" style="margin-top:0">
+                Not dosed for — they arrive with other salts — but a target may still name them.
+            </p>
+            <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.TargetFields"
+                         Prefix="t" Step="0.1" Changed="_ => Edited()" />
         </section>
 
         <section class="card">
@@ -178,6 +203,12 @@
     private Task OnTargetChanged(ChangeEventArgs e)
     {
         Model.TargetText = e.Value?.ToString() ?? string.Empty;
+        return Edited();
+    }
+
+    private Task OnLitersChanged(ChangeEventArgs e)
+    {
+        Model.Liters = Parse(e.Value);
         return Edited();
     }
 

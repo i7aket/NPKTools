@@ -505,3 +505,35 @@ details[open] > summary::before { content: "\25BE  "; }
 }
 
 #blazor-error-ui .reload { color: inherit; text-decoration: underline; }
+
+/* ---------------------------------------------------------------- collapsed extras */
+
+/* The string format, kept out of the way of the table it duplicates. */
+
+.extra { margin-top: var(--grid-gap); }
+
+.extra > summary {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.extra > summary::before { content: "▸ "; }
+.extra[open] > summary::before { content: "▾ "; }
+.extra > summary::-webkit-details-marker { display: none; }
+.extra > * + * { margin-top: 6px; }
+
+/* ---------------------------------------------------------------- grouped inputs */
+
+.group-divider {
+  margin: var(--grid-gap) 0 6px;
+  padding-top: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
