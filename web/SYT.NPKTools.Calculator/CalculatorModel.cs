@@ -1,3 +1,4 @@
+using System.Globalization;
 using SYT.NPKTools.Concentrates;
 using SYT.NPKTools.Fertilizers;
 using SYT.NPKTools.Nutrients;
@@ -38,6 +39,10 @@ public sealed class CalculatorModel
         {
             Selected.Add(salt.Name.Value);
         }
+
+        // Seeded through the setter so the starter target is written once, in the format the parser
+        // and the transport share, rather than duplicated as a field initialiser.
+        TargetText = "N=150 P=50 K=210 Ca=160 Mg=50 S=65 L=100";
     }
 
     /// <summary>Every salt the library knows about, macro and micro together.</summary>
@@ -46,8 +51,84 @@ public sealed class CalculatorModel
     /// <summary>Names of the salts the grower says they have.</summary>
     public HashSet<string> Selected { get; } = new(StringComparer.Ordinal);
 
-    /// <summary>The target, as the parser accepts it.</summary>
-    public string TargetText { get; set; } = "N=150 P=50 K=210 Ca=160 Mg=50 S=65 L=100";
+    /// <summary>The target, element by element, in ppm. Keyed by symbol.</summary>
+    /// <remarks>
+    /// The state, rather than a view of it. A number field cannot hold a malformed value, so the only
+    /// way to reach a parse error is the string box — and an error there no longer destroys what is
+    /// already entered.
+    /// </remarks>
+    public Dictionary<string, double> TargetFields { get; } =
+        ElementGroups.All.ToDictionary(symbol => symbol, _ => 0d, StringComparer.Ordinal);
+
+    /// <summary>The reservoir volume, in litres.</summary>
+    public double Liters { get; set; } = 100;
+
+    /// <summary>
+    /// The target as the parser accepts it — a projection of <see cref="TargetFields"/>.
+    /// </summary>
+    /// <remarks>
+    /// Kept because it is the transport format: a link and a file both carry it, so a setup saved by
+    /// any version stays readable. Setting it parses, and on failure records the error and leaves the
+    /// fields as they were.
+    /// </remarks>
+    public string TargetText
+    {
+        get
+        {
+            IEnumerable<string> pairs = ElementGroups.All
+                .Where(symbol => TargetFields[symbol] > 0)
+                .Select(symbol => $"{symbol}={Format(TargetFields[symbol])}");
+
+            return string.Join(' ', pairs.Append($"L={Format(Liters)}"));
+        }
+
+        set
+        {
+            PpmTarget parsed;
+            try
+            {
+                parsed = _parser.Parse(value);
+            }
+            catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)
+            {
+                Error = ex.Message;
+                return;
+            }
+
+            Error = null;
+            Liters = parsed.Liters.Value;
+            foreach (string symbol in ElementGroups.All)
+            {
+                TargetFields[symbol] = ValueOf(parsed, symbol);
+            }
+        }
+    }
+
+    private static string Format(double value) =>
+        value.ToString("0.####", CultureInfo.InvariantCulture);
+
+    // PpmTarget names its properties by symbol, so the symbol is the property name. WaterProfile is
+    // the opposite — it spells the elements out — so the two are not interchangeable.
+    private static double ValueOf(PpmTarget target, string symbol) => symbol switch
+    {
+        "N" => target.N.Value,
+        "P" => target.P.Value,
+        "K" => target.K.Value,
+        "Ca" => target.Ca.Value,
+        "Mg" => target.Mg.Value,
+        "S" => target.S.Value,
+        "Fe" => target.Fe.Value,
+        "Cu" => target.Cu.Value,
+        "Mn" => target.Mn.Value,
+        "Zn" => target.Zn.Value,
+        "B" => target.B.Value,
+        "Mo" => target.Mo.Value,
+        "Cl" => target.Cl.Value,
+        "Si" => target.Si.Value,
+        "Se" => target.Se.Value,
+        "Na" => target.Na.Value,
+        _ => 0,
+    };
 
     /// <summary>The source-water analysis, in ppm. Keyed by element symbol.</summary>
     public Dictionary<string, double> Water { get; } = new()
