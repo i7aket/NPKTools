@@ -85,7 +85,8 @@
         @if (Model.WaterEstimate is { } estimate)
         {
             <div class="group-divider">Estimated analysis — not an analysis</div>
-            <div class="field-grid">
+            @* Three across, so the six read as two rows rather than four and a stray pair. *@
+            <div class="field-grid" style="grid-template-columns:repeat(3,1fr)">
                 @foreach ((string symbol, double value) in Estimated(estimate))
                 {
                     <div class="field">

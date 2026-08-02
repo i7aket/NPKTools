@@ -25,7 +25,7 @@ public sealed class CalculatorModel
     {
         IFertilizerBundleRepository catalogue = NpkTools.CreateBundleRepository();
 
-        Catalogue =
+        _builtIns =
         [
             .. catalogue.Macro().SelectMany(b => b)
                 .Concat(catalogue.Micro().SelectMany(b => b))
@@ -35,7 +35,7 @@ public sealed class CalculatorModel
 
         // A shelf nobody has edited yet is the whole catalogue: the calculator should produce an
         // answer on first load rather than an empty state that has to be configured first.
-        foreach (Fertilizer salt in Catalogue)
+        foreach (Fertilizer salt in _builtIns)
         {
             Selected.Add(salt.Name.Value);
         }
@@ -45,8 +45,65 @@ public sealed class CalculatorModel
         TargetText = "N=150 P=50 K=210 Ca=160 Mg=50 S=65 L=100";
     }
 
-    /// <summary>Every salt the library knows about, macro and micro together.</summary>
-    public IReadOnlyList<Fertilizer> Catalogue { get; }
+    private readonly IReadOnlyList<Fertilizer> _builtIns;
+    private readonly List<CustomSalt> _customSalts = [];
+    private readonly List<Fertilizer> _materialised = [];
+
+    /// <summary>Every salt on offer: the library's, then the grower's own.</summary>
+    /// <remarks>
+    /// Custom salts come last, in the order they were added. That ordering is what keeps a saved
+    /// link's built-in indices meaning what they meant before any custom salt existed.
+    /// </remarks>
+    public IReadOnlyList<Fertilizer> Catalogue => [.. _builtIns, .. _materialised];
+
+    /// <summary>The salts the grower described themselves.</summary>
+    public IReadOnlyList<CustomSalt> CustomSalts => _customSalts;
+
+    /// <summary>
+    /// Adds a salt of the grower's own, ticked and ready to use.
+    /// </summary>
+    /// <param name="salt">The description.</param>
+    /// <param name="error">Why it was refused, or null on success.</param>
+    /// <returns><see langword="true"/> when the salt was added.</returns>
+    /// <remarks>
+    /// A name already in use is refused rather than allowed to shadow. The shelf is keyed by name —
+    /// <see cref="Selected"/> holds names, not references — so two salts sharing one would be ticked
+    /// and unticked together, and one of them would ride silently into every recipe meant for the
+    /// other.
+    /// </remarks>
+    public bool TryAddCustomSalt(CustomSalt salt, out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(salt);
+
+        if (!salt.TryMaterialise(out Fertilizer? built, out error))
+        {
+            return false;
+        }
+
+        string name = built!.Name.Value;
+        if (Catalogue.Any(f => string.Equals(f.Name.Value, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            error = $"There is already a salt called '{name}'. Pick another name.";
+            return false;
+        }
+
+        _customSalts.Add(salt);
+        _materialised.Add(built);
+        Selected.Add(name);
+        error = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Removes one of the grower's own salts.
+    /// </summary>
+    /// <param name="name">The salt's name. Unknown names are ignored.</param>
+    public void RemoveCustomSalt(string name)
+    {
+        _customSalts.RemoveAll(s => string.Equals(s.Name, name, StringComparison.Ordinal));
+        _materialised.RemoveAll(f => string.Equals(f.Name.Value, name, StringComparison.Ordinal));
+        Selected.Remove(name);
+    }
 
     /// <summary>Names of the salts the grower says they have.</summary>
     public HashSet<string> Selected { get; } = new(StringComparer.Ordinal);
