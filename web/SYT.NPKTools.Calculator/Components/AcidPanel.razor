@@ -1,0 +1,144 @@
+@inject CalculatorModel Model
+
+@*
+    Only shown when there is alkalinity to neutralise, because on reverse osmosis there is nothing to
+    decide. The pH fields are the one place a pH reading carries information: it locates the water on
+    its titration curve. It says nothing about composition, which is why it is an input nowhere else.
+*@
+
+@if (Model.Alkalinity > 0)
+{
+    <section class="card">
+        <h2>Acidification</h2>
+
+        <label class="salt-row" style="padding-left:0">
+            <input type="checkbox" checked="@Model.AcidEnabled" @onchange="OnEnabledChanged" />
+            <span>Neutralise the alkalinity — @Model.Alkalinity.ToString("F2") meq/L</span>
+        </label>
+
+        @if (Model.AcidEnabled)
+        {
+            <div class="field" style="margin-top:var(--grid-gap)">
+                <label for="acid">Acid</label>
+                <select id="acid" value="@Model.AcidId" @onchange="OnAcidChanged">
+                    @foreach (Acid acid in Acid.All)
+                    {
+                        <option value="@acid.Id">@acid.Label</option>
+                    }
+                </select>
+            </div>
+
+            <div class="field-grid" style="margin-top:var(--grid-gap)">
+                <div class="field">
+                    <label for="ph-water">Water pH</label>
+                    <input id="ph-water" type="number" min="0" max="14" step="0.1"
+                           value="@Model.WaterPh" @onchange="OnWaterPhChanged" />
+                </div>
+                <div class="field">
+                    <label for="ph-target">Target pH</label>
+                    <input id="ph-target" type="number" min="0" max="14" step="0.1"
+                           value="@Model.TargetPh" @onchange="OnTargetPhChanged" />
+                </div>
+            </div>
+
+            @if (Model.Acid is { } plan)
+            {
+                <div class="metrics" style="margin-top:8px">
+                    <div class="metric">
+                        <div class="label">Acid</div>
+                        <div class="value">@plan.Millilitres.ToString("F1") <span class="unit">mL</span></div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">Strength</div>
+                        <div class="value">@plan.MilliequivalentsPerLitre.ToString("F2") <span class="unit">meq/L</span></div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">Adds @plan.NutrientSymbol</div>
+                        <div class="value">@plan.NutrientPpm.ToString("F0") <span class="unit">ppm</span></div>
+                    </div>
+                </div>
+
+                @if (Overshoots(plan))
+                {
+                    <div class="notice warn" role="status">
+                        <Icon Kind="IconKind.Warning" />
+                        <span>
+                            <strong>This acid overshoots the @plan.NutrientSymbol target on its own.</strong>
+                            @plan.NutrientPpm.ToString("F0") ppm against a target of
+                            @Model.TargetFields[plan.NutrientSymbol].ToString("F0"). Fertilizer only adds,
+                            so no recipe can bring it back down.
+                            @if (Fits() is { } better)
+                            {
+                                <text>@better.Label would fit.</text>
+                            }
+                        </span>
+                    </div>
+                }
+
+                <p class="card-note">
+                    The @plan.NutrientSymbol above is deducted from the target, like the water.
+                    Worked for a closed vessel: an open reservoir loses CO₂ and drifts back up, so the
+                    dose you settle on will be nearer the full @Model.Alkalinity.ToString("F2") meq/L.
+                    Each recipe's EC still counts this water's bicarbonate, which the acid removes, so
+                    it reads high once you have acidified — by roughly
+                    @((Model.Alkalinity * 44.5).ToString("F0")) µS/cm.
+                </p>
+            }
+        }
+    </section>
+}
+
+@code {
+    /// <summary>Raised after any edit, so the page can recalculate and persist.</summary>
+    [Parameter]
+    public EventCallback Changed { get; set; }
+
+    private bool Overshoots(AcidPlan plan) =>
+        Model.TargetFields.TryGetValue(plan.NutrientSymbol, out double target)
+        && target > 0
+        && plan.NutrientPpm > target;
+
+    // The same neutralisation delivered by a different acid lands on a different element, so there is
+    // usually one that fits. Naming it is more use than telling somebody to go and look.
+    private Acid? Fits() =>
+        Model.Acid is not { } plan
+            ? null
+            : Acid.All.FirstOrDefault(candidate =>
+                Model.TargetFields.TryGetValue(candidate.NutrientSymbol, out double target)
+                && target > 0
+                && plan.MilliequivalentsPerLitre * candidate.MilligramsOfNutrientPerMilliequivalent
+                    <= target);
+
+    private Task OnEnabledChanged(ChangeEventArgs e)
+    {
+        Model.AcidEnabled = e.Value is true;
+        return Changed.InvokeAsync();
+    }
+
+    private Task OnAcidChanged(ChangeEventArgs e)
+    {
+        Model.AcidId = e.Value?.ToString() ?? Model.AcidId;
+        return Changed.InvokeAsync();
+    }
+
+    private Task OnWaterPhChanged(ChangeEventArgs e)
+    {
+        Model.WaterPh = Parse(e.Value, Model.WaterPh);
+        return Changed.InvokeAsync();
+    }
+
+    private Task OnTargetPhChanged(ChangeEventArgs e)
+    {
+        Model.TargetPh = Parse(e.Value, Model.TargetPh);
+        return Changed.InvokeAsync();
+    }
+
+    private static double Parse(object? value, double fallback) =>
+        double.TryParse(
+            value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed is >= 0 and <= 14
+            ? parsed
+            : fallback;
+}

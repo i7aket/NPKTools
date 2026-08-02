@@ -90,6 +90,54 @@ public static class WaterProfileExtensions
     }
 
     /// <summary>
+    /// One German degree of hardness, in milliequivalents per litre.
+    /// </summary>
+    /// <remarks>
+    /// 1 °dH is 17.85 mg/L as CaCO₃, and CaCO₃ has an equivalent weight of 50.04, so one degree is
+    /// 0.3567 meq/L. The same figure converts carbonate hardness, because both scales count
+    /// equivalents and differ only in which ions they count.
+    /// </remarks>
+    public const double MilliequivalentsPerGermanDegree = 0.3567;
+
+    /// <summary>
+    /// The water's general hardness — calcium and magnesium — in German degrees.
+    /// </summary>
+    /// <param name="water">The source water's analysis.</param>
+    /// <returns>The hardness in °dH.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="water"/> is null.</exception>
+    /// <remarks>
+    /// Counted per equivalent, not per milligram: magnesium is lighter than calcium and so contributes
+    /// more hardness per milligram. Sodium contributes none at all, which is exactly why softened
+    /// water reads as soft while its conductivity says otherwise.
+    /// </remarks>
+    public static double GeneralHardness(this WaterProfile water)
+    {
+        ArgumentNullException.ThrowIfNull(water);
+
+        IonBalance balance = water.AsPpm().IonBalance();
+
+        return (balance.Calcium + balance.Magnesium) / MilliequivalentsPerGermanDegree;
+    }
+
+    /// <summary>
+    /// The water's carbonate hardness — its alkalinity — in German degrees.
+    /// </summary>
+    /// <param name="water">The source water's analysis.</param>
+    /// <returns>The carbonate hardness in °dKH.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="water"/> is null.</exception>
+    /// <remarks>
+    /// The same quantity as <see cref="EstimatedAlkalinity"/>, in the unit a drop-test kit prints. It
+    /// is inferred from the cation surplus rather than measured, so water whose anions already balance
+    /// its cations reads as zero however hard it is.
+    /// </remarks>
+    public static double CarbonateHardness(this WaterProfile water)
+    {
+        ArgumentNullException.ThrowIfNull(water);
+
+        return water.EstimatedAlkalinity() / MilliequivalentsPerGermanDegree;
+    }
+
+    /// <summary>
     /// Estimates the conductivity of the source water itself, bicarbonate included.
     /// </summary>
     /// <param name="water">The source water's analysis.</param>

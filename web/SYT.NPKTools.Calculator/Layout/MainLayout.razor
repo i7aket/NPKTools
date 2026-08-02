@@ -1,7 +1,14 @@
 @inherits LayoutComponentBase
 
 <header class="app-header">
-    <h1>NPKTools</h1>
+    @*
+        The mark carries the brand and the heading carries the product, so the two are not competing
+        to be the title. Decorative: the brand is written out beside it, and a screen reader that
+        announced both would say the same thing twice.
+    *@
+    <img class="brand-mark" src="img/greensecrets.png" width="32" height="32" alt="" />
+    <span class="brand">Green Secrets</span>
+    <h1>SYT NPKTools</h1>
     <span class="tagline">Fertilizer calculator — runs entirely in your browser</span>
 </header>
 

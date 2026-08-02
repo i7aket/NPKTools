@@ -1,0 +1,66 @@
+@*
+    One grid of ppm fields. Used four times — target macro, target micro, water macro, water micro —
+    because two implementations of the same grid drift apart within a month.
+*@
+
+<div class="field-grid" style="@(Columns is { } columns ? $"grid-template-columns:repeat({columns},1fr)" : null)">
+    @foreach (string element in Elements)
+    {
+        <div class="field">
+            <label for="@($"{Prefix}-{element}")">@element</label>
+            <input id="@($"{Prefix}-{element}")" type="number" min="0" step="@Step"
+                   value="@Values[element]"
+                   @onchange="e => OnChanged(element, e)" />
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The symbols to show, in order.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> Elements { get; set; } = [];
+
+    /// <summary>The values being edited, keyed by symbol.</summary>
+    [Parameter, EditorRequired]
+    public IDictionary<string, double> Values { get; set; } = new Dictionary<string, double>();
+
+    /// <summary>Distinguishes this grid's input ids from the others on the page.</summary>
+    [Parameter, EditorRequired]
+    public string Prefix { get; set; } = string.Empty;
+
+    /// <summary>The increment for the spinner. Micronutrients want a finer one.</summary>
+    [Parameter]
+    public string Step { get; set; } = "0.1";
+
+    /// <summary>
+    /// A fixed number of columns, or null to fit as many as the width allows.
+    /// </summary>
+    /// <remarks>
+    /// Worth fixing where the elements fall into natural rows. Six macronutrients across an
+    /// as-many-as-fit grid land four and two, which reads as an accident; at three they land N P K
+    /// over Ca Mg S, which is how a feed chart groups them anyway.
+    /// </remarks>
+    [Parameter]
+    public int? Columns { get; set; }
+
+    /// <summary>Raised with the symbol whose value changed.</summary>
+    [Parameter]
+    public EventCallback<string> Changed { get; set; }
+
+    private async Task OnChanged(string element, ChangeEventArgs e)
+    {
+        Values[element] = Parse(e.Value);
+        await Changed.InvokeAsync(element);
+    }
+
+    // Half-typed input should read as empty rather than throw, and the culture is invariant on
+    // purpose: a comma decimal separator read as a thousands separator is a tenfold weighing error.
+    private static double Parse(object? value) =>
+        double.TryParse(
+            value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed >= 0
+            ? parsed
+            : 0;
+}
