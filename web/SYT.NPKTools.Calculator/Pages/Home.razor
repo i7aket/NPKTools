@@ -53,40 +53,7 @@
 
         <AcidPanel Changed="Edited" />
 
-        <section class="card">
-            <h2>Salts you have — @Model.Selected.Count / @Model.Catalogue.Count</h2>
-            <div style="display:flex; gap:8px; margin-bottom:8px">
-                <button class="secondary" @onclick="SelectAll">All</button>
-                <button class="secondary" @onclick="SelectNone">None</button>
-            </div>
-            <div class="salt-list">
-                @foreach (IGrouping<bool, Fertilizer> group in Model.Catalogue
-                    .GroupBy(FertilizerBundleGenerator.IsMicro)
-                    .OrderBy(g => g.Key))
-                {
-                    <div class="salt-group">@(group.Key ? "Micronutrient" : "Macronutrient")</div>
-                    @foreach (Fertilizer salt in group)
-                    {
-                        <label class="salt-row">
-                            <input type="checkbox" checked="@Model.Selected.Contains(salt.Name.Value)"
-                                   @onchange="e => OnSaltToggled(salt.Name.Value, e)" />
-                            <span>@salt.Name.Value</span>
-                            <span class="formula">@salt.Formula.Value</span>
-                        </label>
-                    }
-                }
-            </div>
-            @if (Model.UncoveredElements.Count > 0)
-            {
-                <div class="notice warn" role="status">
-                    <Icon Kind="IconKind.Warning" />
-                    <span>
-                        <strong>No source for</strong> @string.Join(", ", Model.UncoveredElements).
-                        Nothing ticked above supplies these, so no recipe can reach them.
-                    </span>
-                </div>
-            }
-        </section>
+        <SaltPicker Changed="Edited" />
 
         <StoragePanel @ref="_storage" Changed="StateHasChanged" />
 
@@ -169,35 +136,8 @@
         return Edited();
     }
 
-    private Task OnSaltToggled(string name, ChangeEventArgs e)
-    {
-        if (e.Value is true)
-        {
-            Model.Selected.Add(name);
-        }
-        else
-        {
-            Model.Selected.Remove(name);
-        }
 
-        return Edited();
-    }
 
-    private Task SelectAll()
-    {
-        foreach (Fertilizer salt in Model.Catalogue)
-        {
-            Model.Selected.Add(salt.Name.Value);
-        }
-
-        return Edited();
-    }
-
-    private Task SelectNone()
-    {
-        Model.Selected.Clear();
-        return Edited();
-    }
 
     // A half-typed number should leave the field empty rather than throw, so parsing is forgiving and
     // invariant — a comma decimal separator would otherwise silently mean a different number.

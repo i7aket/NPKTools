@@ -20,6 +20,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   tank, and an acid that would overshoot its own element's target says so and names one that fits.
 - `WaterPreset`, `WaterEstimator`, `AcidDose`, `Acid` and `ElementGroups` in `SYT.NPKTools`, and
   `GeneralHardness` / `CarbonateHardness` on `WaterProfile`.
+- Salts the catalogue does not carry can be added by the grower — by chemical formula, which derives
+  the percentages, or by percentages for blends and chelates. They take part in the recipe search
+  exactly as built-in salts do, classified macro or micro by composition rather than by a flag, and
+  they travel in links and files. A formula that looks like a chelate is flagged: the ligand's
+  nitrogen holds the metal rather than feeding the plant, and a formula cannot tell the two apart.
+- `ChemicalFormula` and `FormulaComposition` in `SYT.NPKTools`.
 
 ### Changed
 

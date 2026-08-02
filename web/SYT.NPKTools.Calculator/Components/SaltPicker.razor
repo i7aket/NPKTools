@@ -1,0 +1,105 @@
+@inject CalculatorModel Model
+
+@*
+    The shelf. Lifted out of Home.razor because a list plus an entry form is more than a page should
+    hold inline, and the grouping is not ours to decide — FertilizerBundleGenerator.IsMicro classifies
+    by composition, so a salt the grower adds lands in the right group without a flag to get wrong.
+*@
+
+<section class="card">
+    <h2>Salts you have — @Model.Selected.Count / @Model.Catalogue.Count</h2>
+
+    <div class="button-row" style="margin-top:0">
+        <button class="secondary" @onclick="SelectAll">All</button>
+        <button class="secondary" @onclick="SelectNone">None</button>
+        <button @onclick="() => _adding = !_adding">@(_adding ? "Close" : "Add salt")</button>
+    </div>
+
+    @if (_adding)
+    {
+        <div class="group-divider">Your own salt</div>
+        <CustomSaltForm Changed="Changed" Cancelled="() => _adding = false" />
+    }
+
+    <div class="salt-list">
+        @foreach (IGrouping<bool, Fertilizer> group in Model.Catalogue
+            .GroupBy(FertilizerBundleGenerator.IsMicro)
+            .OrderBy(g => g.Key))
+        {
+            <div class="salt-group">@(group.Key ? "Micronutrient" : "Macronutrient")</div>
+            @foreach (Fertilizer salt in group)
+            {
+                <label class="salt-row">
+                    <input type="checkbox" checked="@Model.Selected.Contains(salt.Name.Value)"
+                           @onchange="e => OnToggled(salt.Name.Value, e)" />
+                    <span>@salt.Name.Value</span>
+                    @if (IsCustom(salt))
+                    {
+                        <button class="secondary tiny" title="Remove this salt"
+                                @onclick:preventDefault @onclick:stopPropagation
+                                @onclick="() => Remove(salt.Name.Value)">✕</button>
+                    }
+                    <span class="formula">@salt.Formula.Value</span>
+                </label>
+            }
+        }
+    </div>
+
+    @if (Model.UncoveredElements.Count > 0)
+    {
+        <div class="notice warn" role="status">
+            <Icon Kind="IconKind.Warning" />
+            <span>
+                <strong>No source for</strong> @string.Join(", ", Model.UncoveredElements).
+                Nothing ticked above supplies these, so no recipe can reach them.
+            </span>
+        </div>
+    }
+</section>
+
+@code {
+    /// <summary>Raised after any edit, so the page can recalculate and persist.</summary>
+    [Parameter]
+    public EventCallback Changed { get; set; }
+
+    private bool _adding;
+
+    private bool IsCustom(Fertilizer salt) =>
+        Model.CustomSalts.Any(c => string.Equals(c.Name, salt.Name.Value, StringComparison.Ordinal));
+
+    private Task OnToggled(string name, ChangeEventArgs e)
+    {
+        if (e.Value is true)
+        {
+            Model.Selected.Add(name);
+        }
+        else
+        {
+            Model.Selected.Remove(name);
+        }
+
+        return Changed.InvokeAsync();
+    }
+
+    private Task Remove(string name)
+    {
+        Model.RemoveCustomSalt(name);
+        return Changed.InvokeAsync();
+    }
+
+    private Task SelectAll()
+    {
+        foreach (Fertilizer salt in Model.Catalogue)
+        {
+            Model.Selected.Add(salt.Name.Value);
+        }
+
+        return Changed.InvokeAsync();
+    }
+
+    private Task SelectNone()
+    {
+        Model.Selected.Clear();
+        return Changed.InvokeAsync();
+    }
+}

@@ -640,3 +640,15 @@ select {
   justify-content: center;
   white-space: nowrap;
 }
+
+/* A row action, sized so it does not compete with the salt's own name. */
+
+button.tiny {
+  min-height: 22px;
+  margin-left: auto;
+  padding: 0 6px;
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.salt-row button.tiny + .formula { margin-left: 8px; }

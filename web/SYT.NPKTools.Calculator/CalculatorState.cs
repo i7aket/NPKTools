@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SYT.NPKTools.Fertilizers;
 
 namespace SYT.NPKTools.Calculator;
 
@@ -92,6 +93,10 @@ public sealed class CalculatorState
     /// <summary>The pH of the untreated water.</summary>
     [JsonPropertyName("waterPh")]
     public double? WaterPh { get; set; }
+
+    /// <summary>Salts the grower described themselves. Absent from links written before they existed.</summary>
+    [JsonPropertyName("customSalts")]
+    public List<CustomSalt> CustomSalts { get; set; } = [];
 
     // ---------------------------------------------------------------- file
 
@@ -210,6 +215,20 @@ public sealed class CalculatorState
         Append(builder, "ap", TargetPh);
         Append(builder, "aw", WaterPh);
 
+        // One entry per custom salt, rather than one packed key, so a link stays legible when it is
+        // truncated in a chat window and so a salt can be lost without taking the others with it.
+        foreach (CustomSalt salt in CustomSalts)
+        {
+            string forms = string.Join(
+                ";",
+                salt.Percentages.Where(p => p.Value > 0)
+                    .OrderBy(p => p.Key, StringComparer.Ordinal)
+                    .Select(p => $"{p.Key}:{p.Value.ToString("R", CultureInfo.InvariantCulture)}"));
+
+            string entry = string.Join('~', salt.Name, salt.Formula ?? string.Empty, salt.Tank, forms);
+            builder.Append("&cs=").Append(Uri.EscapeDataString(entry));
+        }
+
         return builder.ToString();
     }
 
@@ -235,12 +254,29 @@ public sealed class CalculatorState
         }
 
         Dictionary<string, string> parts = new(StringComparer.Ordinal);
+
+        // Custom salts are the one repeated key, so they are collected as they go by. The dictionary
+        // below keeps only the last value for a key, which would silently drop all but one.
+        List<string> customEntries = [];
+
         foreach (string pair in fragment.TrimStart('#').Split('&', StringSplitOptions.RemoveEmptyEntries))
         {
             int split = pair.IndexOf('=', StringComparison.Ordinal);
-            if (split > 0)
+            if (split <= 0)
             {
-                parts[pair[..split]] = Uri.UnescapeDataString(pair[(split + 1)..]);
+                continue;
+            }
+
+            string key = pair[..split];
+            string value = Uri.UnescapeDataString(pair[(split + 1)..]);
+
+            if (key == "cs")
+            {
+                customEntries.Add(value);
+            }
+            else
+            {
+                parts[key] = value;
             }
         }
 
@@ -265,6 +301,37 @@ public sealed class CalculatorState
             TargetPh = Number(parts, "ap"),
             WaterPh = Number(parts, "aw"),
         };
+
+        foreach (string entry in customEntries)
+        {
+            string[] fields = entry.Split('~');
+            if (fields.Length < 3)
+            {
+                continue;
+            }
+
+            CustomSalt salt = new()
+            {
+                Name = fields[0],
+                Formula = string.IsNullOrWhiteSpace(fields[1]) ? null : fields[1],
+                Tank = Enum.TryParse(fields[2], out ConcentrateType tank) ? tank : ConcentrateType.A,
+            };
+
+            if (fields.Length > 3)
+            {
+                foreach (string form in fields[3].Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    string[] halves = form.Split(':', 2);
+                    if (halves.Length == 2 &&
+                        double.TryParse(halves[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double percent))
+                    {
+                        salt.Percentages[halves[0]] = percent;
+                    }
+                }
+            }
+
+            state.CustomSalts.Add(salt);
+        }
 
         if (parts.TryGetValue("w", out string? water))
         {

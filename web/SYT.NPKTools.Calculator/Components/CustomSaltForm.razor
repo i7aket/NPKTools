@@ -1,0 +1,205 @@
+@inject CalculatorModel Model
+
+@*
+    Two ways in. The formula tab covers plain salts and works out the percentages, which also avoids
+    the oxide trap: labels quote P₂O₅ and K₂O, and a figure copied off one overstates phosphorus by a
+    factor of 2.3. The percentages tab covers blends and chelates, where a formula says nothing
+    useful — what matters for a chelate is which agent holds the metal, not which atoms are present.
+*@
+
+<div class="segmented" role="group" aria-label="How the salt is described">
+    <button type="button" class="@(_byFormula ? "on" : null)" @onclick="() => _byFormula = true">
+        By formula
+    </button>
+    <button type="button" class="@(_byFormula ? null : "on")" @onclick="() => _byFormula = false">
+        By percentages
+    </button>
+</div>
+
+<div class="field">
+    <label for="cs-name">Name</label>
+    <input id="cs-name" type="text" value="@_name"
+           @onchange="e => _name = e.Value?.ToString() ?? string.Empty" />
+</div>
+
+@if (_byFormula)
+{
+    <div class="field" style="margin-top:var(--grid-gap)">
+        <label for="cs-formula">Formula</label>
+        <input id="cs-formula" type="text" value="@_formula" placeholder="KNO3, Ca(NO3)2*4H2O"
+               @onchange="OnFormulaChanged" />
+    </div>
+
+    @if (_parsed is { } parsed)
+    {
+        <p class="card-note">
+            M = @parsed.MolarMass.ToString("F2") g/mol — @string.Join(", ", Breakdown(parsed))
+        </p>
+
+        @if (FormulaComposition.LooksChelated(parsed))
+        {
+            <div class="notice warn" role="status">
+                <Icon Kind="IconKind.Warning" />
+                <span>
+                    <strong>This looks like a chelate.</strong>
+                    A chelating agent carries nitrogen that holds the metal rather than feeding the
+                    plant, and a formula cannot tell the two apart — entered this way the salt would
+                    offer nitrogen it does not have. Describe it by percentages instead, where the
+                    agent is named.
+                </span>
+            </div>
+        }
+    }
+}
+else
+{
+    <div class="field-grid" style="margin-top:var(--grid-gap); grid-template-columns:repeat(3,1fr)">
+        @foreach (string form in CustomSalt.Forms)
+        {
+            <div class="field">
+                <label for="cs-@form">@form</label>
+                <input id="cs-@form" type="number" min="0" step="0.01"
+                       value="@(_percentages.GetValueOrDefault(form))"
+                       @onchange="e => SetPercent(form, e)" />
+            </div>
+        }
+    </div>
+    <p class="card-note">
+        Percentages by weight, as on the label — but as elements, not oxides. A bag quoting P₂O₅ or
+        K₂O needs converting first: divide by 2.29 for phosphorus, by 1.20 for potassium.
+    </p>
+}
+
+<div class="field-grid" style="margin-top:var(--grid-gap); grid-template-columns:repeat(2,1fr)">
+    <div class="field">
+        <label for="cs-tank">Concentrate tank</label>
+        <select id="cs-tank" value="@_tank" @onchange="OnTankChanged">
+            <option value="@ConcentrateType.A">A — with calcium</option>
+            <option value="@ConcentrateType.B">B — with sulfates and phosphates</option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="cs-sol">Solubility, g/L — optional</label>
+        <input id="cs-sol" type="number" min="0" step="1" value="@_solubility"
+               @onchange="OnSolubilityChanged" />
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="notice error" role="alert">
+        <Icon Kind="IconKind.Error" />
+        <span>@_error</span>
+    </div>
+}
+
+<div class="button-row">
+    <button @onclick="Save">Add salt</button>
+    <button class="secondary" @onclick="() => Cancelled.InvokeAsync()">Cancel</button>
+</div>
+
+@code {
+    /// <summary>Raised after a salt is added, so the page can recalculate and persist.</summary>
+    [Parameter]
+    public EventCallback Changed { get; set; }
+
+    /// <summary>Raised when the form should close without adding anything.</summary>
+    [Parameter]
+    public EventCallback Cancelled { get; set; }
+
+    private bool _byFormula = true;
+    private string _name = string.Empty;
+    private string _formula = string.Empty;
+    private ConcentrateType _tank = ConcentrateType.A;
+    private double? _solubility;
+    private string? _error;
+    private ChemicalFormula? _parsed;
+    private readonly Dictionary<string, double> _percentages = new(StringComparer.Ordinal);
+
+    private static IEnumerable<string> Breakdown(ChemicalFormula formula) =>
+        new (string Symbol, double Percent)[]
+        {
+            ("N-NO₃", formula.NitratePercent), ("N-NH₄", formula.AmmoniumPercent),
+            ("N-amide", formula.AmidePercent), ("P", formula.PercentOf("P")),
+            ("K", formula.PercentOf("K")), ("Ca", formula.PercentOf("Ca")),
+            ("Mg", formula.PercentOf("Mg")), ("S", formula.PercentOf("S")),
+            ("Fe", formula.PercentOf("Fe")), ("Mn", formula.PercentOf("Mn")),
+            ("Zn", formula.PercentOf("Zn")), ("Cu", formula.PercentOf("Cu")),
+            ("B", formula.PercentOf("B")), ("Mo", formula.PercentOf("Mo")),
+            ("Cl", formula.PercentOf("Cl")), ("Na", formula.PercentOf("Na")),
+        }
+        .Where(x => x.Percent > 0)
+        .Select(x => $"{x.Symbol} {x.Percent:F2}%");
+
+    private void OnFormulaChanged(ChangeEventArgs e)
+    {
+        _formula = e.Value?.ToString() ?? string.Empty;
+        _error = null;
+
+        if (ChemicalFormula.TryParse(_formula, out ChemicalFormula? parsed, out string? error))
+        {
+            _parsed = parsed;
+            _tank = FormulaComposition.SuggestTank(parsed!);
+        }
+        else
+        {
+            _parsed = null;
+            _error = string.IsNullOrWhiteSpace(_formula) ? null : error;
+        }
+    }
+
+    private void OnTankChanged(ChangeEventArgs e) =>
+        _tank = Enum.TryParse(e.Value?.ToString(), out ConcentrateType tank) ? tank : ConcentrateType.A;
+
+    private void OnSolubilityChanged(ChangeEventArgs e) =>
+        _solubility = double.TryParse(
+            e.Value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed > 0
+            ? parsed
+            : null;
+
+    private void SetPercent(string form, ChangeEventArgs e) =>
+        _percentages[form] = double.TryParse(
+            e.Value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed >= 0
+            ? parsed
+            : 0;
+
+    private async Task Save()
+    {
+        CustomSalt salt = new()
+        {
+            Name = _name,
+            Formula = _byFormula ? _formula : null,
+            Tank = _tank,
+            SolubilityGramsPerLitre = _solubility,
+        };
+
+        if (!_byFormula)
+        {
+            foreach ((string form, double percent) in _percentages.Where(p => p.Value > 0))
+            {
+                salt.Percentages[form] = percent;
+            }
+        }
+
+        if (!Model.TryAddCustomSalt(salt, out string? error))
+        {
+            _error = error;
+            return;
+        }
+
+        _name = string.Empty;
+        _formula = string.Empty;
+        _parsed = null;
+        _percentages.Clear();
+        _error = null;
+
+        await Changed.InvokeAsync();
+        await Cancelled.InvokeAsync();
+    }
+}

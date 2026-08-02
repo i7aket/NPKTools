@@ -410,6 +410,7 @@ public sealed class CalculatorModel
         AcidId = AcidId,
         TargetPh = TargetPh,
         WaterPh = WaterPh,
+        CustomSalts = [.. _customSalts],
     };
 
     /// <summary>
@@ -434,6 +435,19 @@ public sealed class CalculatorModel
         foreach (string element in Water.Keys.ToList())
         {
             Water[element] = state.Water.TryGetValue(element, out double value) && value >= 0 ? value : 0;
+        }
+
+        // Rebuilt before the selection is applied, so the names a saved shelf refers to exist by the
+        // time it is read. A salt this version can no longer build is dropped rather than failing
+        // the whole load, the same way an unknown salt name already is.
+        foreach (CustomSalt existing in _customSalts.ToList())
+        {
+            RemoveCustomSalt(existing.Name);
+        }
+
+        foreach (CustomSalt salt in state.CustomSalts)
+        {
+            TryAddCustomSalt(salt, out _);
         }
 
         if (state.Salts.Count > 0)
