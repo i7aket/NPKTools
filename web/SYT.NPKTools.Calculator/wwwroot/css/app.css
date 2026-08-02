@@ -105,17 +105,44 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.app-header .brand-mark {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  /* The mosaic runs to its own edge, so it needs a rule of its own to sit on a dark surface
+     rather than bleed into it. */
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.app-header .brand {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--foreground);
+}
+
+/* The product name follows the brand, divided rather than merely spaced, so the two read as two
+   things instead of one long title. */
 .app-header h1 {
   margin: 0;
+  padding-left: 12px;
   font-size: var(--text-lg);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--foreground);
+  border-left: 1px solid var(--border);
 }
 
 .app-header .tagline {
   font-size: var(--text-sm);
   color: var(--text-muted);
+}
+
+/* On a phone the tagline is the first thing worth dropping: the brand and the product name are
+   not, and three of them wrap into a header taller than the card below it. */
+@media (max-width: 560px) {
+  .app-header .tagline { display: none; }
 }
 
 .app-main {
@@ -592,4 +619,24 @@ select {
   .segmented > button,
   .readout,
   select { min-height: 44px; }
+}
+
+/* ---------------------------------------------------------------- button rows */
+
+/* Equal shares of one line. Four actions that wrap into two rows read as two groups of unrelated
+   things, which is the opposite of what they are. */
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.button-row > * {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 4px;
+  text-align: center;
+  justify-content: center;
+  white-space: nowrap;
 }

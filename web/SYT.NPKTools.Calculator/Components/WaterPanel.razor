@@ -26,13 +26,13 @@
     {
         <p class="card-note" style="margin-top:0">A laboratory analysis, in ppm.</p>
         <ElementGrid Elements="ElementGroups.Macro" Values="Model.Water" Prefix="w"
-                     Step="0.1" Changed="_ => Edited()" />
+                     Step="0.1" Columns="3" Changed="_ => Edited()" />
         <div class="group-divider">Micro</div>
         <ElementGrid Elements="ElementGroups.Micro" Values="Model.Water" Prefix="w"
-                     Step="0.01" Changed="_ => Edited()" />
+                     Step="0.01" Columns="4" Changed="_ => Edited()" />
         <div class="group-divider">Counter-ions</div>
         <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.Water" Prefix="w"
-                     Step="0.1" Changed="_ => Edited()" />
+                     Step="0.1" Columns="2" Changed="_ => Edited()" />
     }
     else
     {
@@ -195,12 +195,19 @@
     private Task Choose(WaterInputMode mode)
     {
         Model.Mode = mode;
+
+        if (mode is WaterInputMode.Conductivity or WaterInputMode.ConductivityWithTests)
+        {
+            Model.SeedReadingFromPreset();
+        }
+
         return Edited();
     }
 
     private Task OnPresetChanged(ChangeEventArgs e)
     {
         Model.WaterPresetId = e.Value?.ToString() ?? Model.WaterPresetId;
+        Model.SeedReadingFromPreset();
         return Edited();
     }
 

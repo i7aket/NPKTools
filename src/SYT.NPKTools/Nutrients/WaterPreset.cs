@@ -104,6 +104,18 @@ public sealed record WaterPreset
     ];
 
     /// <summary>
+    /// The conductivity this shape has at its nominal scale, in µS/cm.
+    /// </summary>
+    /// <remarks>
+    /// A representative reading for the water class, and the sensible thing to put in front of
+    /// somebody who has just picked their water type and not yet reached for a meter. Recomputed on
+    /// each call rather than cached: a cache field would join this record's generated equality and
+    /// make two presets with identical values compare unequal, which costs more than the sum it saves.
+    /// </remarks>
+    public double NominalMicroSiemensPerCm =>
+        ToProfile().EstimateConductivity().MicroSiemensPerCm;
+
+    /// <summary>
     /// Builds the water this shape describes, at a given scale.
     /// </summary>
     /// <param name="scale">

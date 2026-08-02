@@ -135,4 +135,77 @@ public class WaterModeTests
         model.WaterProfile.Calcium.Value.Should().Be(42);
         model.WaterEstimate.Should().BeNull();
     }
+
+    /// <summary>
+    /// Picking a water type puts that type's own conductivity in the reading. Without it the choice
+    /// does nothing visible: the reading starts at zero, so the estimate is all zeros.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void SeedReadingFromPreset_FillsTheReadingWithThePresetsOwnConductivity()
+    {
+        CalculatorModel model = new()
+        {
+            Mode = WaterInputMode.Conductivity,
+            WaterPresetId = WaterPreset.CalciumBicarbonateModerate.Id,
+        };
+
+        model.SeedReadingFromPreset();
+        model.Recalculate();
+
+        model.WaterEc.Should().BeApproximately(0.47, 0.01);
+        model.WaterProfile.Calcium.Value.Should().BeApproximately(55, 2);
+    }
+
+    /// <summary>
+    /// Switching type again moves the reading, because the one showing was the previous type's
+    /// suggestion rather than anything the grower measured.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void SeedReadingFromPreset_FollowsAChangeOfType()
+    {
+        CalculatorModel model = new() { Mode = WaterInputMode.Conductivity };
+        model.WaterPresetId = WaterPreset.SoftLowAlkalinity.Id;
+        model.SeedReadingFromPreset();
+
+        model.WaterPresetId = WaterPreset.CalciumBicarbonateHard.Id;
+        model.SeedReadingFromPreset();
+
+        model.WaterEc.Should().BeApproximately(0.89, 0.01);
+    }
+
+    /// <summary>
+    /// A reading the grower typed is never overwritten — that is their meter, not a suggestion.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void SeedReadingFromPreset_LeavesATypedReadingAlone()
+    {
+        CalculatorModel model = new() { Mode = WaterInputMode.Conductivity, WaterEc = 0.63 };
+
+        model.WaterPresetId = WaterPreset.CalciumBicarbonateHard.Id;
+        model.SeedReadingFromPreset();
+
+        model.WaterEc.Should().Be(0.63);
+    }
+
+    /// <summary>
+    /// The suggestion is written in whichever scale the meter field is showing.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void SeedReadingFromPreset_UsesTheChosenScale()
+    {
+        CalculatorModel model = new()
+        {
+            Mode = WaterInputMode.Conductivity,
+            WaterEcUnit = EcUnit.Ppm500,
+            WaterPresetId = WaterPreset.CalciumBicarbonateModerate.Id,
+        };
+
+        model.SeedReadingFromPreset();
+
+        model.WaterEc.Should().BeApproximately(235, 2);
+    }
 }

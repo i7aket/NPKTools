@@ -16,7 +16,7 @@
                        @onchange="OnLitersChanged" />
             </div>
             <ElementGrid Elements="ElementGroups.Macro" Values="Model.TargetFields"
-                         Prefix="t" Step="1" Changed="_ => Edited()" />
+                         Prefix="t" Step="1" Columns="3" Changed="_ => Edited()" />
 
             <details class="extra">
                 <summary>As a string</summary>
@@ -40,13 +40,13 @@
         <section class="card">
             <h2>Target — micro</h2>
             <ElementGrid Elements="ElementGroups.Micro" Values="Model.TargetFields"
-                         Prefix="t" Step="0.01" Changed="_ => Edited()" />
+                         Prefix="t" Step="0.01" Columns="4" Changed="_ => Edited()" />
             <div class="group-divider">Counter-ions</div>
             <p class="card-note" style="margin-top:0">
                 Not dosed for — they arrive with other salts — but a target may still name them.
             </p>
             <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.TargetFields"
-                         Prefix="t" Step="0.1" Changed="_ => Edited()" />
+                         Prefix="t" Step="0.1" Columns="2" Changed="_ => Edited()" />
         </section>
 
         <WaterPanel Changed="Edited" />

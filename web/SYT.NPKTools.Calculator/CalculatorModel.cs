@@ -184,6 +184,45 @@ public sealed class CalculatorModel
     /// <summary>The pH of the untreated water.</summary>
     public double WaterPh { get; set; } = 7.6;
 
+    /// <summary>The currently chosen shape, falling back to the default if the id is unknown.</summary>
+    public WaterPreset Preset =>
+        WaterPreset.All.FirstOrDefault(p => p.Id == WaterPresetId)
+        ?? WaterPreset.CalciumBicarbonateModerate;
+
+    /// <summary>
+    /// Puts the chosen water type's own conductivity in the reading, unless a real one is there.
+    /// </summary>
+    /// <remarks>
+    /// Picking a water type otherwise does nothing visible: the reading starts at zero, so the
+    /// estimate is all zeros and the card sits dead until a number is typed. Seeding it makes the
+    /// choice mean something immediately — here is what this class of water looks like — and the
+    /// grower then corrects it to their own meter.
+    /// <para>
+    /// A reading the grower typed is never overwritten. The test is whether the current value is
+    /// still some preset's nominal figure, which is exactly the case where nobody has typed anything.
+    /// </para>
+    /// </remarks>
+    public void SeedReadingFromPreset()
+    {
+        bool untouched = WaterEc <= 0 || WaterPreset.All.Any(p => IsNominal(p, WaterEc));
+
+        if (untouched)
+        {
+            WaterEc = FromMicroSiemens(Preset.NominalMicroSiemensPerCm);
+        }
+    }
+
+    private bool IsNominal(WaterPreset preset, double reading) =>
+        Math.Abs(reading - FromMicroSiemens(preset.NominalMicroSiemensPerCm)) < 0.005;
+
+    private double FromMicroSiemens(double microSiemens) => WaterEcUnit switch
+    {
+        EcUnit.MilliSiemensPerCm => Math.Round(microSiemens / 1000, 2),
+        EcUnit.Ppm500 => Math.Round(microSiemens / 1000 * 500),
+        EcUnit.Ppm700 => Math.Round(microSiemens / 1000 * 700),
+        _ => 0,
+    };
+
     /// <summary>The meter reading converted to µS/cm, whatever scale it was entered in.</summary>
     public double WaterMicroSiemensPerCm => WaterEcUnit switch
     {

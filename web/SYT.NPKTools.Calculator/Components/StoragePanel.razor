@@ -15,10 +15,15 @@
         Everything stays on this device — there is no server to sync to.
     </p>
 
-    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px">
-        <button @onclick="CopyLink">@(_copied ? "Link copied" : "Copy link")</button>
-        <a class="download" href="@DataUrl()" download="npktools-recipe.json">Download file</a>
-        <button class="secondary" @onclick="() => _loading = !_loading">Load file</button>
+    @*
+        One word each, so the four sit on one row instead of wrapping into a block. "Open" rather than
+        "Upload": nothing is uploaded anywhere, and the note directly above promises exactly that.
+        What each one is for is spelled out under "Which one to use" below.
+    *@
+    <div class="button-row">
+        <button @onclick="CopyLink">@(_copied ? "Copied" : "Link")</button>
+        <a class="download" href="@DataUrl()" download="npktools-recipe.json">Download</a>
+        <button class="secondary" @onclick="() => _loading = !_loading">Open</button>
         <button class="secondary" @onclick="Forget">Forget</button>
     </div>
 
