@@ -1,0 +1,245 @@
+@inject CalculatorModel Model
+
+@*
+    Everything about the source water: how it is described, and what that description implies. Lifted
+    out of Home.razor because the block roughly tripled and the page should compose, not calculate.
+*@
+
+<section class="card">
+    <h2>Source water</h2>
+
+    <div class="segmented" role="group" aria-label="How the water is described">
+        @foreach ((WaterInputMode mode, string label) in Modes)
+        {
+            <button type="button" class="@(Model.Mode == mode ? "on" : null)"
+                    @onclick="() => Choose(mode)">@label</button>
+        }
+    </div>
+
+    @if (Model.Mode == WaterInputMode.Osmosis)
+    {
+        <p class="card-note" style="margin-top:0">
+            Reverse osmosis, distilled or rain. Nothing is deducted from the target.
+        </p>
+    }
+    else if (Model.Mode == WaterInputMode.Analysis)
+    {
+        <p class="card-note" style="margin-top:0">A laboratory analysis, in ppm.</p>
+        <ElementGrid Elements="ElementGroups.Macro" Values="Model.Water" Prefix="w"
+                     Step="0.1" Changed="_ => Edited()" />
+        <div class="group-divider">Micro</div>
+        <ElementGrid Elements="ElementGroups.Micro" Values="Model.Water" Prefix="w"
+                     Step="0.01" Changed="_ => Edited()" />
+        <div class="group-divider">Counter-ions</div>
+        <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.Water" Prefix="w"
+                     Step="0.1" Changed="_ => Edited()" />
+    }
+    else
+    {
+        <div class="field">
+            <label for="w-preset">Water type</label>
+            <select id="w-preset" value="@Model.WaterPresetId" @onchange="OnPresetChanged">
+                @foreach (WaterPreset preset in WaterPreset.All)
+                {
+                    <option value="@preset.Id">@preset.Label</option>
+                }
+            </select>
+        </div>
+
+        <div class="field-grid" style="margin-top:var(--grid-gap)">
+            <div class="field">
+                <label for="w-ec">Meter reading</label>
+                <input id="w-ec" type="number" min="0" step="0.01" value="@Model.WaterEc"
+                       @onchange="OnEcChanged" />
+            </div>
+            <div class="field">
+                <label for="w-unit">Scale</label>
+                <select id="w-unit" value="@Model.WaterEcUnit" @onchange="OnUnitChanged">
+                    <option value="@EcUnit.MilliSiemensPerCm">mS/cm</option>
+                    <option value="@EcUnit.Ppm500">ppm (500)</option>
+                    <option value="@EcUnit.Ppm700">ppm (700)</option>
+                </select>
+            </div>
+        </div>
+
+        @if (Model.Mode == WaterInputMode.ConductivityWithTests)
+        {
+            <div class="field-grid" style="margin-top:var(--grid-gap)">
+                <div class="field">
+                    <label for="w-gh">GH, °dH</label>
+                    <input id="w-gh" type="number" min="0" step="0.5" value="@Model.WaterGh"
+                           @onchange="OnGhChanged" />
+                </div>
+                <div class="field">
+                    <label for="w-kh">KH, °dKH</label>
+                    <input id="w-kh" type="number" min="0" step="0.5" value="@Model.WaterKh"
+                           @onchange="OnKhChanged" />
+                </div>
+            </div>
+            <p class="card-note">
+                From a drop-test kit. Both optional — each one entered replaces a guess with a
+                measurement.
+            </p>
+        }
+
+        @if (Model.WaterEstimate is { } estimate)
+        {
+            <div class="group-divider">Estimated analysis — not an analysis</div>
+            <div class="field-grid">
+                @foreach ((string symbol, double value) in Estimated(estimate))
+                {
+                    <div class="field">
+                        <label>@symbol</label>
+                        <div class="readout">@value.ToString("F1")</div>
+                    </div>
+                }
+            </div>
+
+            @if (!estimate.Feasible)
+            {
+                <div class="notice warn" role="status">
+                    <Icon Kind="IconKind.Warning" />
+                    <span>
+                        <strong>These readings describe no water.</strong>
+                        The hardness entered already accounts for
+                        @estimate.MicroSiemensPerCm.ToString("F0") µS/cm, more than the
+                        @estimate.RequestedMicroSiemensPerCm.ToString("F0") µS/cm the meter read.
+                        Check both, and the water type.
+                    </span>
+                </div>
+            }
+            else if (estimate.RelativeError > 0.2)
+            {
+                <div class="notice warn" role="status">
+                    <Icon Kind="IconKind.Warning" />
+                    <span>
+                        <strong>The estimate is
+                        @((estimate.RelativeError * 100).ToString("F0"))% off the reading.</strong>
+                        A different water type may fit better.
+                    </span>
+                </div>
+            }
+        }
+    }
+
+    @if (Model.HasRun && Model.WaterConductivity is { } waterEc && waterEc.MicroSiemensPerCm > 0)
+    {
+        <div class="metrics" style="margin-top:8px">
+            <div class="metric">
+                <div class="label">Water EC</div>
+                <div class="value">@waterEc.MicroSiemensPerCm.ToString("F0") <span class="unit">µS/cm</span></div>
+            </div>
+            <div class="metric">
+                <div class="label">Alkalinity</div>
+                <div class="value">@Model.Alkalinity.ToString("F2") <span class="unit">meq/L</span></div>
+            </div>
+            <div class="metric">
+                <div class="label">as HCO₃⁻</div>
+                <div class="value">@((Model.Alkalinity * 61).ToString("F0")) <span class="unit">ppm</span></div>
+            </div>
+        </div>
+
+        @if (Model.Mode == WaterInputMode.Analysis)
+        {
+            <p class="card-note">
+                Compare the water EC with your own meter — it is the quickest check that the analysis
+                above was typed in correctly. The alkalinity is inferred from the cation surplus, and is
+                also the acid needed per litre to neutralise it.
+            </p>
+        }
+        else
+        {
+            <p class="card-note">
+                The alkalinity is inferred from the cation surplus, and is also the acid needed per
+                litre to neutralise it.
+            </p>
+        }
+    }
+
+    @if (Model.Excesses.Count > 0)
+    {
+        <div class="notice warn" role="status">
+            <Icon Kind="IconKind.Warning" />
+            <span>
+                <strong>Water oversupplies</strong>
+                @string.Join(", ", Model.Excesses.Select(x => $"{x.Element} ({x.InWater:F0} vs target {x.Target:F0})")).
+                Fertilizer only adds, so no recipe can bring these down — raise the target or dilute the water.
+            </span>
+        </div>
+    }
+</section>
+
+@code {
+    /// <summary>Raised after any edit, so the page can recalculate and persist.</summary>
+    [Parameter]
+    public EventCallback Changed { get; set; }
+
+    private static readonly (WaterInputMode Mode, string Label)[] Modes =
+    [
+        (WaterInputMode.Osmosis, "Osmosis"),
+        (WaterInputMode.Conductivity, "EC"),
+        (WaterInputMode.ConductivityWithTests, "EC + tests"),
+        (WaterInputMode.Analysis, "Analysis"),
+    ];
+
+    private static IEnumerable<(string Symbol, double Value)> Estimated(WaterEstimate estimate) =>
+    [
+        ("Ca", estimate.Profile.Calcium.Value),
+        ("Mg", estimate.Profile.Magnesium.Value),
+        ("Na", estimate.Profile.Sodium.Value),
+        ("S", estimate.Profile.Sulfur.Value),
+        ("Cl", estimate.Profile.Chlorine.Value),
+        ("N", estimate.Profile.Nitrogen.Nitrate),
+    ];
+
+    private Task Choose(WaterInputMode mode)
+    {
+        Model.Mode = mode;
+        return Edited();
+    }
+
+    private Task OnPresetChanged(ChangeEventArgs e)
+    {
+        Model.WaterPresetId = e.Value?.ToString() ?? Model.WaterPresetId;
+        return Edited();
+    }
+
+    private Task OnEcChanged(ChangeEventArgs e)
+    {
+        Model.WaterEc = Parse(e.Value) ?? 0;
+        return Edited();
+    }
+
+    private Task OnUnitChanged(ChangeEventArgs e)
+    {
+        Model.WaterEcUnit = Enum.TryParse(e.Value?.ToString(), out EcUnit unit)
+            ? unit
+            : EcUnit.MilliSiemensPerCm;
+        return Edited();
+    }
+
+    private Task OnGhChanged(ChangeEventArgs e)
+    {
+        Model.WaterGh = Parse(e.Value);
+        return Edited();
+    }
+
+    private Task OnKhChanged(ChangeEventArgs e)
+    {
+        Model.WaterKh = Parse(e.Value);
+        return Edited();
+    }
+
+    private Task Edited() => Changed.InvokeAsync();
+
+    // Null rather than zero for a cleared field: an unmeasured drop test is not a measurement of zero,
+    // and the estimator treats the two differently.
+    private static double? Parse(object? value) =>
+        double.TryParse(
+            value?.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out double parsed) && parsed >= 0
+            ? parsed
+            : null;
+}

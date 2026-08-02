@@ -537,3 +537,59 @@ details[open] > summary::before { content: "\25BE  "; }
   color: var(--text-muted);
   border-top: 1px solid var(--border);
 }
+
+/* ---------------------------------------------------------------- segmented control */
+
+.segmented {
+  display: flex;
+  margin-bottom: var(--grid-gap);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.segmented > button {
+  flex: 1;
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.segmented > button + button { border-left: 1px solid var(--border); }
+.segmented > button.on { color: var(--on-primary); background: var(--primary); }
+
+/* A figure the calculator worked out, shaped like the field it sits beside but not editable. */
+
+.readout {
+  min-height: 32px;
+  padding: 4px 6px;
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+select {
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 6px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+@media (pointer: coarse) {
+  .segmented > button,
+  .readout,
+  select { min-height: 44px; }
+}

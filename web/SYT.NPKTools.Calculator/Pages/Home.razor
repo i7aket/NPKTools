@@ -49,59 +49,7 @@
                          Prefix="t" Step="0.1" Changed="_ => Edited()" />
         </section>
 
-        <section class="card">
-            <h2>Source water</h2>
-            <p class="card-note" style="margin-top:0">
-                Leave at zero for reverse osmosis or rain. Whatever the water carries is deducted from
-                the target before the salts are worked out.
-            </p>
-            <div class="field-grid">
-                @foreach (string element in Model.Water.Keys)
-                {
-                    <div class="field">
-                        <label for="w-@element">@element</label>
-                        <input id="w-@element" type="number" min="0" step="0.01"
-                               value="@Model.Water[element]"
-                               @onchange="e => OnWaterChanged(element, e)" />
-                    </div>
-                }
-            </div>
-
-            @if (Model.HasRun && Model.WaterConductivity is { } waterEc && waterEc.MicroSiemensPerCm > 0)
-            {
-                <div class="metrics" style="margin-top:8px">
-                    <div class="metric">
-                        <div class="label">Water EC</div>
-                        <div class="value">@waterEc.MicroSiemensPerCm.ToString("F0") <span class="unit">µS/cm</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="label">Alkalinity</div>
-                        <div class="value">@Model.Alkalinity.ToString("F2") <span class="unit">meq/L</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="label">as HCO₃⁻</div>
-                        <div class="value">@((Model.Alkalinity * 61).ToString("F0")) <span class="unit">ppm</span></div>
-                    </div>
-                </div>
-                <p class="card-note">
-                    Compare the water EC with your own meter — it is the quickest check that the analysis
-                    above was typed in correctly. The alkalinity is inferred from the cation surplus, and is
-                    also the acid needed per litre to neutralise it.
-                </p>
-            }
-
-            @if (Model.Excesses.Count > 0)
-            {
-                <div class="notice warn" role="status">
-                    <Icon Kind="IconKind.Warning" />
-                    <span>
-                        <strong>Water oversupplies</strong>
-                        @string.Join(", ", Model.Excesses.Select(x => $"{x.Element} ({x.InWater:F0} vs target {x.Target:F0})")).
-                        Fertilizer only adds, so no recipe can bring these down — raise the target or dilute the water.
-                    </span>
-                </div>
-            }
-        </section>
+        <WaterPanel Changed="Edited" />
 
         <section class="card">
             <h2>Salts you have — @Model.Selected.Count / @Model.Catalogue.Count</h2>
@@ -209,12 +157,6 @@
     private Task OnLitersChanged(ChangeEventArgs e)
     {
         Model.Liters = Parse(e.Value);
-        return Edited();
-    }
-
-    private Task OnWaterChanged(string element, ChangeEventArgs e)
-    {
-        Model.Water[element] = Parse(e.Value);
         return Edited();
     }
 

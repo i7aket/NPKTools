@@ -154,6 +154,33 @@ public sealed class CalculatorModel
     /// <summary>Litres in each concentrate tank. Null means the caller does not want a concentrate.</summary>
     public double? ConcentrateLiters { get; set; } = 1;
 
+    /// <summary>How the source water is being described.</summary>
+    public WaterInputMode Mode { get; set; } = WaterInputMode.Osmosis;
+
+    /// <summary>The chosen water shape, by <see cref="WaterPreset.Id"/>.</summary>
+    public string WaterPresetId { get; set; } = WaterPreset.CalciumBicarbonateModerate.Id;
+
+    /// <summary>The meter reading, in whatever scale <see cref="WaterEcUnit"/> names.</summary>
+    public double WaterEc { get; set; }
+
+    /// <summary>The scale the meter reading is in.</summary>
+    public EcUnit WaterEcUnit { get; set; } = EcUnit.MilliSiemensPerCm;
+
+    /// <summary>General hardness in °dH, or null when not measured.</summary>
+    public double? WaterGh { get; set; }
+
+    /// <summary>Carbonate hardness in °dKH, or null when not measured.</summary>
+    public double? WaterKh { get; set; }
+
+    /// <summary>The meter reading converted to µS/cm, whatever scale it was entered in.</summary>
+    public double WaterMicroSiemensPerCm => WaterEcUnit switch
+    {
+        EcUnit.MilliSiemensPerCm => WaterEc * 1000,
+        EcUnit.Ppm500 => WaterEc / 500 * 1000,
+        EcUnit.Ppm700 => WaterEc / 700 * 1000,
+        _ => 0,
+    };
+
     // ---------------------------------------------------------------- results
 
     public string? Error { get; private set; }
@@ -161,6 +188,9 @@ public sealed class CalculatorModel
     public WaterProfile WaterProfile { get; private set; } = WaterProfile.Pure;
     public double Alkalinity { get; private set; }
     public ConductivityEstimate? WaterConductivity { get; private set; }
+
+    /// <summary>The inferred analysis, or null when the water was not estimated.</summary>
+    public WaterEstimate? WaterEstimate { get; private set; }
     public IReadOnlyList<NutrientExcess> Excesses { get; private set; } = [];
     public IReadOnlyList<string> UncoveredElements { get; private set; } = [];
     public IReadOnlyList<RecipeView> Recipes { get; private set; } = [];
@@ -276,13 +306,38 @@ public sealed class CalculatorModel
 
     private WaterProfile BuildWater()
     {
-        WaterProfileBuilder builder = new();
-        builder.AddNitrate(Water["N"]).AddP(Water["P"]).AddK(Water["K"])
-            .AddCa(Water["Ca"]).AddMg(Water["Mg"]).AddS(Water["S"])
-            .AddFe(Water["Fe"]).AddCu(Water["Cu"]).AddMn(Water["Mn"]).AddZn(Water["Zn"])
-            .AddB(Water["B"]).AddMo(Water["Mo"]).AddCl(Water["Cl"]).AddSi(Water["Si"])
-            .AddSe(Water["Se"]).AddNa(Water["Na"]);
-        return builder.Build();
+        WaterEstimate = null;
+
+        switch (Mode)
+        {
+            case WaterInputMode.Osmosis:
+                return WaterProfile.Pure;
+
+            case WaterInputMode.Conductivity:
+            case WaterInputMode.ConductivityWithTests:
+                // Drop tests are read only in the mode that shows them. Values left behind by a
+                // previous mode would otherwise silently constrain an estimate nobody asked them to.
+                bool withTests = Mode == WaterInputMode.ConductivityWithTests;
+                WaterPreset preset = WaterPreset.All.FirstOrDefault(p => p.Id == WaterPresetId)
+                    ?? WaterPreset.CalciumBicarbonateModerate;
+
+                WaterEstimate = WaterEstimator.Estimate(
+                    preset,
+                    WaterMicroSiemensPerCm,
+                    withTests ? WaterGh : null,
+                    withTests ? WaterKh : null);
+
+                return WaterEstimate.Profile;
+
+            default:
+                WaterProfileBuilder builder = new();
+                builder.AddNitrate(Water["N"]).AddP(Water["P"]).AddK(Water["K"])
+                    .AddCa(Water["Ca"]).AddMg(Water["Mg"]).AddS(Water["S"])
+                    .AddFe(Water["Fe"]).AddCu(Water["Cu"]).AddMn(Water["Mn"]).AddZn(Water["Zn"])
+                    .AddB(Water["B"]).AddMo(Water["Mo"]).AddCl(Water["Cl"]).AddSi(Water["Si"])
+                    .AddSe(Water["Se"]).AddNa(Water["Na"]);
+                return builder.Build();
+        }
     }
 
     private RecipeView Describe(Solution mix)
