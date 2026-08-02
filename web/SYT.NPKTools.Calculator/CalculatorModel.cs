@@ -172,6 +172,18 @@ public sealed class CalculatorModel
     /// <summary>Carbonate hardness in °dKH, or null when not measured.</summary>
     public double? WaterKh { get; set; }
 
+    /// <summary>Whether the water is being acidified.</summary>
+    public bool AcidEnabled { get; set; }
+
+    /// <summary>The chosen acid, by <see cref="Nutrients.Acid.Id"/>.</summary>
+    public string AcidId { get; set; } = Nutrients.Acid.Nitric60.Id;
+
+    /// <summary>The pH to bring the solution to.</summary>
+    public double TargetPh { get; set; } = 5.8;
+
+    /// <summary>The pH of the untreated water.</summary>
+    public double WaterPh { get; set; } = 7.6;
+
     /// <summary>The meter reading converted to µS/cm, whatever scale it was entered in.</summary>
     public double WaterMicroSiemensPerCm => WaterEcUnit switch
     {
@@ -191,6 +203,21 @@ public sealed class CalculatorModel
 
     /// <summary>The inferred analysis, or null when the water was not estimated.</summary>
     public WaterEstimate? WaterEstimate { get; private set; }
+
+    /// <summary>The acid plan, or null when no acid is needed or wanted.</summary>
+    public AcidPlan? Acid { get; private set; }
+
+    /// <summary>
+    /// The source water plus whatever the acid contributes.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="WaterProfile"/>, which stays the water as it comes out of the tap: the
+    /// alkalinity and the water EC shown on screen describe the untreated supply, and folding the acid
+    /// into them would make both wrong. This is what the recipe is solved against and what the reported
+    /// tank contents are measured from — an acid's nitrogen is in the reservoir exactly as the water's
+    /// is, and reporting one without the other would understate the tank by the whole dose.
+    /// </remarks>
+    private WaterProfile _effectiveWater = WaterProfile.Pure;
     public IReadOnlyList<NutrientExcess> Excesses { get; private set; } = [];
     public IReadOnlyList<string> UncoveredElements { get; private set; } = [];
     public IReadOnlyList<RecipeView> Recipes { get; private set; } = [];
@@ -211,6 +238,18 @@ public sealed class CalculatorModel
         WaterProfile = BuildWater();
         Alkalinity = WaterProfile.EstimatedAlkalinity();
         WaterConductivity = WaterProfile.EstimateConductivity();
+
+        Acid = null;
+        _effectiveWater = WaterProfile;
+
+        if (AcidEnabled && Alkalinity > 0)
+        {
+            Nutrients.Acid acid = Nutrients.Acid.All.FirstOrDefault(a => a.Id == AcidId)
+                ?? Nutrients.Acid.Nitric60;
+
+            Acid = AcidDose.Calculate(Alkalinity, WaterPh, TargetPh, acid, Liters);
+            _effectiveWater = WithNutrient(WaterProfile, Acid.NutrientSymbol, Acid.NutrientPpm);
+        }
 
         PpmTarget target;
         try
@@ -235,7 +274,7 @@ public sealed class CalculatorModel
 
         // The water comes off the target before the optimizer sees it; whatever the water already
         // supplies is not something the salts should supply again.
-        WaterAdjustedTarget adjusted = target.AdjustFor(WaterProfile);
+        WaterAdjustedTarget adjusted = target.AdjustFor(_effectiveWater);
         Excesses = adjusted.Excesses;
 
         CustomFertilizerBundleRepository bundles = NpkTools.CreateBundleRepository(shelf);
@@ -340,12 +379,40 @@ public sealed class CalculatorModel
         }
     }
 
+    /// <summary>
+    /// The same water with one element raised — how an acid's own nutrient enters the reservoir.
+    /// </summary>
+    /// <remarks>
+    /// Rebuilt rather than mutated: a <see cref="WaterProfile"/> is immutable, and an acid contributes
+    /// to the tank exactly as the water does, so it belongs in the same profile rather than in a
+    /// separate adjustment every consumer would have to be told about.
+    /// </remarks>
+    private static WaterProfile WithNutrient(WaterProfile water, string symbol, double ppm)
+    {
+        WaterProfileBuilder builder = new();
+        builder
+            .AddNitrate(water.Nitrogen.Nitrate + (symbol == "N" ? ppm : 0))
+            .AddAmmonium(water.Nitrogen.Ammonium)
+            .AddAmine(water.Nitrogen.Amine)
+            .AddP(water.Phosphorus.Value + (symbol == "P" ? ppm : 0))
+            .AddK(water.Potassium.Value)
+            .AddCa(water.Calcium.Value)
+            .AddMg(water.Magnesium.Value)
+            .AddS(water.Sulfur.Value + (symbol == "S" ? ppm : 0))
+            .AddFe(water.Iron.Value).AddCu(water.Copper.Value).AddMn(water.Manganese.Value)
+            .AddZn(water.Zinc.Value).AddB(water.Boron.Value).AddMo(water.Molybdenum.Value)
+            .AddCl(water.Chlorine.Value).AddSi(water.Silicon.Value).AddSe(water.Selenium.Value)
+            .AddNa(water.Sodium.Value);
+
+        return builder.Build();
+    }
+
     private RecipeView Describe(Solution mix)
     {
         // Measured, not assumed: the ppm comes back through the same calculator the library uses, and
         // the water is added on so the figures describe the reservoir rather than the salts alone.
         Ppm fromSalts = _calculator.CalculatePpm([.. mix], mix.WaterLiters);
-        Ppm inTank = fromSalts.Plus(WaterProfile);
+        Ppm inTank = fromSalts.Plus(_effectiveWater);
 
         ConcentratePlan? plan = null;
         if (ConcentrateLiters is > 0 && ConcentrateLiters < mix.WaterLiters)
