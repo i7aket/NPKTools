@@ -2,7 +2,7 @@
 @inject CalculatorModel Model
 @inject Translations T
 
-<PageTitle>NPKTools — fertilizer calculator</PageTitle>
+<PageTitle>@T["page.title"]</PageTitle>
 
 <div class="grid">
 
@@ -10,9 +10,9 @@
     <div class="col-4 stack">
 
         <section class="card">
-            <h2>Target — macro</h2>
+            <h2>@T["target.macro.title"]</h2>
             <div class="field" style="margin-bottom:var(--grid-gap)">
-                <label for="liters">Reservoir, litres</label>
+                <label for="liters">@T["target.litres"]</label>
                 <input id="liters" type="number" min="0" step="1" value="@Model.Liters"
                        @onchange="OnLitersChanged" />
             </div>
@@ -20,13 +20,13 @@
                          Prefix="t" Step="1" Columns="3" Changed="_ => Edited()" />
 
             <details class="extra">
-                <summary>As a string</summary>
+                <summary>@T["target.asString"]</summary>
                 <input class="target-input" type="text" value="@Model.TargetText"
-                       @onchange="OnTargetChanged" aria-label="Target nutrient profile in ppm" />
-                <p class="card-note">
-                    Element=ppm, separated by spaces. <code>L</code> is the reservoir volume in litres.
-                    Paste one from a feed chart, or copy this one out.
-                </p>
+                       @onchange="OnTargetChanged" aria-label="@T["target.asString.aria"]" />
+                @* One key, not three fragments around a <code> element: word order differs across
+                   the eight languages, and the code styling is not worth making a sentence
+                   untranslatable. *@
+                <p class="card-note">@T["target.asString.note"]</p>
             </details>
 
             @if (Model.ErrorKey is { } errorKey)
@@ -42,12 +42,12 @@
         </section>
 
         <section class="card">
-            <h2>Target — micro</h2>
+            <h2>@T["target.micro.title"]</h2>
             <ElementGrid Elements="ElementGroups.Micro" Values="Model.TargetFields"
                          Prefix="t" Step="0.01" Columns="4" Changed="_ => Edited()" />
-            <div class="group-divider">Counter-ions</div>
+            <div class="group-divider">@T["target.counterIons"]</div>
             <p class="card-note" style="margin-top:0">
-                Not dosed for — they arrive with other salts — but a target may still name them.
+                @T["target.counterIons.note"]
             </p>
             <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.TargetFields"
                          Prefix="t" Step="0.1" Columns="2" Changed="_ => Edited()" />
@@ -62,15 +62,14 @@
         <StoragePanel @ref="_storage" Changed="StateHasChanged" />
 
         <section class="card">
-            <h2>Concentrate</h2>
+            <h2>@T["concentrate.title"]</h2>
             <div class="field">
-                <label for="conc">Litres per tank — blank for none</label>
+                <label for="conc">@T["concentrate.litres"]</label>
                 <input id="conc" type="number" min="0" step="0.1" value="@Model.ConcentrateLiters"
                        @onchange="OnConcentrateChanged" />
             </div>
             <p class="card-note">
-                The whole recipe's salt goes into this much water, so a 100 L recipe in 1 L is 1:100.
-                Calcium is kept away from sulfate and phosphate.
+                @T["concentrate.note"]
             </p>
         </section>
 
@@ -80,19 +79,18 @@
     <div class="col-8">
         @if (!Model.HasRun)
         {
-            <div class="card empty">Enter a target and the calculator will work out the recipes.</div>
+            <div class="card empty">@T["recipes.empty.noRun"]</div>
         }
         else if (Model.Recipes.Count == 0)
         {
-            <div class="card empty">No recipe for this combination. See the message on the left.</div>
+            <div class="card empty">@T["recipes.empty.none"]</div>
         }
         else
         {
             <div class="card" style="margin-bottom:var(--grid-gap)">
-                <h2>@Model.Recipes.Count recipes — @(Model.Target!.Liters.Value.ToString("F0")) L</h2>
+                <h2>@RecipesTitle</h2>
                 <p class="card-note" style="margin-top:0">
-                    Every one of these hits the target. They differ in which salts they use, so pick by
-                    what you would rather spend, or by which figures below you prefer.
+                    @T["recipes.note"]
                 </p>
             </div>
 
@@ -107,6 +105,15 @@
 
 @code {
     private StoragePanel? _storage;
+
+    // Plural form and litres in one key: a translator cannot reorder a heading assembled in markup,
+    // and not every language puts the volume where English does.
+    private string RecipesTitle =>
+        T.Plural("recipes.title", Model.Recipes.Count)
+            .Replace(
+                "{1}",
+                Model.Target!.Liters.Value.ToString("F0", System.Globalization.CultureInfo.InvariantCulture),
+                StringComparison.Ordinal);
 
     protected override void OnInitialized() => Model.Recalculate();
 

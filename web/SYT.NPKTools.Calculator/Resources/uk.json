@@ -36,5 +36,24 @@
   "error.shelf.empty": "No salts selected. Tick at least one.",
   "error.recipe.uncovered": "Nothing on the shelf supplies {0}.",
   "error.recipe.unreachable": "The selected salts cannot reach this target. Add more, or relax it.",
-  "target.cannotSolve": "Cannot solve."
+  "target.cannotSolve": "Cannot solve.",
+  "page.title": "NPKTools — fertilizer calculator",
+  "target.macro.title": "Target — macro",
+  "target.micro.title": "Target — micro",
+  "target.litres": "Reservoir, litres",
+  "target.asString": "As a string",
+  "target.asString.aria": "Target nutrient profile in ppm",
+  "target.asString.note": "Element=ppm, separated by spaces. L is the reservoir volume in litres. Paste one from a feed chart, or copy this one out.",
+  "target.counterIons.note": "Not dosed for — they arrive with other salts — but a target may still name them.",
+  "concentrate.title": "Concentrate",
+  "concentrate.litres": "Litres per tank — blank for none",
+  "concentrate.note": "The whole recipe's salt goes into this much water, so a 100 L recipe in 1 L is 1:100. Calcium is kept away from sulfate and phosphate.",
+  "recipes.empty.noRun": "Enter a target and the calculator will work out the recipes.",
+  "recipes.empty.none": "No recipe for this combination. See the message on the left.",
+  "recipes.title": {
+    "one": "{0} recipe — {1} L",
+    "other": "{0} recipes — {1} L"
+  },
+  "recipes.note": "Every one of these hits the target. They differ in which salts they use, so pick by what you would rather spend, or by which figures below you prefer.",
+  "target.counterIons": "Counter-ions"
 }
