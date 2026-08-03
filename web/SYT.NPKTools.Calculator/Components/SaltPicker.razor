@@ -1,5 +1,6 @@
 @inject CalculatorModel Model
 @inject Translations T
+@implements IDisposable
 
 @*
     The shelf. Lifted out of Home.razor because a list plus an entry form is more than a page should
@@ -59,6 +60,15 @@
 </section>
 
 @code {
+    // Blazor skips a child whose parameters have not changed, and this panel's only parameter is a
+    // callback that never does — so without this it would keep showing what it drew at startup. See
+    // CalculatorModel.Changed.
+    protected override void OnInitialized() => Model.Changed += Redraw;
+
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Model.Changed -= Redraw;
+
     /// <summary>Raised after any edit, so the page can recalculate and persist.</summary>
     [Parameter]
     public EventCallback Changed { get; set; }
