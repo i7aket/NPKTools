@@ -153,7 +153,10 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  /* minmax(0,1fr) rather than 1fr: a bare fr floors at min-content, so one wide recipe table was
+     stretching all twelve tracks and pushing the whole page — input cards included — past the edge
+     of a phone screen. */
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--grid-gap);
 }
 
@@ -195,9 +198,13 @@ body {
 
 /* ---------------------------------------------------------------- forms */
 
+/* Column count comes from --cols so a media query can override it; an inline
+   grid-template-columns could not be beaten without !important. minmax(0,1fr) rather than 1fr,
+   because a bare 1fr floors at min-content and lets long labels push the card wider than the
+   screen. */
 .field-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
   gap: var(--grid-gap);
 }
 
@@ -393,10 +400,22 @@ tfoot td:first-child { text-align: left; font-family: var(--font-ui); }
 
 /* ---------------------------------------------------------------- metrics */
 
+/*
+  Four readings go four across or two by two — never three and a stray one below, which is what
+  auto-fit gave on a phone.
+
+  Keyed to the card rather than the window, because the two columns of this layout are nothing like
+  each other: at 1440px the left column is about 460px and the right about 940px, and a window-width
+  rule would give both the same answer and be wrong for one of them.
+*/
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--grid-gap);
+}
+
+@container (min-width: 460px) {
+  .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .metric {
@@ -652,3 +671,76 @@ button.tiny {
 }
 
 .salt-row button.tiny + .formula { margin-left: 8px; }
+
+/* ---------------------------------------------------------------- narrow screens */
+
+/*
+  A phone gets two columns everywhere, whatever a component asked for. Six macronutrients then read
+  three rows of two rather than two rows of three squeezed to 90px, and nothing is ever left as a
+  single orphan on its own row.
+*/
+
+@media (max-width: 620px) {
+  .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Four labels do not fit across a phone. Two by two, and each keeps a real touch target. */
+  .segmented { flex-wrap: wrap; }
+  .segmented > button { flex: 1 1 calc(50% - 1px); }
+  .segmented > button:nth-child(2n) { border-left: 1px solid var(--border); }
+  .segmented > button:nth-child(n + 3) { border-top: 1px solid var(--border); }
+
+  .button-row { flex-wrap: wrap; }
+  .button-row > * { flex: 1 1 calc(50% - 4px); }
+}
+
+/* Long words in a note must wrap rather than widen the card. The page may scroll down; it must
+   never scroll sideways. */
+
+.card-note,
+.salt-row span,
+.notice span { overflow-wrap: anywhere; }
+
+html,
+body { overflow-x: hidden; }
+
+/* A recipe table has a floor below which its columns stop making sense, so it scrolls inside its
+   own card rather than widening the page. Sideways scrolling belongs to the table, never the body. */
+
+.card table { min-width: 320px; }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* A grid item's automatic minimum size is min-content, so a column refuses to be narrower than its
+   widest child no matter how small the tracks get. This is the rule that actually stops the page
+   scrolling sideways on a phone; minmax(0,1fr) on the tracks alone does not. */
+
+.col-4,
+.col-8,
+.col-12,
+.stack > * { min-width: 0; }
+
+/* ---------------------------------------------------------------- container queries */
+
+/* Every card measures itself, so a grid narrows because its own card is narrow rather than because
+   the window is. The left column stays about 460px wide from 1024px upwards while the window keeps
+   growing, and only the card knows that. */
+
+/* Recipes are <article class="recipe">, not cards, and they hold the widest readings on the page —
+   leaving them out meant the metrics never saw a container and stayed two across on a 1920 screen. */
+.card,
+.recipe { container-type: inline-size; }
+
+@container (max-width: 420px) {
+  .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .segmented { flex-wrap: wrap; }
+  .segmented > button { flex: 1 1 calc(50% - 1px); }
+  .segmented > button:nth-child(2n) { border-left: 1px solid var(--border); }
+  .segmented > button:nth-child(n + 3) { border-top: 1px solid var(--border); }
+
+  .button-row { flex-wrap: wrap; }
+  .button-row > * { flex: 1 1 calc(50% - 4px); }
+}
