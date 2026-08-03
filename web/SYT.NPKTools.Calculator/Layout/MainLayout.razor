@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@inject Translations T
 
 <header class="app-header">
     @*
@@ -7,9 +8,9 @@
         announced both would say the same thing twice.
     *@
     <img class="brand-mark" src="img/greensecrets.png" width="32" height="32" alt="" />
-    <span class="brand">Green Secrets</span>
-    <h1>SYT NPKTools</h1>
-    <span class="tagline">Fertilizer calculator — runs entirely in your browser</span>
+    <span class="brand">@T["app.brand"]</span>
+    <h1>SYT @T["app.name"]</h1>
+    <span class="tagline">@T["app.tagline"]</span>
 </header>
 
 <main class="app-main">

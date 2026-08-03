@@ -5,5 +5,31 @@
   "recipes.count": {
     "one": "{0} recipe",
     "other": "{0} recipes"
-  }
+  },
+  "app.tagline": "Fertilizer calculator — runs entirely in your browser",
+  "salts.title": "Salts you have — {0} / {1}",
+  "salts.all": "All",
+  "salts.none": "None",
+  "salts.add": "Add salt",
+  "salts.close": "Close",
+  "salts.own": "Your own salt",
+  "salts.remove": "Remove this salt",
+  "salts.group.macro": "Macronutrient",
+  "salts.group.micro": "Micronutrient",
+  "salts.uncovered.lead": "No source for",
+  "salts.uncovered.note": "Nothing ticked above supplies these, so no recipe can reach them.",
+  "acid.title": "Acidification",
+  "acid.enable": "Neutralise the alkalinity — {0} meq/L",
+  "acid.acid": "Acid",
+  "acid.waterPh": "Water pH",
+  "acid.targetPh": "Target pH",
+  "acid.metric.volume": "Acid",
+  "acid.metric.strength": "Strength",
+  "acid.metric.adds": "Adds {0}",
+  "acid.overshoot.lead": "This acid overshoots the {0} target on its own.",
+  "acid.overshoot.detail": "{0} ppm against a target of {1}. Fertilizer only adds, so no recipe can bring it back down.",
+  "acid.overshoot.alternative": "{0} would fit.",
+  "acid.note": "The {0} above is deducted from the target, like the water. Worked for a closed vessel: an open reservoir loses CO₂ and drifts back up, so the dose you settle on will be nearer the full {1} meq/L. Each recipe's EC still counts this water's bicarbonate, which the acid removes, so it reads high once you have acidified — by roughly {2} µS/cm.",
+  "notFound.title": "Something went wrong.",
+  "notFound.reload": "Reload"
 }
