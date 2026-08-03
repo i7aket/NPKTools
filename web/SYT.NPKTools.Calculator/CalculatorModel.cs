@@ -333,10 +333,44 @@ public sealed class CalculatorModel
     public bool HasRun { get; private set; }
 
     /// <summary>
-    /// Runs the whole chain. Never throws for bad input — a malformed target lands in
-    /// <see cref="Error"/>, because a calculator that crashes on a typo is unusable.
+    /// Raised after every <see cref="Recalculate"/>, so a panel that shows a result can redraw.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Necessary, not decorative. Blazor skips re-rendering a child component whose parameters have not
+    /// changed, and these panels take one parameter — an <see cref="EventCallback"/> to the same method
+    /// on the same page, which compares equal on every pass. So a panel only ever redrew when it
+    /// handled the event itself: editing the water updated the water card and left the acidification
+    /// card showing what it had computed at startup, which for a page that opens on osmosis meant
+    /// nothing at all.
+    /// </para>
+    /// <para>
+    /// The page cannot fix this from its side — it re-renders, and the children are skipped anyway. So
+    /// the model says when it has changed and each panel listens, the same arrangement the language
+    /// picker already uses.
+    /// </para>
+    /// </remarks>
+    public event Action? Changed;
+
+    /// <summary>
+    /// Runs the whole chain, then announces it. Never throws for bad input — a malformed target lands
+    /// in <see cref="Error"/>, because a calculator that crashes on a typo is unusable.
     /// </summary>
     public void Recalculate()
+    {
+        try
+        {
+            Run();
+        }
+        finally
+        {
+            // In a finally because a stale screen is worse than a lost calculation: if Run ever does
+            // throw, the panels should still be told to redraw from whatever state it left behind.
+            Changed?.Invoke();
+        }
+    }
+
+    private void Run()
     {
         HasRun = true;
         Error = null;

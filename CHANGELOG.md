@@ -38,6 +38,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   collapsed, and is still what links and files carry — so a typo in it no longer destroys the target.
 - Links carry the water and acid settings. Existing links keep working.
 
+### Fixed
+
+- The acidification card now appears when the water has alkalinity to neutralise. It never did:
+  Blazor does not re-render a child component whose parameters have not changed, and each panel takes
+  one — a callback to the same method on the page, equal on every pass — so a panel redrew only when it
+  handled the event itself. The card was drawn once at startup, on osmosis, where there is nothing to
+  neutralise, and was never drawn again. The acid dose, the overshoot warning and the note about an
+  open reservoir were all unreachable. The model now announces each recalculation and every panel
+  listens, which also fixes a stale download link: the file offered was the setup as it stood when the
+  page opened.
+
 ## [1.0.0-preview.3] - 2026-08-01
 
 **The calculator, not just the solver.** Everything below turns a recipe into something a grower can act on:
