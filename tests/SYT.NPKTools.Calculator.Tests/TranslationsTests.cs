@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using SYT.NPKTools.Calculator.Localisation;
+using SYT.NPKTools.Nutrients;
 using Xunit;
 
 namespace SYT.NPKTools.Calculator.Tests;
@@ -85,6 +86,65 @@ public class TranslationsTests
 
         raised.Should().Be(1);
         t.Current.Tag.Should().Be("ru");
+    }
+
+    /// <summary>
+    /// Values land in the placeholders that name them.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Format_FillsThePlaceholders()
+    {
+        Translations t = new();
+
+        t.Format("water.excess.item", "Cl", "30", "0").Should().Be("Cl (30 vs target 0)");
+    }
+
+    /// <summary>
+    /// A value that itself contains a placeholder is left alone, which is what lets one sentence be
+    /// filled with a list assembled from another.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Format_DoesNotSubstituteIntoItsOwnOutput()
+    {
+        Translations t = new();
+
+        t.Format("water.excess.detail", "{1} ppm").Should().StartWith("{1} ppm. Fertilizer only adds");
+    }
+
+    /// <summary>
+    /// A placeholder nobody supplied a value for stays visible rather than becoming a blank.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Format_WithTooFewValues_LeavesThePlaceholderInPlace()
+    {
+        Translations t = new();
+
+        t.Format("water.excess.item", "Cl").Should().Be("Cl ({1} vs target {2})");
+    }
+
+    /// <summary>
+    /// Every water preset the library offers has a name in the interface.
+    /// </summary>
+    /// <remarks>
+    /// The presets are named by <see cref="WaterPreset.Id"/> rather than by their own
+    /// <see cref="WaterPreset.Label"/>, which is English prose written for developers. That leaves one
+    /// failure worth a test: a preset added to the library and not to the resource files would show
+    /// its key in the picker.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EveryWaterPreset_HasAName()
+    {
+        Translations t = new();
+        IReadOnlyCollection<string> keys = t.KeysFor(Language.Default);
+
+        foreach (WaterPreset preset in WaterPreset.All)
+        {
+            keys.Should().Contain($"water.preset.{preset.Id}");
+        }
     }
 
     /// <summary>

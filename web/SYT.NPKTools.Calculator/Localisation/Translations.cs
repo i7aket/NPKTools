@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 
 namespace SYT.NPKTools.Calculator.Localisation;
@@ -88,6 +89,57 @@ public sealed class Translations
             "{0}",
             count.ToString(CultureInfo.InvariantCulture),
             StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The text for a key, with <c>{0}</c>, <c>{1}</c> and so on replaced by the values given.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <param name="values">The values, already formatted for display.</param>
+    /// <returns>The text, with every placeholder it recognises filled in.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="values"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Numbers arrive already formatted, as strings. That is deliberate: the caller knows how many
+    /// decimals its number deserves, and formatting stays invariant rather than becoming this class's
+    /// business.
+    /// </para>
+    /// <para>
+    /// The scan is a single pass, so a value that happens to contain a placeholder is not substituted
+    /// again — which is what lets one sentence be filled with a list built from another.
+    /// </para>
+    /// </remarks>
+    public string Format(string key, params string[] values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+
+        string text = this[key];
+        StringBuilder built = new(text.Length + 16);
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (text[i] == '{')
+            {
+                int close = text.IndexOf('}', i + 1);
+
+                if (close > i
+                    && int.TryParse(
+                        text.AsSpan(i + 1, close - i - 1),
+                        NumberStyles.None,
+                        CultureInfo.InvariantCulture,
+                        out int index)
+                    && index < values.Length)
+                {
+                    built.Append(values[index]);
+                    i = close;
+                    continue;
+                }
+            }
+
+            built.Append(text[i]);
+        }
+
+        return built.ToString();
     }
 
     /// <summary>
