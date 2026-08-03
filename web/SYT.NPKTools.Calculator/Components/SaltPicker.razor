@@ -1,4 +1,5 @@
 @inject CalculatorModel Model
+@inject Translations T
 
 @*
     The shelf. Lifted out of Home.razor because a list plus an entry form is more than a page should
@@ -7,17 +8,17 @@
 *@
 
 <section class="card">
-    <h2>Salts you have — @Model.Selected.Count / @Model.Catalogue.Count</h2>
+    <h2>@FormattedTitle</h2>
 
     <div class="button-row" style="margin-top:0">
-        <button class="secondary" @onclick="SelectAll">All</button>
-        <button class="secondary" @onclick="SelectNone">None</button>
-        <button @onclick="() => _adding = !_adding">@(_adding ? "Close" : "Add salt")</button>
+        <button class="secondary" @onclick="SelectAll">@T["salts.all"]</button>
+        <button class="secondary" @onclick="SelectNone">@T["salts.none"]</button>
+        <button @onclick="() => _adding = !_adding">@(_adding ? T["salts.close"] : T["salts.add"])</button>
     </div>
 
     @if (_adding)
     {
-        <div class="group-divider">Your own salt</div>
+        <div class="group-divider">@T["salts.own"]</div>
         <CustomSaltForm Changed="Changed" Cancelled="() => _adding = false" />
     }
 
@@ -26,7 +27,7 @@
             .GroupBy(FertilizerBundleGenerator.IsMicro)
             .OrderBy(g => g.Key))
         {
-            <div class="salt-group">@(group.Key ? "Micronutrient" : "Macronutrient")</div>
+            <div class="salt-group">@(group.Key ? T["salts.group.micro"] : T["salts.group.macro"])</div>
             @foreach (Fertilizer salt in group)
             {
                 <label class="salt-row">
@@ -35,7 +36,7 @@
                     <span>@salt.Name.Value</span>
                     @if (IsCustom(salt))
                     {
-                        <button class="secondary tiny" title="Remove this salt"
+                        <button class="secondary tiny" title="@T["salts.remove"]"
                                 @onclick:preventDefault @onclick:stopPropagation
                                 @onclick="() => Remove(salt.Name.Value)">✕</button>
                     }
@@ -50,8 +51,8 @@
         <div class="notice warn" role="status">
             <Icon Kind="IconKind.Warning" />
             <span>
-                <strong>No source for</strong> @string.Join(", ", Model.UncoveredElements).
-                Nothing ticked above supplies these, so no recipe can reach them.
+                <strong>@T["salts.uncovered.lead"]</strong> @string.Join(", ", Model.UncoveredElements).
+                @T["salts.uncovered.note"]
             </span>
         </div>
     }
@@ -63,6 +64,12 @@
     public EventCallback Changed { get; set; }
 
     private bool _adding;
+
+    // One key with both numbers in it: a translator cannot reorder a title assembled in markup.
+    private string FormattedTitle =>
+        T["salts.title"]
+            .Replace("{0}", Model.Selected.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal)
+            .Replace("{1}", Model.Catalogue.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);
 
     private bool IsCustom(Fertilizer salt) =>
         Model.CustomSalts.Any(c => string.Equals(c.Name, salt.Name.Value, StringComparison.Ordinal));

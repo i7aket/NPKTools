@@ -744,3 +744,17 @@ body { overflow-x: hidden; }
   .button-row { flex-wrap: wrap; }
   .button-row > * { flex: 1 1 calc(50% - 4px); }
 }
+
+/* Sits at the end of the header and stays small: chosen once, then ignored. */
+
+.app-header .language {
+  width: auto;
+  min-height: 28px;
+  margin-left: auto;
+  padding: 2px 6px;
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 620px) {
+  .app-header .language { margin-left: 0; }
+}

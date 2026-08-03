@@ -10,4 +10,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // is managed code with no dependencies, which is what lets the optimizer run in the browser.
 builder.Services.AddSingleton<CalculatorModel>();
 
+// The interface text, for every language at once — see Localisation/Translations.cs for why it is
+// embedded rather than fetched.
+builder.Services.AddSingleton<SYT.NPKTools.Calculator.Localisation.Translations>();
+
 await builder.Build().RunAsync();

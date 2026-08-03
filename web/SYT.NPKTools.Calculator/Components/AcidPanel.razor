@@ -123,22 +123,17 @@
 
     private Task OnWaterPhChanged(ChangeEventArgs e)
     {
-        Model.WaterPh = Parse(e.Value, Model.WaterPh);
+        Model.WaterPh = Ph(e.Value, Model.WaterPh);
         return Changed.InvokeAsync();
     }
 
     private Task OnTargetPhChanged(ChangeEventArgs e)
     {
-        Model.TargetPh = Parse(e.Value, Model.TargetPh);
+        Model.TargetPh = Ph(e.Value, Model.TargetPh);
         return Changed.InvokeAsync();
     }
-
-    private static double Parse(object? value, double fallback) =>
-        double.TryParse(
-            value?.ToString(),
-            System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out double parsed) && parsed is >= 0 and <= 14
-            ? parsed
-            : fallback;
+    // pH is the one figure with a meaningful range, so an out-of-range entry keeps the previous
+    // value rather than reading as zero — which would silently mean "strongly acidic".
+    private static double Ph(object? value, double fallback) =>
+        Numbers.TryParse(value, out double parsed) && parsed is >= 0 and <= 14 ? parsed : fallback;
 }
