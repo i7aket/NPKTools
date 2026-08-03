@@ -877,6 +877,70 @@ makes a translation impossible to do well:
   a translator.
 - **Counts go through `Plural`,** never string concatenation.
 
+#### Progress, and what the verification method turned out to be
+
+Task 4 is being landed one component per pull request, because the check that matters is a diff of the
+**rendered** text against a build of `main` and that is only meaningful per component.
+
+| Component | PR | State |
+|---|---|---|
+| `Layout/MainLayout.razor`, `Components/SaltPicker.razor` | #22 | done |
+| `Pages/Home.razor` | #25 | done |
+| `Components/WaterPanel.razor` | #27 | done |
+| `Components/AcidPanel.razor`, `Pages/NotFound.razor` | #29 | done |
+| `Components/StoragePanel.razor` | — | to do |
+| `Components/CustomSaltForm.razor` | — | to do |
+| `Components/RecipeCard.razor` | — | to do, the largest |
+| The two library concentrate sentences | — | to do, needs a library change — see below |
+
+**Capture the rendered text with `innerText`, per component, in every state the component has.** Three
+capture methods were tried and only the third is honest: a text-node walk invents a space where two
+nodes touch, `textContent` keeps the insignificant whitespace a wrapped line of markup leaves inside a
+block element, and only `innerText` reflects what the layout shows. Both of the first two reported
+differences that were not on the screen. Clear `localStorage` before each state, or the previous state
+leaks in through the saved setup.
+
+That diff has earned its place three times over: it caught `target.counterIons` rendering as its own
+key, and in `AcidPanel` it caught **Razor dropping the space between an expression and the block that
+follows** — `…bring it back down.Nitric acid 60% would fit.` Literal whitespace after literal text
+survives; whitespace after an expression does not, and neither does a leading space inside a `<span>`.
+It takes `&#32;`.
+
+Two things found along the way and fixed in their own pull requests rather than folded in:
+
+- **#28, the panels never redrew.** Blazor does not re-render a child whose parameters have not
+  changed, and every panel takes one — an `EventCallback` to the same method on the page. The
+  acidification card had therefore never been visible: it renders when the water has alkalinity, the
+  page opens on osmosis, and nothing asked it again. `CalculatorModel.Changed` now announces each
+  recalculation. Without this the acid card could not be reached in a browser at all, so its
+  localisation could not be checked.
+- **#24, the error messages** already covered `Error = ex.Message`.
+
+`Translations.Format(key, params string[] values)` was added in #27 for sentences with placeholders. It
+scans in a single pass, so a value that itself contains `{1}` is not substituted again — which is what
+lets a list assembled from one key be dropped into another. Values arrive already formatted as
+strings, because the caller knows how many decimals its number deserves.
+
+Library prose that reaches the screen is keyed by **id**, never by the library's own label:
+`water.preset.<Id>` (#27) and `acid.kind.<AcidKind>` with the strength as `{0}` (#29, three keys for
+six acids, so Turkish can write `%60`). Each has a test that fails if the library gains an entry the
+resource files do not name.
+
+#### The two library concentrate sentences need the library to expose numbers
+
+`ConcentrateWarning` carries `Kind`, `Tank`, `Fertilizers` and `Message` — the numbers in the message
+are formatted into it and not otherwise available, so the app cannot write its own sentence from what
+it is given:
+
+> Tank B is at 136 % of saturation: its salts together need more water than the tank holds…
+> Tank B needs 20.3 g/L of 'Calcium Monobasic Phosphate', which dissolves to 18 g/L at 20 °C…
+
+The library already computes both figures. Add them to the record — `double? Actual` and
+`double? Allowed`, null for the kinds that have no numbers — and the app writes both sentences from
+`Kind`, `Tank`, `Fertilizers`, `Actual` and `Allowed`. `Message` stays as it is for developers and for
+anyone using the library directly. This is a library change with its own tests, so it is its own pull
+request and should come after `RecipeCard`'s own strings rather than inside that work.
+
 #### Ten sentences are currently built from fragments and have to be restructured
 
 Found by capturing the rendered text rather than by reading the markup, which is why it was missed

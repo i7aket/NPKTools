@@ -4,16 +4,15 @@
 *@
 
 @inject CalculatorModel Model
+@inject Translations T
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 @implements IAsyncDisposable
 
 <section class="card">
-    <h2>Save &amp; transfer</h2>
+    <h2>@T["storage.title"]</h2>
 
-    <p class="card-note" style="margin-top:0">
-        Everything stays on this device — there is no server to sync to.
-    </p>
+    <p class="card-note" style="margin-top:0">@T["storage.note"]</p>
 
     @*
         One word each, so the four sit on one row instead of wrapping into a block. "Open" rather than
@@ -21,43 +20,39 @@
         What each one is for is spelled out under "Which one to use" below.
     *@
     <div class="button-row">
-        <button @onclick="CopyLink">@(_copied ? "Copied" : "Link")</button>
-        <a class="download" href="@DataUrl()" download="npktools-recipe.json">Download</a>
-        <button class="secondary" @onclick="() => _loading = !_loading">Open</button>
-        <button class="secondary" @onclick="Forget">Forget</button>
+        <button @onclick="CopyLink">@(_copied ? T["storage.copied"] : T["storage.link"])</button>
+        <a class="download" href="@DataUrl()" download="npktools-recipe.json">@T["storage.download"]</a>
+        <button class="secondary" @onclick="() => _loading = !_loading">@T["storage.open"]</button>
+        <button class="secondary" @onclick="Forget">@T["storage.forget"]</button>
     </div>
 
     @if (_loading)
     {
         <div style="margin-top:8px">
-            <InputFile OnChange="OnFilePicked" accept=".json" aria-label="Choose a saved recipe file" />
+            <InputFile OnChange="OnFilePicked" accept=".json" aria-label="@T["storage.choose"]" />
         </div>
     }
 
-    @if (_message is not null)
+    @if (_messageKey is { } messageKey)
     {
         <div class="notice @_messageKind" role="status">
             <Icon Kind="@(_messageKind == "error" ? IconKind.Error : IconKind.Info)" />
-            <span>@_message</span>
+            <span>@T.Format(messageKey, _messageArgument ?? string.Empty)</span>
         </div>
     }
 
     <details style="margin-top:8px">
-        <summary>Which one to use</summary>
+        <summary>@T["storage.which"]</summary>
+        @*
+            "Automatic." keeps its bold because it is a sentence of its own. The other two lost theirs:
+            the bold sat on the subject of a sentence — "<strong>The link</strong> carries…" — and a
+            sentence a translator cannot reorder is a sentence they cannot translate.
+        *@
         <p class="card-note">
-            <strong>Automatic.</strong> This browser remembers your last setup, so closing the tab loses
-            nothing. It cannot reach another browser — that is how browser storage works, not a limit of
-            this app.
+            <strong>@T["storage.auto.lead"]</strong> @T["storage.auto.body"]
         </p>
-        <p class="card-note">
-            <strong>The link</strong> carries the whole setup in the address. Copy it into another browser,
-            another device, or a message to someone else. It is also what to bookmark to keep several
-            targets a click apart.
-        </p>
-        <p class="card-note">
-            <strong>The file</strong> is plain JSON you can keep, edit and re-load. Unlike the other two it
-            survives clearing site data, which makes it the one to use for a recipe you rely on.
-        </p>
+        <p class="card-note">@T["storage.link.note"]</p>
+        <p class="card-note">@T["storage.file.note"]</p>
     </details>
 </section>
 
@@ -71,7 +66,8 @@
     private bool _writing;
     private bool _copied;
     private bool _loading;
-    private string? _message;
+    private string? _messageKey;
+    private string? _messageArgument;
     private string _messageKind = "info";
 
     /// <summary>Raised after loading a file or a link, so the page can re-render the results.</summary>
@@ -128,13 +124,11 @@
         }
 
         Model.Apply(state);
-        _message = null;
+        _messageKey = null;
 
         if (!saltsUsable)
         {
-            Show("This link was made with a different version of the salt catalogue, so its salt "
-                + "selection was ignored and everything is ticked. The rest of the link was applied.",
-                "error");
+            Show("storage.msg.saltsIgnored", "error");
         }
 
         return true;
@@ -203,9 +197,8 @@
         }
 
         _copied = await _module.InvokeAsync<bool>("copy", Navigation.Uri);
-        Show(_copied
-            ? "Link copied. Paste it into any browser to reopen this setup."
-            : "Could not reach the clipboard — copy the address bar by hand instead.",
+        Show(
+            _copied ? "storage.msg.copied" : "storage.msg.clipboardFailed",
             _copied ? "info" : "error");
     }
 
@@ -218,7 +211,7 @@
 
         if (state is null)
         {
-            Show("That file is not a saved recipe.", "error");
+            Show("storage.msg.notARecipe", "error");
             return;
         }
 
@@ -226,7 +219,7 @@
         Model.Recalculate();
         await Persist();
         _loading = false;
-        Show($"Loaded {e.File.Name}.", "info");
+        Show("storage.msg.loaded", "info", e.File.Name);
         await Changed.InvokeAsync();
     }
 
@@ -237,13 +230,16 @@
             await _module.InvokeVoidAsync("clear");
         }
 
-        Show("This browser will no longer remember your setup. The current one is still on screen.", "info");
+        Show("storage.msg.forgotten", "info");
     }
 
-    private void Show(string message, string kind)
+    // The key rather than the words, so the notice is in the reader's language and stays in it when
+    // they change language while it is on screen.
+    private void Show(string key, string kind, string? argument = null)
     {
-        _message = message;
+        _messageKey = key;
         _messageKind = kind;
+        _messageArgument = argument;
     }
 
     public async ValueTask DisposeAsync()

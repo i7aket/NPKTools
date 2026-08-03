@@ -169,6 +169,42 @@ public class TranslationsTests
     }
 
     /// <summary>
+    /// Every notice the save and transfer card can show has words behind it.
+    /// </summary>
+    /// <remarks>
+    /// These six are chosen in C# rather than in markup, and four of them need a clipboard, a file or a
+    /// link from an older catalogue to appear — none of which a headless browser can be walked through.
+    /// So they are checked here instead: a key that reaches the screen without a value in the resource
+    /// files shows the key.
+    /// </remarks>
+    [Theory]
+    [InlineData("storage.msg.saltsIgnored")]
+    [InlineData("storage.msg.copied")]
+    [InlineData("storage.msg.clipboardFailed")]
+    [InlineData("storage.msg.notARecipe")]
+    [InlineData("storage.msg.loaded")]
+    [InlineData("storage.msg.forgotten")]
+    [Trait("Category", "Unit")]
+    public void StorageNotices_HaveWords(string key)
+    {
+        Translations t = new();
+
+        t[key].Should().NotBe(key);
+    }
+
+    /// <summary>
+    /// The name of a loaded file lands in the notice about it.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Format_PutsAFileNameIntoTheLoadedNotice()
+    {
+        Translations t = new();
+
+        t.Format("storage.msg.loaded", "feed-chart.json").Should().Be("Loaded feed-chart.json.");
+    }
+
+    /// <summary>
     /// Every language carries every key English does. This is the test that earns its place: the
     /// failure it prevents — adding a string and forgetting seven files — is the one that happens.
     /// </summary>
