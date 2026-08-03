@@ -214,7 +214,7 @@
 
     private Task OnEcChanged(ChangeEventArgs e)
     {
-        Model.WaterEc = Parse(e.Value) ?? 0;
+        Model.WaterEc = Numbers.ParseOrNull(e.Value) ?? 0;
         return Edited();
     }
 
@@ -228,26 +228,15 @@
 
     private Task OnGhChanged(ChangeEventArgs e)
     {
-        Model.WaterGh = Parse(e.Value);
+        Model.WaterGh = Numbers.ParseOrNull(e.Value);
         return Edited();
     }
 
     private Task OnKhChanged(ChangeEventArgs e)
     {
-        Model.WaterKh = Parse(e.Value);
+        Model.WaterKh = Numbers.ParseOrNull(e.Value);
         return Edited();
     }
 
     private Task Edited() => Changed.InvokeAsync();
-
-    // Null rather than zero for a cleared field: an unmeasured drop test is not a measurement of zero,
-    // and the estimator treats the two differently.
-    private static double? Parse(object? value) =>
-        double.TryParse(
-            value?.ToString(),
-            System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out double parsed) && parsed >= 0
-            ? parsed
-            : null;
 }

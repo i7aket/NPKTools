@@ -125,28 +125,14 @@
 
     private Task OnLitersChanged(ChangeEventArgs e)
     {
-        Model.Liters = Parse(e.Value);
+        Model.Liters = Numbers.ParseOrZero(e.Value);
         return Edited();
     }
 
     private Task OnConcentrateChanged(ChangeEventArgs e)
     {
         string raw = e.Value?.ToString() ?? string.Empty;
-        Model.ConcentrateLiters = string.IsNullOrWhiteSpace(raw) ? null : Parse(raw);
+        Model.ConcentrateLiters = string.IsNullOrWhiteSpace(raw) ? null : Numbers.ParseOrZero(raw);
         return Edited();
     }
-
-
-
-
-    // A half-typed number should leave the field empty rather than throw, so parsing is forgiving and
-    // invariant — a comma decimal separator would otherwise silently mean a different number.
-    private static double Parse(object? value) =>
-        double.TryParse(
-            value?.ToString(),
-            System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out double parsed) && parsed >= 0
-            ? parsed
-            : 0;
 }
