@@ -41,3 +41,23 @@ export async function copy(text) {
         return false;
     }
 }
+
+const LANGUAGE_KEY = 'npktools.language';
+
+// The interface language is remembered apart from the recipe, because it belongs to the reader rather
+// than to the calculation: a link arriving from another country must not change it.
+export function language() {
+  try {
+    return localStorage.getItem(LANGUAGE_KEY) ?? navigator.language ?? '';
+  } catch {
+    return navigator.language ?? '';
+  }
+}
+
+export function setLanguage(tag) {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, tag);
+  } catch {
+    // Private browsing refuses to store. The choice then lasts for this tab, which is enough.
+  }
+}

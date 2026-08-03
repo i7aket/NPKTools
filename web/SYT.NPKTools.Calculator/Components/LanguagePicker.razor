@@ -1,0 +1,46 @@
+@inject Translations T
+@inject IJSRuntime Js
+
+@*
+    Reads the remembered choice, or the browser's own language the first time round. Deliberately not
+    part of the saved recipe: a link sent to another country should not impose the sender's language
+    on whoever opens it.
+*@
+
+<select class="language" aria-label="@T["app.language"]" value="@T.Current.Tag" @onchange="Choose">
+    @foreach (Language language in Language.All)
+    {
+        <option value="@language.Tag">@language.NativeName</option>
+    }
+</select>
+
+@code {
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/storage.js");
+        Language chosen = Language.Match(await _module.InvokeAsync<string?>("language"));
+
+        if (chosen != T.Current)
+        {
+            T.Use(chosen);
+        }
+    }
+
+    private async Task Choose(ChangeEventArgs e)
+    {
+        Language chosen = Language.Match(e.Value?.ToString());
+        T.Use(chosen);
+
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("setLanguage", chosen.Tag);
+        }
+    }
+}

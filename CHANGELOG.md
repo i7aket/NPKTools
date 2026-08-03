@@ -26,6 +26,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   they travel in links and files. A formula that looks like a chelate is flagged: the ligand's
   nitrogen holds the metal rather than feeding the plant, and a formula cannot tell the two apart.
 - `ChemicalFormula` and `FormulaComposition` in `SYT.NPKTools`.
+- Groundwork for translation: plural forms follow each language's own rules rather than English's,
+  numbers accept a comma as a decimal point while still displaying a dot, and a picker offers eight
+  languages — English, Russian, Ukrainian, Dutch, German, Spanish, Polish, Turkish. All eight show
+  English text for now; the words come next. No ICU — the app is still built with
+  `InvariantGlobalization=true`.
 
 ### Changed
 

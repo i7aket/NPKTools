@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject Translations T
+@implements IDisposable
 
 <header class="app-header">
     @*
@@ -11,8 +12,19 @@
     <span class="brand">@T["app.brand"]</span>
     <h1>SYT @T["app.name"]</h1>
     <span class="tagline">@T["app.tagline"]</span>
+    <LanguagePicker />
 </header>
 
 <main class="app-main">
     @Body
 </main>
+
+@code {
+    // App.razor renders this layout above everything, so one subscription here redraws the whole page
+    // when the language changes.
+    protected override void OnInitialized() => T.Changed += Redraw;
+
+    private void Redraw() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => T.Changed -= Redraw;
+}
