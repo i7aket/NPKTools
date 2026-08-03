@@ -1,4 +1,5 @@
 @inject CalculatorModel Model
+@inject Translations T
 
 @*
     Everything about the source water: how it is described, and what that description implies. Lifted
@@ -6,54 +7,54 @@
 *@
 
 <section class="card">
-    <h2>Source water</h2>
+    <h2>@T["water.title"]</h2>
 
-    <div class="segmented" role="group" aria-label="How the water is described">
-        @foreach ((WaterInputMode mode, string label) in Modes)
+    <div class="segmented" role="group" aria-label="@T["water.mode.aria"]">
+        @foreach ((WaterInputMode mode, string key) in Modes)
         {
             <button type="button" class="@(Model.Mode == mode ? "on" : null)"
-                    @onclick="() => Choose(mode)">@label</button>
+                    @onclick="() => Choose(mode)">@T[key]</button>
         }
     </div>
 
     @if (Model.Mode == WaterInputMode.Osmosis)
     {
-        <p class="card-note" style="margin-top:0">
-            Reverse osmosis, distilled or rain. Nothing is deducted from the target.
-        </p>
+        <p class="card-note" style="margin-top:0">@T["water.osmosis.note"]</p>
     }
     else if (Model.Mode == WaterInputMode.Analysis)
     {
-        <p class="card-note" style="margin-top:0">A laboratory analysis, in ppm.</p>
+        <p class="card-note" style="margin-top:0">@T["water.analysis.note"]</p>
         <ElementGrid Elements="ElementGroups.Macro" Values="Model.Water" Prefix="w"
                      Step="0.1" Columns="3" Changed="_ => Edited()" />
-        <div class="group-divider">Micro</div>
+        <div class="group-divider">@T["water.group.micro"]</div>
         <ElementGrid Elements="ElementGroups.Micro" Values="Model.Water" Prefix="w"
                      Step="0.01" Columns="4" Changed="_ => Edited()" />
-        <div class="group-divider">Counter-ions</div>
+        <div class="group-divider">@T["target.counterIons"]</div>
         <ElementGrid Elements="ElementGroups.CounterIons" Values="Model.Water" Prefix="w"
                      Step="0.1" Columns="2" Changed="_ => Edited()" />
     }
     else
     {
         <div class="field">
-            <label for="w-preset">Water type</label>
+            <label for="w-preset">@T["water.preset"]</label>
+            @* Keyed by Id, not by the library's own Label: that prose is English and written for
+               developers, the same reason the error messages moved. *@
             <select id="w-preset" value="@Model.WaterPresetId" @onchange="OnPresetChanged">
                 @foreach (WaterPreset preset in WaterPreset.All)
                 {
-                    <option value="@preset.Id">@preset.Label</option>
+                    <option value="@preset.Id">@T[$"water.preset.{preset.Id}"]</option>
                 }
             </select>
         </div>
 
         <div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
             <div class="field">
-                <label for="w-ec">Meter reading</label>
+                <label for="w-ec">@T["water.meter"]</label>
                 <input id="w-ec" type="number" min="0" step="0.01" value="@Model.WaterEc"
                        @onchange="OnEcChanged" />
             </div>
             <div class="field">
-                <label for="w-unit">Scale</label>
+                <label for="w-unit">@T["water.scale"]</label>
                 <select id="w-unit" value="@Model.WaterEcUnit" @onchange="OnUnitChanged">
                     <option value="@EcUnit.MilliSiemensPerCm">mS/cm</option>
                     <option value="@EcUnit.Ppm500">ppm (500)</option>
@@ -66,25 +67,22 @@
         {
             <div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
                 <div class="field">
-                    <label for="w-gh">GH, °dH</label>
+                    <label for="w-gh">@T["water.gh"]</label>
                     <input id="w-gh" type="number" min="0" step="0.5" value="@Model.WaterGh"
                            @onchange="OnGhChanged" />
                 </div>
                 <div class="field">
-                    <label for="w-kh">KH, °dKH</label>
+                    <label for="w-kh">@T["water.kh"]</label>
                     <input id="w-kh" type="number" min="0" step="0.5" value="@Model.WaterKh"
                            @onchange="OnKhChanged" />
                 </div>
             </div>
-            <p class="card-note">
-                From a drop-test kit. Both optional — each one entered replaces a guess with a
-                measurement.
-            </p>
+            <p class="card-note">@T["water.tests.note"]</p>
         }
 
         @if (Model.WaterEstimate is { } estimate)
         {
-            <div class="group-divider">Estimated analysis — not an analysis</div>
+            <div class="group-divider">@T["water.estimate.title"]</div>
             @* Three across, so the six read as two rows rather than four and a stray pair. *@
             <div class="field-grid" style="--cols:3">
                 @foreach ((string symbol, double value) in Estimated(estimate))
@@ -101,11 +99,11 @@
                 <div class="notice warn" role="status">
                     <Icon Kind="IconKind.Warning" />
                     <span>
-                        <strong>These readings describe no water.</strong>
-                        The hardness entered already accounts for
-                        @estimate.MicroSiemensPerCm.ToString("F0") µS/cm, more than the
-                        @estimate.RequestedMicroSiemensPerCm.ToString("F0") µS/cm the meter read.
-                        Check both, and the water type.
+                        <strong>@T["water.estimate.infeasible.lead"]</strong>
+                        @T.Format(
+                            "water.estimate.infeasible.detail",
+                            estimate.MicroSiemensPerCm.ToString("F0"),
+                            estimate.RequestedMicroSiemensPerCm.ToString("F0"))
                     </span>
                 </div>
             }
@@ -114,9 +112,10 @@
                 <div class="notice warn" role="status">
                     <Icon Kind="IconKind.Warning" />
                     <span>
-                        <strong>The estimate is
-                        @((estimate.RelativeError * 100).ToString("F0"))% off the reading.</strong>
-                        A different water type may fit better.
+                        <strong>@T.Format(
+                            "water.estimate.off.lead",
+                            (estimate.RelativeError * 100).ToString("F0"))</strong>
+                        @T["water.estimate.off.detail"]
                     </span>
                 </div>
             }
@@ -127,33 +126,26 @@
     {
         <div class="metrics" style="margin-top:8px">
             <div class="metric">
-                <div class="label">Water EC</div>
+                <div class="label">@T["water.metric.ec"]</div>
                 <div class="value">@waterEc.MicroSiemensPerCm.ToString("F0") <span class="unit">µS/cm</span></div>
             </div>
             <div class="metric">
-                <div class="label">Alkalinity</div>
+                <div class="label">@T["water.metric.alkalinity"]</div>
                 <div class="value">@Model.Alkalinity.ToString("F2") <span class="unit">meq/L</span></div>
             </div>
             <div class="metric">
-                <div class="label">as HCO₃⁻</div>
+                <div class="label">@T["water.metric.bicarbonate"]</div>
                 <div class="value">@((Model.Alkalinity * 61).ToString("F0")) <span class="unit">ppm</span></div>
             </div>
         </div>
 
         @if (Model.Mode == WaterInputMode.Analysis)
         {
-            <p class="card-note">
-                Compare the water EC with your own meter — it is the quickest check that the analysis
-                above was typed in correctly. The alkalinity is inferred from the cation surplus, and is
-                also the acid needed per litre to neutralise it.
-            </p>
+            <p class="card-note">@T["water.note.analysis"]</p>
         }
         else
         {
-            <p class="card-note">
-                The alkalinity is inferred from the cation surplus, and is also the acid needed per
-                litre to neutralise it.
-            </p>
+            <p class="card-note">@T["water.note.alkalinity"]</p>
         }
     }
 
@@ -162,9 +154,8 @@
         <div class="notice warn" role="status">
             <Icon Kind="IconKind.Warning" />
             <span>
-                <strong>Water oversupplies</strong>
-                @string.Join(", ", Model.Excesses.Select(x => $"{x.Element} ({x.InWater:F0} vs target {x.Target:F0})")).
-                Fertilizer only adds, so no recipe can bring these down — raise the target or dilute the water.
+                <strong>@T["water.excess.lead"]</strong>
+                @T.Format("water.excess.detail", Excesses)
             </span>
         </div>
     }
@@ -175,13 +166,24 @@
     [Parameter]
     public EventCallback Changed { get; set; }
 
-    private static readonly (WaterInputMode Mode, string Label)[] Modes =
+    private static readonly (WaterInputMode Mode, string Key)[] Modes =
     [
-        (WaterInputMode.Osmosis, "Osmosis"),
-        (WaterInputMode.Conductivity, "EC"),
-        (WaterInputMode.ConductivityWithTests, "EC + tests"),
-        (WaterInputMode.Analysis, "Analysis"),
+        (WaterInputMode.Osmosis, "water.mode.osmosis"),
+        (WaterInputMode.Conductivity, "water.mode.ec"),
+        (WaterInputMode.ConductivityWithTests, "water.mode.ecTests"),
+        (WaterInputMode.Analysis, "water.mode.analysis"),
     ];
+
+    // Each entry is its own sentence fragment in a language that puts "target" somewhere else, so it
+    // goes through a key too rather than being interpolated here.
+    private string Excesses =>
+        string.Join(
+            ", ",
+            Model.Excesses.Select(x => T.Format(
+                "water.excess.item",
+                x.Element,
+                x.InWater.ToString("F0"),
+                x.Target.ToString("F0"))));
 
     private static IEnumerable<(string Symbol, double Value)> Estimated(WaterEstimate estimate) =>
     [
