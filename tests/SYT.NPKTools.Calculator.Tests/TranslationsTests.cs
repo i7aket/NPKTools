@@ -148,6 +148,27 @@ public class TranslationsTests
     }
 
     /// <summary>
+    /// Every acid the library offers has a name in the interface.
+    /// </summary>
+    /// <remarks>
+    /// Keyed by <see cref="Acid.Kind"/> with the strength filled in, so the six built-in acids need
+    /// three keys rather than six — and Turkish, which writes the percentage as <c>%60</c>, can put it
+    /// where it belongs.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EveryAcid_HasAName()
+    {
+        Translations t = new();
+        IReadOnlyCollection<string> keys = t.KeysFor(Language.Default);
+
+        foreach (Acid acid in Acid.All)
+        {
+            keys.Should().Contain($"acid.kind.{acid.Kind}");
+        }
+    }
+
+    /// <summary>
     /// Every language carries every key English does. This is the test that earns its place: the
     /// failure it prevents — adding a string and forgetting seven files — is the one that happens.
     /// </summary>

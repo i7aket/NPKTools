@@ -1,4 +1,5 @@
 @inject CalculatorModel Model
+@inject Translations T
 @implements IDisposable
 
 @*
@@ -10,33 +11,33 @@
 @if (Model.Alkalinity > 0)
 {
     <section class="card">
-        <h2>Acidification</h2>
+        <h2>@T["acid.title"]</h2>
 
         <label class="salt-row" style="padding-left:0">
             <input type="checkbox" checked="@Model.AcidEnabled" @onchange="OnEnabledChanged" />
-            <span>Neutralise the alkalinity — @Model.Alkalinity.ToString("F2") meq/L</span>
+            <span>@T.Format("acid.enable", Model.Alkalinity.ToString("F2"))</span>
         </label>
 
         @if (Model.AcidEnabled)
         {
             <div class="field" style="margin-top:var(--grid-gap)">
-                <label for="acid">Acid</label>
+                <label for="acid">@T["acid.acid"]</label>
                 <select id="acid" value="@Model.AcidId" @onchange="OnAcidChanged">
                     @foreach (Acid acid in Acid.All)
                     {
-                        <option value="@acid.Id">@acid.Label</option>
+                        <option value="@acid.Id">@Name(acid)</option>
                     }
                 </select>
             </div>
 
             <div class="field-grid" style="margin-top:var(--grid-gap)">
                 <div class="field">
-                    <label for="ph-water">Water pH</label>
+                    <label for="ph-water">@T["acid.waterPh"]</label>
                     <input id="ph-water" type="number" min="0" max="14" step="0.1"
                            value="@Model.WaterPh" @onchange="OnWaterPhChanged" />
                 </div>
                 <div class="field">
-                    <label for="ph-target">Target pH</label>
+                    <label for="ph-target">@T["acid.targetPh"]</label>
                     <input id="ph-target" type="number" min="0" max="14" step="0.1"
                            value="@Model.TargetPh" @onchange="OnTargetPhChanged" />
                 </div>
@@ -46,15 +47,15 @@
             {
                 <div class="metrics" style="margin-top:8px">
                     <div class="metric">
-                        <div class="label">Acid</div>
+                        <div class="label">@T["acid.metric.volume"]</div>
                         <div class="value">@plan.Millilitres.ToString("F1") <span class="unit">mL</span></div>
                     </div>
                     <div class="metric">
-                        <div class="label">Strength</div>
+                        <div class="label">@T["acid.metric.strength"]</div>
                         <div class="value">@plan.MilliequivalentsPerLitre.ToString("F2") <span class="unit">meq/L</span></div>
                     </div>
                     <div class="metric">
-                        <div class="label">Adds @plan.NutrientSymbol</div>
+                        <div class="label">@T.Format("acid.metric.adds", plan.NutrientSymbol)</div>
                         <div class="value">@plan.NutrientPpm.ToString("F0") <span class="unit">ppm</span></div>
                     </div>
                 </div>
@@ -64,25 +65,28 @@
                     <div class="notice warn" role="status">
                         <Icon Kind="IconKind.Warning" />
                         <span>
-                            <strong>This acid overshoots the @plan.NutrientSymbol target on its own.</strong>
-                            @plan.NutrientPpm.ToString("F0") ppm against a target of
-                            @Model.TargetFields[plan.NutrientSymbol].ToString("F0"). Fertilizer only adds,
-                            so no recipe can bring it back down.
+                            <strong>@T.Format("acid.overshoot.lead", plan.NutrientSymbol)</strong>
+                            @T.Format(
+                                "acid.overshoot.detail",
+                                plan.NutrientPpm.ToString("F0"),
+                                Model.TargetFields[plan.NutrientSymbol].ToString("F0"))
                             @if (Fits() is { } better)
                             {
-                                <text>@better.Label would fit.</text>
+                                @* An entity rather than a space: Razor drops literal whitespace between
+                                   an expression and the block that follows, which ran the two sentences
+                                   together. An entity is markup, so it survives. *@
+                                <text>&#32;@T.Format("acid.overshoot.alternative", Name(better))</text>
                             }
                         </span>
                     </div>
                 }
 
                 <p class="card-note">
-                    The @plan.NutrientSymbol above is deducted from the target, like the water.
-                    Worked for a closed vessel: an open reservoir loses CO₂ and drifts back up, so the
-                    dose you settle on will be nearer the full @Model.Alkalinity.ToString("F2") meq/L.
-                    Each recipe's EC still counts this water's bicarbonate, which the acid removes, so
-                    it reads high once you have acidified — by roughly
-                    @((Model.Alkalinity * 44.5).ToString("F0")) µS/cm.
+                    @T.Format(
+                        "acid.note",
+                        plan.NutrientSymbol,
+                        Model.Alkalinity.ToString("F2"),
+                        (Model.Alkalinity * 44.5).ToString("F0"))
                 </p>
             }
         }
@@ -102,6 +106,11 @@
     /// <summary>Raised after any edit, so the page can recalculate and persist.</summary>
     [Parameter]
     public EventCallback Changed { get; set; }
+
+    // Named by kind with the strength filled in, rather than by the library's own Label: "60%" is
+    // written "%60" in Turkish, and one key per kind is three to translate instead of six.
+    private string Name(Acid acid) =>
+        T.Format($"acid.kind.{acid.Kind}", acid.PercentByWeight.ToString("0.##"));
 
     private bool Overshoots(AcidPlan plan) =>
         Model.TargetFields.TryGetValue(plan.NutrientSymbol, out double target)
