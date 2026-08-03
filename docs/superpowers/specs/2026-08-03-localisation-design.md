@@ -56,11 +56,18 @@ back and reopen the number question in a tool where the output gets weighed on a
 `water.mode.osmosis`, not `"Osmosis"`. Rewording the English then does not orphan seven other
 languages, and a missing key is detectable rather than invisible.
 
-### One JSON file per language, fetched when needed
+### One JSON file per language, embedded in the assembly
 
-`wwwroot/i18n/{lang}.json`, about 10 KB each. Languages nobody selects are never downloaded, so the
-first load does not grow. A correction is a change to a text file and a pull request — no rebuild,
-which matters for translations arriving from people who do not build the app.
+`Resources/{lang}.json`, about 10 KB each, included as `EmbeddedResource` and parsed at startup.
+
+Fetching them from `wwwroot` was the first instinct and is the wrong call here. `Program.cs` records
+that this app has "no HttpClient and no backend of any kind", and a runtime fetch would reintroduce
+both, plus a failure mode — offline, or a 404 — for text that is never going to change while the page
+is open. Eight languages come to roughly 80 KB against an 11 MB payload, so lazy loading buys nothing
+worth a loading state.
+
+Translators still edit JSON rather than C#. The app is rebuilt and deployed by CI on every push, so a
+text-only pull request reaches the site without anyone building anything by hand.
 
 A missing key falls back to English. **A test asserts every language carries every key**; that is the
 test that matters, because the failure it prevents — adding a string and forgetting seven files — is
