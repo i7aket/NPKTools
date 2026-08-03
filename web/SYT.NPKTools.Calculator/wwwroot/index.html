@@ -21,6 +21,13 @@
         <div class="boot">Loading the calculator…</div>
     </div>
 
+    <!--
+        These two, and the boot message above, stay in English. They are the only text on the page the
+        app itself does not render: one shows before the runtime has loaded and the other after it has
+        fallen over, and neither moment has a Translations instance to ask. Localising them would mean
+        a second copy of the words outside the resource files, which is a worse trade than an English
+        line in a state where nothing else works either.
+    -->
     <div id="blazor-error-ui">
         Something went wrong.
         <a href="." class="reload">Reload</a>
