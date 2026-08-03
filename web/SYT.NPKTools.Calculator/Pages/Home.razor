@@ -1,5 +1,6 @@
 @page "/"
 @inject CalculatorModel Model
+@inject Translations T
 
 <PageTitle>NPKTools — fertilizer calculator</PageTitle>
 
@@ -28,11 +29,14 @@
                 </p>
             </details>
 
-            @if (Model.Error is not null)
+            @if (Model.ErrorKey is { } errorKey)
             {
                 <div class="notice error" role="alert">
                     <Icon Kind="IconKind.Error" />
-                    <span><strong>Cannot solve.</strong> @Model.Error</span>
+                    <span>
+                        <strong>@T["target.cannotSolve"]</strong>
+                        @T[errorKey].Replace("{0}", string.Join(", ", Model.UncoveredElements), StringComparison.Ordinal)
+                    </span>
                 </div>
             }
         </section>
