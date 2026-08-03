@@ -877,6 +877,43 @@ makes a translation impossible to do well:
   a translator.
 - **Counts go through `Plural`,** never string concatenation.
 
+#### Ten sentences are currently built from fragments and have to be restructured
+
+Found by capturing the rendered text rather than by reading the markup, which is why it was missed
+when this plan was written. These are not string swaps — each is a sentence whose pieces are
+concatenated around a value, and in at least one of the eight languages the value does not sit where
+English puts it:
+
+| Rendered today | Has to become |
+|---|---|
+| `Element=ppm, separated by spaces.` + `L` + `is the reservoir volume in litres. Paste one from a feed chart, or copy this one out.` | one key, with `L` inside it |
+| `The link` + `carries the whole setup in the address. …` | one key per sentence |
+| `The file` + `is plain JSON you can keep, edit and re-load. …` | one key per sentence |
+| `Concentrate — 1:` + n + `ml of each per litre` | `concentrate.summary` with `{0}` and `{1}` |
+| `Salts you have —` + n + `/` + n | `salts.title` with `{0}` and `{1}` |
+| n + `recipes —` + litres + `L` | `recipes.title`, plural, with `{1}` for litres |
+| `Tank A — 118 g/L, 14 % saturated` | `tank.summary` with `{0}`, `{1}`, `{2}` |
+| `Solubility allows up to 1:` + n | one key with `{0}` |
+| `Target` / `In tank` / `Off by` table headers | fine as they are — single words |
+| `g total`, `ml of each per litre` | fold into the sentence that carries them |
+
+Doing these as fragment-by-fragment replacements would produce eight translations that cannot be
+written correctly, so they are the part of this task to do carefully rather than quickly.
+
+#### Two library messages also reach the screen
+
+Task 6 covers `Error = ex.Message`. The rendered text shows two more coming from the library, both
+from the concentrate plan and both full sentences:
+
+- "Tank B is at 136 % of saturation: its salts together need more water than the tank holds, because
+  they compete for the same water. Use a larger concentrate volume."
+- "Tank B needs 20.3 g/L of 'Calcium Monobasic Phosphate', which dissolves to 18 g/L at 20 °C. Use a
+  larger concentrate volume, or a more soluble source of that element."
+
+They need the same treatment as the error keys: the library keeps its English prose for developers,
+and the app names the condition and writes its own sentence. `ConcentratePlan` exposes the numbers
+already, so nothing needs parsing out of the message.
+
 - [ ] **Step 3: Replace the strings, component by component**
 
 `MainLayout.razor` becomes:
