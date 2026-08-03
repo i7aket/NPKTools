@@ -46,7 +46,7 @@
             </select>
         </div>
 
-        <div class="field-grid" style="margin-top:var(--grid-gap)">
+        <div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
             <div class="field">
                 <label for="w-ec">Meter reading</label>
                 <input id="w-ec" type="number" min="0" step="0.01" value="@Model.WaterEc"
@@ -64,7 +64,7 @@
 
         @if (Model.Mode == WaterInputMode.ConductivityWithTests)
         {
-            <div class="field-grid" style="margin-top:var(--grid-gap)">
+            <div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
                 <div class="field">
                     <label for="w-gh">GH, °dH</label>
                     <input id="w-gh" type="number" min="0" step="0.5" value="@Model.WaterGh"
@@ -86,7 +86,7 @@
         {
             <div class="group-divider">Estimated analysis — not an analysis</div>
             @* Three across, so the six read as two rows rather than four and a stray pair. *@
-            <div class="field-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="field-grid" style="--cols:3">
                 @foreach ((string symbol, double value) in Estimated(estimate))
                 {
                     <div class="field">

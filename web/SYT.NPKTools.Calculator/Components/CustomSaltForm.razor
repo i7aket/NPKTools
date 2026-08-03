@@ -53,7 +53,7 @@
 }
 else
 {
-    <div class="field-grid" style="margin-top:var(--grid-gap); grid-template-columns:repeat(3,1fr)">
+    <div class="field-grid" style="margin-top:var(--grid-gap); --cols:3">
         @foreach (string form in CustomSalt.Forms)
         {
             <div class="field">
@@ -70,7 +70,7 @@ else
     </p>
 }
 
-<div class="field-grid" style="margin-top:var(--grid-gap); grid-template-columns:repeat(2,1fr)">
+<div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
     <div class="field">
         <label for="cs-tank">Concentrate tank</label>
         <select id="cs-tank" value="@_tank" @onchange="OnTankChanged">

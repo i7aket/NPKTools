@@ -3,7 +3,7 @@
     because two implementations of the same grid drift apart within a month.
 *@
 
-<div class="field-grid" style="@(Columns is { } columns ? $"grid-template-columns:repeat({columns},1fr)" : null)">
+<div class="field-grid" style="@(Columns is { } columns ? $"--cols:{columns}" : null)">
     @foreach (string element in Elements)
     {
         <div class="field">
