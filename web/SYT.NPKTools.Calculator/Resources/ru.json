@@ -31,5 +31,10 @@
   "acid.overshoot.alternative": "{0} would fit.",
   "acid.note": "The {0} above is deducted from the target, like the water. Worked for a closed vessel: an open reservoir loses CO₂ and drifts back up, so the dose you settle on will be nearer the full {1} meq/L. Each recipe's EC still counts this water's bicarbonate, which the acid removes, so it reads high once you have acidified — by roughly {2} µS/cm.",
   "notFound.title": "Something went wrong.",
-  "notFound.reload": "Reload"
+  "notFound.reload": "Reload",
+  "error.target.unreadable": "That target cannot be read. Use element=ppm pairs separated by spaces, for example N=150 K=210 L=100.",
+  "error.shelf.empty": "No salts selected. Tick at least one.",
+  "error.recipe.uncovered": "Nothing on the shelf supplies {0}.",
+  "error.recipe.unreachable": "The selected salts cannot reach this target. Add more, or relax it.",
+  "target.cannotSolve": "Cannot solve."
 }

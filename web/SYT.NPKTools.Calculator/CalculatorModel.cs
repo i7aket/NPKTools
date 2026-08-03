@@ -149,10 +149,12 @@ public sealed class CalculatorModel
             catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)
             {
                 Error = ex.Message;
+                ErrorKey = "error.target.unreadable";
                 return;
             }
 
             Error = null;
+            ErrorKey = null;
             Liters = parsed.Liters.Value;
             foreach (string symbol in ElementGroups.All)
             {
@@ -300,6 +302,17 @@ public sealed class CalculatorModel
     /// <summary>The inferred analysis, or null when the water was not estimated.</summary>
     public WaterEstimate? WaterEstimate { get; private set; }
 
+    /// <summary>
+    /// Which failure this is, as a translation key, or null when there is none.
+    /// </summary>
+    /// <remarks>
+    /// Named rather than described, because the library's exception text is written for developers and
+    /// exists only in English. A grower needs a sentence they can act on, in their own language, so the
+    /// app names the condition and writes its own. <see cref="UncoveredElements"/> carries the detail
+    /// the message needs to name.
+    /// </remarks>
+    public string? ErrorKey { get; private set; }
+
     /// <summary>The acid plan, or null when no acid is needed or wanted.</summary>
     public AcidPlan? Acid { get; private set; }
 
@@ -327,6 +340,7 @@ public sealed class CalculatorModel
     {
         HasRun = true;
         Error = null;
+        ErrorKey = null;
         Recipes = [];
         Excesses = [];
         UncoveredElements = [];
@@ -355,6 +369,7 @@ public sealed class CalculatorModel
         catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)
         {
             Error = ex.Message;
+            ErrorKey = "error.target.unreadable";
             Target = null;
             return;
         }
@@ -365,6 +380,7 @@ public sealed class CalculatorModel
         if (shelf.Length == 0)
         {
             Error = "No salts selected. Tick at least one.";
+            ErrorKey = "error.shelf.empty";
             return;
         }
 
@@ -384,6 +400,7 @@ public sealed class CalculatorModel
             Error = UncoveredElements.Count > 0
                 ? $"No recipe: nothing on the shelf supplies {string.Join(", ", UncoveredElements)}."
                 : "No recipe. The selected salts cannot reach this target — try adding more, or relax it.";
+            ErrorKey = UncoveredElements.Count > 0 ? "error.recipe.uncovered" : "error.recipe.unreachable";
             return;
         }
 
