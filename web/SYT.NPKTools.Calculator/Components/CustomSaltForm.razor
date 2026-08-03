@@ -1,4 +1,5 @@
 @inject CalculatorModel Model
+@inject Translations T
 
 @*
     Two ways in. The formula tab covers plain salts and works out the percentages, which also avoids
@@ -7,17 +8,17 @@
     useful — what matters for a chelate is which agent holds the metal, not which atoms are present.
 *@
 
-<div class="segmented" role="group" aria-label="How the salt is described">
+<div class="segmented" role="group" aria-label="@T["salt.form.aria"]">
     <button type="button" class="@(_byFormula ? "on" : null)" @onclick="() => _byFormula = true">
-        By formula
+        @T["salt.form.byFormula"]
     </button>
     <button type="button" class="@(_byFormula ? null : "on")" @onclick="() => _byFormula = false">
-        By percentages
+        @T["salt.form.byPercentages"]
     </button>
 </div>
 
 <div class="field">
-    <label for="cs-name">Name</label>
+    <label for="cs-name">@T["salt.form.name"]</label>
     <input id="cs-name" type="text" value="@_name"
            @onchange="e => _name = e.Value?.ToString() ?? string.Empty" />
 </div>
@@ -25,7 +26,7 @@
 @if (_byFormula)
 {
     <div class="field" style="margin-top:var(--grid-gap)">
-        <label for="cs-formula">Formula</label>
+        <label for="cs-formula">@T["salt.form.formula"]</label>
         <input id="cs-formula" type="text" value="@_formula" placeholder="KNO3, Ca(NO3)2*4H2O"
                @onchange="OnFormulaChanged" />
     </div>
@@ -33,7 +34,10 @@
     @if (_parsed is { } parsed)
     {
         <p class="card-note">
-            M = @parsed.MolarMass.ToString("F2") g/mol — @string.Join(", ", Breakdown(parsed))
+            @T.Format(
+                "salt.form.molarMass",
+                parsed.MolarMass.ToString("F2"),
+                string.Join(", ", Breakdown(parsed)))
         </p>
 
         @if (FormulaComposition.LooksChelated(parsed))
@@ -41,11 +45,8 @@
             <div class="notice warn" role="status">
                 <Icon Kind="IconKind.Warning" />
                 <span>
-                    <strong>This looks like a chelate.</strong>
-                    A chelating agent carries nitrogen that holds the metal rather than feeding the
-                    plant, and a formula cannot tell the two apart — entered this way the salt would
-                    offer nitrogen it does not have. Describe it by percentages instead, where the
-                    agent is named.
+                    <strong>@T["salt.form.chelate.lead"]</strong>
+                    @T["salt.form.chelate.body"]
                 </span>
             </div>
         }
@@ -64,27 +65,29 @@ else
             </div>
         }
     </div>
-    <p class="card-note">
-        Percentages by weight, as on the label — but as elements, not oxides. A bag quoting P₂O₅ or
-        K₂O needs converting first: divide by 2.29 for phosphorus, by 1.20 for potassium.
-    </p>
+    <p class="card-note">@T["salt.form.percentages.note"]</p>
 }
 
 <div class="field-grid" style="margin-top:var(--grid-gap); --cols:2">
     <div class="field">
-        <label for="cs-tank">Concentrate tank</label>
+        <label for="cs-tank">@T["salt.form.tank"]</label>
         <select id="cs-tank" value="@_tank" @onchange="OnTankChanged">
-            <option value="@ConcentrateType.A">A — with calcium</option>
-            <option value="@ConcentrateType.B">B — with sulfates and phosphates</option>
+            <option value="@ConcentrateType.A">@T["salt.form.tank.a"]</option>
+            <option value="@ConcentrateType.B">@T["salt.form.tank.b"]</option>
         </select>
     </div>
     <div class="field">
-        <label for="cs-sol">Solubility, g/L — optional</label>
+        <label for="cs-sol">@T["salt.form.solubility"]</label>
         <input id="cs-sol" type="number" min="0" step="1" value="@_solubility"
                @onchange="OnSolubilityChanged" />
     </div>
 </div>
 
+@*
+    Still English: this comes from the formula parser and from TryAddCustomSalt, which describe nine
+    different failures in prose written for developers. They need reason codes before the app can write
+    its own sentences — the same change the concentrate warnings need, and its own piece of work.
+*@
 @if (_error is not null)
 {
     <div class="notice error" role="alert">
@@ -94,8 +97,8 @@ else
 }
 
 <div class="button-row">
-    <button @onclick="Save">Add salt</button>
-    <button class="secondary" @onclick="() => Cancelled.InvokeAsync()">Cancel</button>
+    <button @onclick="Save">@T["salts.add"]</button>
+    <button class="secondary" @onclick="() => Cancelled.InvokeAsync()">@T["salt.form.cancel"]</button>
 </div>
 
 @code {

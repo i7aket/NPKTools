@@ -888,10 +888,10 @@ Task 4 is being landed one component per pull request, because the check that ma
 | `Pages/Home.razor` | #25 | done |
 | `Components/WaterPanel.razor` | #27 | done |
 | `Components/AcidPanel.razor`, `Pages/NotFound.razor` | #29 | done |
-| `Components/StoragePanel.razor` | — | to do |
-| `Components/CustomSaltForm.razor` | — | to do |
+| `Components/StoragePanel.razor` | #30 | done |
+| `Components/CustomSaltForm.razor` | #31 | done, apart from its error notice |
 | `Components/RecipeCard.razor` | — | to do, the largest |
-| The two library concentrate sentences | — | to do, needs a library change — see below |
+| Library prose that still reaches the screen | — | to do, needs a library change — see below |
 
 **Capture the rendered text with `innerText`, per component, in every state the component has.** Three
 capture methods were tried and only the third is honest: a text-node walk invents a space where two
@@ -926,7 +926,7 @@ Library prose that reaches the screen is keyed by **id**, never by the library's
 six acids, so Turkish can write `%60`). Each has a test that fails if the library gains an entry the
 resource files do not name.
 
-#### The two library concentrate sentences need the library to expose numbers
+#### Library prose that still reaches the screen needs reason codes, not sentences
 
 `ConcentrateWarning` carries `Kind`, `Tank`, `Fertilizers` and `Message` — the numbers in the message
 are formatted into it and not otherwise available, so the app cannot write its own sentence from what
@@ -938,8 +938,18 @@ it is given:
 The library already computes both figures. Add them to the record — `double? Actual` and
 `double? Allowed`, null for the kinds that have no numbers — and the app writes both sentences from
 `Kind`, `Tank`, `Fertilizers`, `Actual` and `Allowed`. `Message` stays as it is for developers and for
-anyone using the library directly. This is a library change with its own tests, so it is its own pull
-request and should come after `RecipeCard`'s own strings rather than inside that work.
+anyone using the library directly.
+
+The custom salt form has the same problem and more of it: its error notice comes from
+`ChemicalFormula.TryParse`, which describes nine different failures in prose — two of them with a
+character and a position interpolated in — and from `TryAddCustomSalt`, which adds a duplicate name.
+Those need the same treatment: a reason the caller can name, with the offending value beside it, and
+the app writes the sentence.
+
+All of this is one library change with its own tests, so it is its own pull request and should come
+after `RecipeCard`'s own strings rather than inside that work. Every one of these paths is a notice
+shown to a grower who has just made a mistake, which is the worst moment to hand them a language they
+do not read.
 
 #### Ten sentences are currently built from fragments and have to be restructured
 
