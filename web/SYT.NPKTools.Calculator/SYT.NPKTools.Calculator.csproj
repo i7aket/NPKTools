@@ -26,4 +26,14 @@
     <ProjectReference Include="..\..\src\SYT.NPKTools\SYT.NPKTools.csproj" />
   </ItemGroup>
 
+
+  <!--
+    Translations are embedded rather than served from wwwroot: this app has no HttpClient on purpose,
+    and a runtime fetch would add an offline failure mode for text that cannot change while the page
+    is open.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+
 </Project>

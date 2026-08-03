@@ -1,0 +1,9 @@
+{
+  "app.name": "NPKTools",
+  "app.brand": "Green Secrets",
+  "app.language": "Interface language",
+  "recipes.count": {
+    "one": "{0} recipe",
+    "other": "{0} recipes"
+  }
+}
