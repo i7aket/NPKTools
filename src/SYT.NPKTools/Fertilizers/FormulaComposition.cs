@@ -20,7 +20,7 @@ public static class FormulaComposition
     /// <param name="formula">The chemical formula.</param>
     /// <param name="type">Which concentrate tank the salt belongs in.</param>
     /// <param name="fertilizer">The result, or null when the formula could not be read.</param>
-    /// <param name="error">What went wrong, or null on success.</param>
+    /// <param name="problem">What went wrong, or null on success.</param>
     /// <returns><see langword="true"/> when the fertilizer was built.</returns>
     /// <remarks>
     /// Metals are recorded as non-chelated. A formula spells out atoms, and a chelate is defined by
@@ -32,17 +32,18 @@ public static class FormulaComposition
         string formula,
         ConcentrateType type,
         out Fertilizer? fertilizer,
-        out string? error)
+        out FormulaProblem? problem)
     {
         fertilizer = null;
+        problem = null;
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            error = "The salt needs a name.";
+            problem = new(FormulaProblemKind.NameMissing, "The salt needs a name.");
             return false;
         }
 
-        if (!ChemicalFormula.TryParse(formula, out ChemicalFormula? parsed, out error))
+        if (!ChemicalFormula.TryParse(formula, out ChemicalFormula? parsed, out problem))
         {
             return false;
         }
@@ -72,7 +73,6 @@ public static class FormulaComposition
         Set(builder.AddNa, parsed.PercentOf(Names.Na));
 
         fertilizer = builder.Build();
-        error = null;
         return true;
     }
 

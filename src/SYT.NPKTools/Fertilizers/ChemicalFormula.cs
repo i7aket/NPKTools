@@ -93,7 +93,7 @@ public sealed class ChemicalFormula
     /// </summary>
     /// <param name="text">The formula, for example <c>Ca(NO₃)2*4H₂O</c>.</param>
     /// <param name="formula">The parsed formula, or null when it could not be read.</param>
-    /// <param name="error">What went wrong and where, or null on success.</param>
+    /// <param name="problem">What went wrong and where, or null on success.</param>
     /// <returns><see langword="true"/> when the formula was read.</returns>
     /// <remarks>
     /// Accepts element symbols, plain and Unicode subscripts — the catalogue mixes them within a
@@ -101,14 +101,14 @@ public sealed class ChemicalFormula
     /// <c>·</c>. Anything else is refused: guessing would produce a fertilizer that is confidently
     /// wrong, which is worse than one that is rejected.
     /// </remarks>
-    public static bool TryParse(string? text, out ChemicalFormula? formula, out string? error)
+    public static bool TryParse(string? text, out ChemicalFormula? formula, out FormulaProblem? problem)
     {
         formula = null;
-        error = null;
+        problem = null;
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            error = "The formula is empty.";
+            problem = new(FormulaProblemKind.Empty, "The formula is empty.");
             return false;
         }
 
@@ -135,7 +135,9 @@ public sealed class ChemicalFormula
             {
                 if (part == 0)
                 {
-                    error = "A formula cannot start with a number.";
+                    problem = new(
+                        FormulaProblemKind.StartsWithNumber,
+                        "A formula cannot start with a number.");
                     return false;
                 }
 
@@ -143,7 +145,7 @@ public sealed class ChemicalFormula
                 body = body[digits..];
             }
 
-            if (!ParseGroup(body, multiplier, atoms, ref nitrate, ref ammonium, ref amide, out error))
+            if (!ParseGroup(body, multiplier, atoms, ref nitrate, ref ammonium, ref amide, out problem))
             {
                 return false;
             }
@@ -151,7 +153,7 @@ public sealed class ChemicalFormula
 
         if (atoms.Count == 0)
         {
-            error = "The formula names no elements.";
+            problem = new(FormulaProblemKind.NoElements, "The formula names no elements.");
             return false;
         }
 
@@ -184,16 +186,18 @@ public sealed class ChemicalFormula
         ref double nitrate,
         ref double ammonium,
         ref double amide,
-        out string? error)
+        out FormulaProblem? problem)
     {
-        error = null;
+        problem = null;
         int index = 0;
 
         while (index < body.Length)
         {
             if (body[index] == ')')
             {
-                error = "A closing bracket has nothing to close.";
+                problem = new(
+                    FormulaProblemKind.UnmatchedClosingBracket,
+                    "A closing bracket has nothing to close.");
                 return false;
             }
 
@@ -209,7 +213,7 @@ public sealed class ChemicalFormula
 
                 if (depth != 0)
                 {
-                    error = "A bracket is not closed.";
+                    problem = new(FormulaProblemKind.UnclosedBracket, "A bracket is not closed.");
                     return false;
                 }
 
@@ -221,7 +225,7 @@ public sealed class ChemicalFormula
                 double groupNitrate = 0;
                 double groupAmmonium = 0;
                 double groupAmide = 0;
-                if (!ParseGroup(inner, 1, group, ref groupNitrate, ref groupAmmonium, ref groupAmide, out error))
+                if (!ParseGroup(inner, 1, group, ref groupNitrate, ref groupAmmonium, ref groupAmide, out problem))
                 {
                     return false;
                 }
@@ -250,7 +254,11 @@ public sealed class ChemicalFormula
 
             if (!char.IsAsciiLetterUpper(body[index]))
             {
-                error = $"Unexpected '{body[index]}' at position {index + 1}.";
+                problem = new(
+                    FormulaProblemKind.UnexpectedCharacter,
+                    $"Unexpected '{body[index]}' at position {index + 1}.",
+                    body[index].ToString(),
+                    index + 1);
                 return false;
             }
 
@@ -264,7 +272,10 @@ public sealed class ChemicalFormula
             string element = body[start..index];
             if (!Masses.ContainsKey(element))
             {
-                error = $"'{element}' is not an element this calculator knows.";
+                problem = new(
+                    FormulaProblemKind.UnknownElement,
+                    $"'{element}' is not an element this calculator knows.",
+                    element);
                 return false;
             }
 

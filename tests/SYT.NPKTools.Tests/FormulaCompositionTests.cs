@@ -18,9 +18,9 @@ public class FormulaCompositionTests
     {
         bool created = FormulaComposition.TryCreate(
             "My potassium nitrate", "KNO3", ConcentrateType.A,
-            out Fertilizer? salt, out string? error);
+            out Fertilizer? salt, out FormulaProblem? problem);
 
-        created.Should().BeTrue(because: error);
+        created.Should().BeTrue(because: problem?.ToString());
         salt!.Name.Value.Should().Be("My potassium nitrate");
         salt.Formula.Value.Should().Be("KNO3");
         salt.Potassium.Value.Should().BeApproximately(38.672, 0.02);
@@ -67,10 +67,10 @@ public class FormulaCompositionTests
     public void TryCreate_ForANonsenseFormula_Fails()
     {
         FormulaComposition.TryCreate("Nonsense", "Zz9", ConcentrateType.A,
-            out Fertilizer? salt, out string? error).Should().BeFalse();
+            out Fertilizer? salt, out FormulaProblem? problem).Should().BeFalse();
 
         salt.Should().BeNull();
-        error.Should().NotBeNullOrWhiteSpace();
+        problem.Should().NotBeNull();
     }
 
     /// <summary>
@@ -80,10 +80,10 @@ public class FormulaCompositionTests
     [Trait("Category", "Unit")]
     public void TryCreate_WithoutAName_Fails()
     {
-        FormulaComposition.TryCreate("  ", "KNO3", ConcentrateType.A, out _, out string? error)
+        FormulaComposition.TryCreate("  ", "KNO3", ConcentrateType.A, out _, out FormulaProblem? problem)
             .Should().BeFalse();
 
-        error.Should().NotBeNullOrWhiteSpace();
+        problem.Should().NotBeNull();
     }
 
     /// <summary>
@@ -119,8 +119,8 @@ public class FormulaCompositionTests
     [Trait("Category", "Unit")]
     public void LooksChelated_FlagsAnOrganicLigandHoldingAMetal(string formula, bool expected)
     {
-        ChemicalFormula.TryParse(formula, out ChemicalFormula? parsed, out string? error)
-            .Should().BeTrue(because: error);
+        ChemicalFormula.TryParse(formula, out ChemicalFormula? parsed, out FormulaProblem? problem)
+            .Should().BeTrue(because: problem?.ToString());
 
         FormulaComposition.LooksChelated(parsed!).Should().Be(expected);
     }

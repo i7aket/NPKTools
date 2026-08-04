@@ -71,11 +71,11 @@ public sealed class CalculatorModel
     /// and unticked together, and one of them would ride silently into every recipe meant for the
     /// other.
     /// </remarks>
-    public bool TryAddCustomSalt(CustomSalt salt, out string? error)
+    public bool TryAddCustomSalt(CustomSalt salt, out SaltProblem? problem)
     {
         ArgumentNullException.ThrowIfNull(salt);
 
-        if (!salt.TryMaterialise(out Fertilizer? built, out error))
+        if (!salt.TryMaterialise(out Fertilizer? built, out problem))
         {
             return false;
         }
@@ -83,14 +83,14 @@ public sealed class CalculatorModel
         string name = built!.Name.Value;
         if (Catalogue.Any(f => string.Equals(f.Name.Value, name, StringComparison.OrdinalIgnoreCase)))
         {
-            error = $"There is already a salt called '{name}'. Pick another name.";
+            problem = new("salt.error.duplicateName", name);
             return false;
         }
 
         _customSalts.Add(salt);
         _materialised.Add(built);
         Selected.Add(name);
-        error = null;
+        problem = null;
         return true;
     }
 

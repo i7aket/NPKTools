@@ -22,7 +22,7 @@ public class CustomSaltShelfTests
         CalculatorModel model = new();
         int before = model.Catalogue.Count;
 
-        model.TryAddCustomSalt(Kno3(), out string? error).Should().BeTrue(because: error);
+        model.TryAddCustomSalt(Kno3(), out SaltProblem? problem).Should().BeTrue(because: problem?.ToString());
 
         model.Catalogue.Should().HaveCount(before + 1);
         model.Selected.Should().Contain("Shop KNO3");
@@ -40,10 +40,11 @@ public class CustomSaltShelfTests
         string existing = model.Catalogue[0].Name.Value;
 
         model.TryAddCustomSalt(
-            new CustomSalt { Name = existing, Formula = "KNO3" }, out string? error)
+            new CustomSalt { Name = existing, Formula = "KNO3" }, out SaltProblem? problem)
             .Should().BeFalse();
 
-        error.Should().Contain(existing);
+        problem!.Key.Should().Be("salt.error.duplicateName");
+        problem.Values.Should().Equal(existing);
     }
 
     /// <summary>
@@ -56,8 +57,8 @@ public class CustomSaltShelfTests
         CalculatorModel model = new();
         model.TryAddCustomSalt(Kno3(), out _).Should().BeTrue();
 
-        model.TryAddCustomSalt(Kno3(), out string? error).Should().BeFalse();
-        error.Should().NotBeNullOrWhiteSpace();
+        model.TryAddCustomSalt(Kno3(), out SaltProblem? problem).Should().BeFalse();
+        problem.Should().NotBeNull();
     }
 
     /// <summary>
@@ -75,7 +76,7 @@ public class CustomSaltShelfTests
         model.Recipes.Should().NotBeEmpty(because: "the untouched shelf solves the starter target");
 
         model.Selected.Remove("Potassium Nitrate");
-        model.TryAddCustomSalt(Kno3(), out string? error).Should().BeTrue(because: error);
+        model.TryAddCustomSalt(Kno3(), out SaltProblem? problem).Should().BeTrue(because: problem?.ToString());
         model.Recalculate();
 
         model.Recipes.Should().NotBeEmpty(because: model.Error);
@@ -110,9 +111,9 @@ public class CustomSaltShelfTests
         CalculatorModel model = new();
 
         model.TryAddCustomSalt(
-            new CustomSalt { Name = "Bad", Formula = "Zz9" }, out string? error).Should().BeFalse();
+            new CustomSalt { Name = "Bad", Formula = "Zz9" }, out SaltProblem? problem).Should().BeFalse();
 
-        error.Should().NotBeNullOrWhiteSpace();
+        problem.Should().NotBeNull();
         model.CustomSalts.Should().BeEmpty();
     }
 

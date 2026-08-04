@@ -889,9 +889,10 @@ Task 4 is being landed one component per pull request, because the check that ma
 | `Components/WaterPanel.razor` | #27 | done |
 | `Components/AcidPanel.razor`, `Pages/NotFound.razor` | #29 | done |
 | `Components/StoragePanel.razor` | #30 | done |
-| `Components/CustomSaltForm.razor` | #31 | done, apart from its error notice |
+| `Components/CustomSaltForm.razor` | #31, #33 | done, notices included |
 | `Components/RecipeCard.razor` | #32 | done, apart from `warning.Message` |
-| Library prose that still reaches the screen | — | to do, needs a library change — see below |
+| Formula and salt failures → named reasons | #33 | done |
+| The two concentrate warning messages | — | to do, same shape — see below |
 
 **Capture the rendered text with `innerText`, per component, in every state the component has.** Three
 capture methods were tried and only the third is honest: a text-node walk invents a space where two

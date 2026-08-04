@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using SYT.NPKTools.Fertilizers;
 
@@ -44,15 +45,16 @@ public sealed class CustomSalt
     /// Builds the fertilizer this describes.
     /// </summary>
     /// <param name="fertilizer">The result, or null when the description is unusable.</param>
-    /// <param name="error">What is wrong with the description, or null on success.</param>
+    /// <param name="problem">What is wrong with the description, or null on success.</param>
     /// <returns><see langword="true"/> when a fertilizer was built.</returns>
-    public bool TryMaterialise(out Fertilizer? fertilizer, out string? error)
+    public bool TryMaterialise(out Fertilizer? fertilizer, out SaltProblem? problem)
     {
         fertilizer = null;
+        problem = null;
 
         if (string.IsNullOrWhiteSpace(Name))
         {
-            error = "The salt needs a name.";
+            problem = new("salt.error.NameMissing");
             return false;
         }
 
@@ -60,19 +62,26 @@ public sealed class CustomSalt
         // one the form fills in for itself.
         if (!string.IsNullOrWhiteSpace(Formula))
         {
-            return FormulaComposition.TryCreate(Name, Formula, Tank, out fertilizer, out error);
+            if (FormulaComposition.TryCreate(
+                    Name, Formula, Tank, out fertilizer, out FormulaProblem? formula))
+            {
+                return true;
+            }
+
+            problem = SaltProblem.From(formula!);
+            return false;
         }
 
         double total = Percentages.Values.Sum();
         if (total <= 0)
         {
-            error = "The salt carries no nutrients, so no target can use it.";
+            problem = new("salt.error.noNutrients");
             return false;
         }
 
         if (total > 100)
         {
-            error = $"The percentages add up to {total:F1}, which is more than 100.";
+            problem = new("salt.error.percentagesOver100", total.ToString("F1", CultureInfo.InvariantCulture));
             return false;
         }
 
@@ -85,13 +94,12 @@ public sealed class CustomSalt
         {
             if (!Apply(builder, form, percent))
             {
-                error = $"'{form}' is not a nutrient form this calculator knows.";
+                problem = new("salt.error.unknownForm", form);
                 return false;
             }
         }
 
         fertilizer = builder.Build();
-        error = null;
         return true;
     }
 
