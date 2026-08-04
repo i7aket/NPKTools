@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using SYT.NPKTools.Calculator.Localisation;
+using SYT.NPKTools.Concentrates;
 using SYT.NPKTools.Nutrients;
 using Xunit;
 
@@ -202,6 +203,43 @@ public class TranslationsTests
         Translations t = new();
 
         t.Format("storage.msg.loaded", "feed-chart.json").Should().Be("Loaded feed-chart.json.");
+    }
+
+    /// <summary>
+    /// Every kind of concentrate warning has words in the interface.
+    /// </summary>
+    /// <remarks>
+    /// Two of the four — a precipitation risk, and a tank the library had to infer — could not be
+    /// provoked in a browser, so this is what stands behind them. It also catches a kind added to the
+    /// library and not to the resource files, which would reach the screen as its key.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EveryConcentrateWarningKind_HasWords()
+    {
+        Translations t = new();
+
+        foreach (ConcentrateWarningKind kind in Enum.GetValues<ConcentrateWarningKind>())
+        {
+            t[$"concentrate.warn.{kind}"].Should().NotBe($"concentrate.warn.{kind}");
+        }
+    }
+
+    /// <summary>
+    /// A recipe of one salt says "1 salt", which the markup it replaced could not.
+    /// </summary>
+    /// <remarks>
+    /// The count was interpolated into a fixed plural before — "1 salts" — so this is a small fix
+    /// rather than only a move behind a key.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void Plural_CountsSalts()
+    {
+        Translations t = new();
+
+        t.Plural("recipe.salts", 1).Should().Be("1 salt");
+        t.Plural("recipe.salts", 6).Should().Be("6 salts");
     }
 
     /// <summary>
