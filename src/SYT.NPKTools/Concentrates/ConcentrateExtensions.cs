@@ -118,7 +118,9 @@ public static class ConcentrateExtensions
                     [c.Fertilizer.Name.Value],
                     $"Tank {tank.Tank} needs {c.GramsPerLiter:F1} g/L of '{c.Fertilizer.Name.Value}', "
                         + $"which dissolves to {c.SolubilityLimit:F0} g/L at 20 °C. Use a larger "
-                        + "concentrate volume, or a more soluble source of that element.")));
+                        + "concentrate volume, or a more soluble source of that element.",
+                    c.GramsPerLiter,
+                    c.SolubilityLimit)));
 
             if (tank.IsSaturated)
             {
@@ -128,7 +130,9 @@ public static class ConcentrateExtensions
                     [.. tank.Components.Select(c => c.Fertilizer.Name.Value)],
                     $"Tank {tank.Tank} is at {tank.SaturationFraction:P0} of saturation: its salts "
                         + "together need more water than the tank holds, because they compete for the "
-                        + "same water. Use a larger concentrate volume."));
+                        + "same water. Use a larger concentrate volume.",
+                    tank.SaturationFraction,
+                    1));
             }
 
             maxRatio = Smaller(maxRatio, CeilingFor(tank, solution.WaterLiters));

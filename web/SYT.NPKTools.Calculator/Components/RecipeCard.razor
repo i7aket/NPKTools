@@ -171,7 +171,7 @@
                 <div class="notice @(warning.Kind == ConcentrateWarningKind.TankInferred ? "info" : "error")"
                      role="@(warning.Kind == ConcentrateWarningKind.TankInferred ? "status" : "alert")">
                     <Icon Kind="@(warning.Kind == ConcentrateWarningKind.TankInferred ? IconKind.Info : IconKind.Error)" />
-                    <span><strong>@T[$"concentrate.warn.{warning.Kind}"].</strong> @warning.Message</span>
+                    <span><strong>@T[$"concentrate.warn.{warning.Kind}"].</strong> @Explain(T, warning)</span>
                 </div>
             }
         </details>
@@ -234,6 +234,35 @@
         yield return ("N:S", r.NitrogenToSulfur);
         yield return ("N:P", r.NitrogenToPhosphorus);
     }
+
+    // The library describes these in prose written for a developer; the numbers behind the prose are on
+    // the record, so the sentence is written here instead. ConcentrateWarning.Message stays for logs.
+    private static string Explain(Translations t, ConcentrateWarning warning) => warning.Kind switch
+    {
+        ConcentrateWarningKind.SolubilityExceeded => t.Format(
+            "concentrate.warn.SolubilityExceeded.detail",
+            warning.Tank.ToString(),
+            warning.Actual?.ToString("F1") ?? "?",
+            warning.Fertilizers.Count > 0 ? warning.Fertilizers[0] : "?",
+            warning.Allowed?.ToString("F0") ?? "?"),
+
+        ConcentrateWarningKind.TankSaturated => t.Format(
+            "concentrate.warn.TankSaturated.detail",
+            warning.Tank.ToString(),
+            warning.Actual?.ToString("P0") ?? "?"),
+
+        // Both groups of salts in one list. The library keeps them apart because it knows which is
+        // which; a grower is being told to move one group, and the names are what they act on.
+        ConcentrateWarningKind.PrecipitationRisk => t.Format(
+            "concentrate.warn.PrecipitationRisk.detail",
+            warning.Tank.ToString(),
+            string.Join(", ", warning.Fertilizers)),
+
+        _ => t.Format(
+            "concentrate.warn.TankInferred.detail",
+            warning.Fertilizers.Count > 0 ? warning.Fertilizers[0] : "?",
+            warning.Tank.ToString()),
+    };
 
     // One key per whole line rather than a stem plus an ending: "saturation unknown" is not a
     // sentence a translator can append to a phrase that ends in a unit.

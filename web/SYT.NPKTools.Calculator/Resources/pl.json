@@ -155,6 +155,10 @@
   "concentrate.warn.SolubilityExceeded": "Will not dissolve",
   "concentrate.warn.TankSaturated": "Tank saturated",
   "concentrate.warn.TankInferred": "Tank inferred",
+  "concentrate.warn.SolubilityExceeded.detail": "Tank {0} needs {1} g/L of '{2}', which dissolves to {3} g/L at 20 °C. Use a larger concentrate volume, or a more soluble source of that element.",
+  "concentrate.warn.TankSaturated.detail": "Tank {0} is at {1} of saturation: its salts together need more water than the tank holds, because they compete for the same water. Use a larger concentrate volume.",
+  "concentrate.warn.PrecipitationRisk.detail": "Tank {0} holds calcium together with sulfate or phosphate ({1}). These precipitate at concentrate strength even though they stay dissolved at working strength. Move one group to the other tank.",
+  "concentrate.warn.TankInferred.detail": "'{0}' has no tank of its own, so tank {1} was chosen from what it contains.",
   "recipes.empty.noRun": "Enter a target and the calculator will work out the recipes.",
   "recipes.empty.none": "No recipe for this combination. See the message on the left.",
   "recipes.title": {

@@ -44,9 +44,26 @@ public enum ConcentrateWarningKind
 /// <param name="Kind">What sort of problem this is.</param>
 /// <param name="Tank">The tank it concerns.</param>
 /// <param name="Fertilizers">The fertilizers involved, so a caller can point at them.</param>
-/// <param name="Message">A description suitable for showing to a person.</param>
+/// <param name="Message">English prose, for a developer reading a log.</param>
+/// <param name="Actual">
+/// The figure that is wrong, for the kinds that have one: grams per litre needed for
+/// <see cref="ConcentrateWarningKind.SolubilityExceeded"/>, the fraction of saturation for
+/// <see cref="ConcentrateWarningKind.TankSaturated"/>. Null for the kinds that carry no number.
+/// </param>
+/// <param name="Allowed">
+/// What that figure may be — grams per litre that dissolve, or 1 for a full tank. Null when
+/// <paramref name="Actual"/> is.
+/// </param>
+/// <remarks>
+/// <see cref="Message"/> is prose and cannot be translated by whoever shows it. The kind, the tank, the
+/// fertilizers and the two figures are the same information as data, so an application can write the
+/// sentence in the language of the person reading it — which for these warnings is somebody deciding
+/// whether their concentrate will physically dissolve.
+/// </remarks>
 public sealed record ConcentrateWarning(
     ConcentrateWarningKind Kind,
     ConcentrateType Tank,
     IReadOnlyList<string> Fertilizers,
-    string Message);
+    string Message,
+    double? Actual = null,
+    double? Allowed = null);

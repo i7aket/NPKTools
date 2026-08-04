@@ -355,6 +355,67 @@ public class ConcentrateTests
     }
 
     /// <summary>
+    /// A warning about solubility carries the two figures its sentence needs, not only a sentence.
+    /// </summary>
+    /// <remarks>
+    /// The prose stays for logs. An application showing this to somebody deciding whether their
+    /// concentrate will dissolve has to write the sentence in their language, and cannot do that from
+    /// prose — so the grams per litre needed and the grams per litre that dissolve are on the record.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void AsConcentrate_WhenASaltCannotDissolve_CarriesTheFigures()
+    {
+        // Calcium monobasic phosphate dissolves to 18 g/L, the lowest figure in the table, so a
+        // modest weight in a modest volume is over it several times.
+        Fertilizer phosphate = new FertilizerBuilder()
+            .AddName("Calcium Monobasic Phosphate")
+            .AddType(ConcentrateType.B)
+            .AddP(23.5).AddCaNonChelated(15.9)
+            .AddWeight(20)
+            .Build();
+        Solution solution = new([phosphate], waterLiters: 100);
+
+        ConcentratePlan plan = solution.AsConcentrate(concentrateLiters: 0.5);
+
+        ConcentrateWarning warning = plan.Warnings
+            .Should().ContainSingle(w => w.Kind == ConcentrateWarningKind.SolubilityExceeded).Subject;
+        warning.Actual.Should().BeApproximately(40, Precision);
+        warning.Allowed.Should().Be(18);
+    }
+
+    /// <summary>
+    /// A saturated tank carries the fraction it is saturated to, and what a full tank would be.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void AsConcentrate_WhenATankIsSaturated_CarriesTheFraction()
+    {
+        // Both named as the solubility table names them, so both have a figure and the tank can be
+        // judged saturated at all: 111 g/L for the sulfate, 226 for the phosphate.
+        Fertilizer sulfate = new FertilizerBuilder()
+            .AddName("Potassium Sulfate (SOP)")
+            .AddType(ConcentrateType.B)
+            .AddK(44.87).AddS(18.4)
+            .AddWeight(40)
+            .Build();
+        Fertilizer phosphate = new FertilizerBuilder()
+            .AddName("Potassium Dihydrogen Phosphate (MKP)")
+            .AddType(ConcentrateType.B)
+            .AddP(22.76).AddK(28.73)
+            .AddWeight(40)
+            .Build();
+        Solution solution = new([sulfate, phosphate], waterLiters: 100);
+
+        ConcentratePlan plan = solution.AsConcentrate(concentrateLiters: 0.5);
+
+        ConcentrateWarning warning = plan.Warnings
+            .Should().ContainSingle(w => w.Kind == ConcentrateWarningKind.TankSaturated).Subject;
+        warning.Actual.Should().BeGreaterThan(1);
+        warning.Allowed.Should().Be(1);
+    }
+
+    /// <summary>
     /// Guards the extension against a null receiver, which a caller can reach through an explicit
     /// static invocation.
     /// </summary>

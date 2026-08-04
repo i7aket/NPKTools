@@ -38,6 +38,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   collapsed, and is still what links and files carry — so a typo in it no longer destroys the target.
 - Links carry the water and acid settings. Existing links keep working.
 
+- `ConcentrateWarning` carries the two figures behind its message — `Actual` and `Allowed`: the grams
+  per litre a salt needs against the grams per litre that dissolve, or how far past full a tank is.
+  `Message` is unchanged. Both are optional parameters at the end of the record, so existing source
+  keeps compiling; a caller recompiling against a new build is the intended path.
 - **Breaking, `SYT.NPKTools`.** `ChemicalFormula.TryParse` and `FormulaComposition.TryCreate` report a
   `FormulaProblem` rather than a `string`: which failure it is, the offending character or symbol, and
   where it is. The English prose is still there as `FormulaProblem.Message`, for a developer reading a
