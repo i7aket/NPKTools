@@ -1,3 +1,5 @@
+@inject Translations T
+
 @*
     One recipe: what to weigh, what it produces, and how to store it.
 
@@ -10,17 +12,18 @@
 
     <div class="recipe-head">
         <span class="n">#@Number</span>
-        <strong>@Recipe.Mix.Count salts</strong>
-        <span class="omits">@Recipe.Mix.Sum(f => f.Weight.Value).ToString("F1") g total</span>
+        <strong>@T.Plural("recipe.salts", Recipe.Mix.Count)</strong>
+        <span class="omits">@T.Format("recipe.gramsTotal", Recipe.Mix.Sum(f => f.Weight.Value).ToString("F1"))</span>
     </div>
 
     <div class="table-scroll"><table>
             <thead>
                 <tr>
-                    <th scope="col">Salt</th>
-                    <th scope="col">Grams</th>
+                    <th scope="col">@T["recipe.th.salt"]</th>
+                    <th scope="col">@T["recipe.th.grams"]</th>
+                    @* g/L, mM and meq/L stay as they are: a unit is written the same in all eight. *@
                     <th scope="col">g/L</th>
-                    <th scope="col">Tank</th>
+                    <th scope="col">@T["recipe.th.tank"]</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +39,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td>Total</td>
+                    <td>@T["recipe.total"]</td>
                     <td>@Recipe.Mix.Sum(f => f.Weight.Value).ToString("F2")</td>
                     <td colspan="2"></td>
                 </tr>
@@ -45,14 +48,14 @@
 
     @* ------------------------------------------------------------------ achieved vs target *@
     <details style="margin-top:8px">
-        <summary>In the reservoir — salts plus source water</summary>
+        <summary>@T["recipe.inReservoir"]</summary>
         <div class="table-scroll" style="margin-top:6px"><table>
                 <thead>
                     <tr>
-                        <th scope="col">Element</th>
-                        <th scope="col">Target</th>
-                        <th scope="col">In tank</th>
-                        <th scope="col">Off by</th>
+                        <th scope="col">@T["recipe.th.element"]</th>
+                        <th scope="col">@T["recipe.th.target"]</th>
+                        <th scope="col">@T["recipe.th.inTank"]</th>
+                        <th scope="col">@T["recipe.th.offBy"]</th>
                         <th scope="col">mM</th>
                         <th scope="col">meq/L</th>
                     </tr>
@@ -86,11 +89,11 @@
             <div class="value">@Recipe.Conductivity.AsTdsPpm().ToString("F0") <span class="unit">ppm</span></div>
         </div>
         <div class="metric">
-            <div class="label">Acid added</div>
+            <div class="label">@T["recipe.metric.acidAdded"]</div>
             <div class="value">@Recipe.Ions.AcidEquivalents.ToString("+0.00;-0.00;0.00") <span class="unit">meq/L</span></div>
         </div>
         <div class="metric">
-            <div class="label">Ions</div>
+            <div class="label">@T["recipe.metric.ions"]</div>
             <div class="value">@Recipe.Ions.Total.ToString("F1") <span class="unit">meq/L</span></div>
         </div>
     </div>
@@ -107,8 +110,7 @@
         <div class="notice warn" role="status">
             <Icon Kind="IconKind.Warning" />
             <span>
-                <strong>EC out of range.</strong> This solution is stronger than the reference solutions the
-                EC model was checked against, so treat the figure as an ordering rather than a measurement.
+                <strong>@T["recipe.ecRange.lead"]</strong> @T["recipe.ecRange.body"]
             </span>
         </div>
     }
@@ -118,8 +120,10 @@
     {
         <details style="margin-top:8px" open="@plan.HasWarnings">
             <summary>
-                Concentrate — 1:@plan.DilutionRatio.ToString("F0"),
-                @plan.MillilitresPerLiter.ToString("F1") ml of each per litre
+                @T.Format(
+                    "concentrate.summary",
+                    plan.DilutionRatio.ToString("F0"),
+                    plan.MillilitresPerLiter.ToString("F1"))
             </summary>
 
             <div class="grid" style="margin-top:6px">
@@ -128,7 +132,7 @@
                     <div class="col-4" style="grid-column:span 6">
                         <div class="metric">
                             <div class="label">
-                                @Describe(tank)
+                                @Describe(T, tank)
                             </div>
                             @foreach (ConcentrateComponent part in tank.Components)
                             {
@@ -147,12 +151,16 @@
             @if (plan.MaxDilutionRatio is { } ceiling)
             {
                 <p class="card-note">
-                    Solubility allows up to 1:@ceiling.ToString("F0").
+                    @T.Format("concentrate.ceiling", ceiling.ToString("F0"))
                     @if (plan.UnknownSolubility.Count > 0)
                     {
+                        @* An entity, not a space: Razor drops literal whitespace between an expression
+                           and the block that follows, which ran the two sentences together. *@
+                        <text>&#32;</text>
                         <span>
-                            No published figure for @string.Join(", ", plan.UnknownSolubility.Distinct()), so
-                            that ceiling leaves them out and the real one may be lower.
+                            @T.Format(
+                                "concentrate.unknownSolubility",
+                                string.Join(", ", plan.UnknownSolubility.Distinct()))
                         </span>
                     }
                 </p>
@@ -163,7 +171,7 @@
                 <div class="notice @(warning.Kind == ConcentrateWarningKind.TankInferred ? "info" : "error")"
                      role="@(warning.Kind == ConcentrateWarningKind.TankInferred ? "status" : "alert")">
                     <Icon Kind="@(warning.Kind == ConcentrateWarningKind.TankInferred ? IconKind.Info : IconKind.Error)" />
-                    <span><strong>@Humanise(warning.Kind).</strong> @warning.Message</span>
+                    <span><strong>@T[$"concentrate.warn.{warning.Kind}"].</strong> @warning.Message</span>
                 </div>
             }
         </details>
@@ -227,21 +235,17 @@
         yield return ("N:P", r.NitrogenToPhosphorus);
     }
 
-    // Built as one string rather than interleaved markup: Razor inserts whitespace around a
-    // conditional block, which left a gap before the comma.
-    private static string Describe(ConcentrateTank tank)
-    {
-        string strength = $"Tank {tank.Tank} — {tank.TotalGramsPerLiter:F0} g/L";
-        return tank.SaturationFraction is { } saturation
-            ? $"{strength}, {saturation:P0} saturated"
-            : $"{strength}, saturation unknown";
-    }
-
-    private static string Humanise(ConcentrateWarningKind kind) => kind switch
-    {
-        ConcentrateWarningKind.PrecipitationRisk => "Will precipitate",
-        ConcentrateWarningKind.SolubilityExceeded => "Will not dissolve",
-        ConcentrateWarningKind.TankSaturated => "Tank saturated",
-        _ => "Tank inferred",
-    };
+    // One key per whole line rather than a stem plus an ending: "saturation unknown" is not a
+    // sentence a translator can append to a phrase that ends in a unit.
+    private static string Describe(Translations t, ConcentrateTank tank) =>
+        tank.SaturationFraction is { } saturation
+            ? t.Format(
+                "concentrate.tank.saturated",
+                tank.Tank.ToString(),
+                tank.TotalGramsPerLiter.ToString("F0"),
+                saturation.ToString("P0"))
+            : t.Format(
+                "concentrate.tank.unknown",
+                tank.Tank.ToString(),
+                tank.TotalGramsPerLiter.ToString("F0"));
 }
