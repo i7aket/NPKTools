@@ -1,9 +1,9 @@
 # Hydroponics glossary for the eight interface languages
 
 Date: 2026-08-03
-Status: **Dutch and Spanish checked against primary sources; Russian, Ukrainian and German written
-with confidence but unchecked; Polish and Turkish still to check.** Do not translate an entry that is
-still marked ⚠.
+Status: **Dutch, Spanish, Polish and Turkish checked against primary sources — the four I was least
+sure of. Russian, Ukrainian and German are written with confidence but have not been externally
+checked.** Two entries remain marked ⚠ and say why; everything else is quoted from a source.
 
 The interface is translated against this file rather than string by string, so one concept cannot
 become three different words in three places. Each entry says what the term *means*, not only what it
@@ -37,6 +37,21 @@ referir a estas especies como Alcalinidad."* So the word is right and the label 
 a grower cannot map the field to the paper in their hand. `alcalinidad` **is** idiomatic in Latin
 America, where Intagri titles articles with it, which the dual label also serves.
 
+**Polish answers the question this glossary was opened to settle, and then makes it moot.**
+`zasadowość` is the normative word: it is the title of the Polish national standard
+PN-EN ISO 9963 — *"Oznaczanie zasadowości"*, in mmol/l — and the headword in the Polish
+hydrogeological dictionary, which defines it as *"zdolność do zobojętniania silnych kwasów"*.
+`alkaliczność` is listed there only as a synonym and in practice belongs to marine and boiler-water
+engineering. So: **`zasadowość`, not `alkaliczność`.**
+
+And then the same thing happens as in the other three languages. A Polish laboratory selling water
+analysis to greenhouse growers prints *"Zawartość wodorowęglanów (HCO₃) wyrażona w miligramach na litr
+oraz milimolach na litr"* and no alkalinity line at all; Instytut Ogrodnictwa's own fertilizer
+recommendations contain neither word and work from HCO₃⁻ directly — *"Niekorzystny wpływ HCO₃⁻ zaczyna
+się, gdy jego zawartość w wodzie wynosi powyżej 60-90 mg/l"* — and professor Treder states the acid
+rule the same way: the bicarbonate figure is what the acid dose is computed from, leaving about
+43 mg/l. Four languages, four times the same answer: **name the ion, gloss the quantity.**
+
 Unit trap for anyone importing these reports: Dutch and Spanish figures arrive as mg/L HCO₃⁻ and must
 be divided by 61 to reach the mmol/L growers work in. Dunea's 174 mg/l is 2,85 mmol/l — a water that
 needs acid. mg/L CaCO₃ is US practice and appears in neither market's horticultural writing.
@@ -48,7 +63,7 @@ needs acid. mg/L CaCO₃ is US practice and appears in neither market's horticul
 | de | Alkalinität |
 | nl | bicarbonaat (HCO₃⁻) — *alkaliniteit* is understood but not what a report prints |
 | es | alcalinidad (bicarbonatos, HCO₃⁻) |
-| pl | alkaliczność ⚠ (also *zasadowość* — the more common word in water-treatment writing; prefer it if a reviewer confirms) |
+| pl | wodorowęglany (HCO₃⁻) — the quantity itself is `zasadowość`, **not** `alkaliczność` |
 | tr | alkalinite |
 
 **carbonate hardness (KH)** — alkalinity expressed in degrees, as a drop-test kit reports it. Nothing
@@ -61,8 +76,8 @@ to do with carbon, and not a kind of firmness.
 | de | Karbonathärte |
 | nl | carbonaathardheid (KH) ⚠ — aquarium register; professional writing says `tijdelijke hardheid` or names the ion |
 | es | dureza de carbonatos (KH) |
-| pl | twardość węglanowa |
-| tr | karbonat sertliği |
+| pl | twardość węglanowa (KH) |
+| tr | karbonat sertliği (KH) — textbook synonym `geçici sertlik` |
 
 **general hardness (GH)** — calcium and magnesium together, in degrees. The everyday sense of "hard
 water".
@@ -74,8 +89,8 @@ water".
 | de | Gesamthärte |
 | nl | totale hardheid |
 | es | dureza total |
-| pl | twardość ogólna |
-| tr | toplam sertlik |
+| pl | twardość ogólna (GH) |
+| tr | genel sertlik (GH) on kits, `toplam sertlik` in reports |
 
 **The unit a drop test prints is not the unit a water report prints, and they differ by 1,78×.**
 This matters more than the words. Spanish agronomic reports use French degrees — IFAPA: *"Se expresa
@@ -118,8 +133,8 @@ some meters. Two scales exist, 500 and 700, and they disagree about the same wat
 | de | Gesamtsalzgehalt (TDS) |
 | nl | totaal opgeloste stoffen (TDS) |
 | es | sólidos disueltos totales (TDS) |
-| pl | ogólna zawartość soli (TDS) ⚠ |
-| tr | toplam çözünmüş katı (TDS) ⚠ |
+| pl | TDS / `ogólna zawartość soli` — growers say TDS untranslated; agronomists say `zasolenie` |
+| tr | toplam çözünmüş madde (TDS) |
 
 **source water** — what comes out of the tap, well or rain barrel, before anything is added. Not
 "water supply" in the utility sense.
@@ -131,8 +146,8 @@ some meters. Two scales exist, 500 and 700, and they disagree about the same wat
 | de | Ausgangswasser |
 | nl | uitgangswater |
 | es | agua de riego |
-| pl | woda wyjściowa ⚠ |
-| tr | kaynak suyu |
+| pl | woda do nawadniania (przed dodaniem nawozów) |
+| tr | sulama suyu (gübre eklenmeden önce) |
 
 **Checked, and my own assumption was backwards.** I had guessed that the everyday phrase for
 irrigation water meant the water *after* mixing, and in both languages it does not.
@@ -154,6 +169,22 @@ and would not cover RO output at all.
 
 The mixed solution is `voedingsoplossing` and `solución nutritiva`, both already in this glossary, and
 `druppelwater` at the emitter. Those are the words that must never be used for the input.
+
+**Turkish agrees with both, and gives the cleanest disambiguation.** `Sulama suyu` is the water
+*before* fertilizer: the MEB soilless-growing module opens the recipe with *"Besin çözeltisi
+hazırlığında yapılması gereken ilk işlem sulama suyunun tahlil edilmesidir"* — the first thing to do is
+analyse the irrigation water — and later mixes the stock *into* it. `Besin çözeltisi` is the mixture.
+One ambiguity to design around: fertigation writing reuses the phrase family for the mix as `gübreli
+sulama suyu`, so where the two fields sit side by side, `Sulama suyu (ham su)` costs nothing.
+`Ham su` is the attested term for raw feed water.
+
+**Polish makes it three out of three, and `woda wyjściowa` was worse than merely unattested.**
+Treder, of Instytut Ogrodnictwa, writes that the contents of the irrigation water *"powinny być odjęte
+od wyjściowego składu pożywki"* — subtracted from the **starting composition of the recipe**. In Polish
+horticultural writing `wyjściowy` attaches to the recipe, not to the water, so `woda wyjściowa` would
+point a grower at the wrong one of the two things this app subtracts between. Use `woda do
+nawadniania`. `woda surowa` is defined relative to a treatment step and would be self-contradictory for
+RO permeate; `woda zasilająca` is boiler feed-water.
 
 **reverse osmosis** — water with essentially nothing dissolved in it. Growers shorten it to "osmosis"
 or "RO"; keep whichever is idiomatic.
@@ -179,8 +210,8 @@ that starves the plant of calcium while loading it with sodium.
 | de | enthärtetes Wasser (Ionenaustausch) |
 | nl | onthard water (ionenwisselaar, Na⁺) |
 | es | agua descalcificada (intercambio iónico sódico) — LatAm `agua suavizada` / `ablandada` |
-| pl | woda zmiękczona (wymiana jonowa) |
-| tr | yumuşatılmış su (iyon değişimi) |
+| pl | woda zmiękczona (z wymiennika sodowego) — not `woda miękka` |
+| tr | yumuşatılmış su (iyon değiştirici) — never `yumuşak su` |
 
 **Never label this one with the word for naturally soft water.** That collapse is not
 hypothetical: Dutch and Spanish consumer softener marketing routinely advertises softened water *as*
@@ -196,6 +227,19 @@ below 0,5 mmol/l in irrigation water, softening adds roughly 0,35 mmol/l of sodi
 at a Dutch tap hardness of 8 °dH the result is about 2,8 mmol/l — five times the limit. That is why the
 profile is separate, and it needs no vendor to say so.
 
+Turkish carries the distinction in a participle exactly as Dutch does — `yumuşatılmış` is
+"softened", `yumuşak` is "soft" — and Turkish consumer copy blurs them just as badly: one vendor's
+comparison table is headed `Yumuşak Su` while its own mineral row reads *"Düşük mineral, yüksek sodyum
+iyonları içerir"*. A Turkish water-treatment supplier states the mechanism better than any agronomic
+source could: *"sertlik iyonları tutulurken, sodyum iyonları suya katılır… suyun iyon dengesinde
+herhangi bir değişiklik olmaz"* — the hardness ions are held back, sodium goes in, and the water's ion
+balance does not change. That last clause is this profile's whole point, in a Turkish sentence.
+
+Polish carries it in a participle as well — `zmiękczona` against `miękka` — and Polish hydroponic
+writing defines `woda miękka` by low EC, which is exactly what softened water is not. The softener
+literature frames it the same way everywhere: calcium out, sodium in, and *"wysokie stężenie sodu
+utrudnia również wchłanianie innych składników mineralnych, w tym potasu"*.
+
 **cation surplus** — the gap between positive and negative charge in a water analysis. Not an error:
 it measures the bicarbonate nobody entered.
 
@@ -207,9 +251,18 @@ it measures the bicarbonate nobody entered.
 | nl | kationenoverschot |
 | es | exceso de cationes |
 | pl | nadmiar kationów |
-| tr | katyon fazlası ⚠ |
+| tr | katyon toplamının anyon toplamını aşan kısmı — no noun exists; `katyon–anyon farkı` if a label must be short |
 
 ## Nutrients and their forms
+
+**Turkish has no noun for this, and the near-miss is dangerous.** `katyon-anyon dengesi` is a real
+Turkish term — but for the ion-balance *check* a laboratory runs to validate an analysis, not for the
+residual. Worse, the ministry's own irrigation guidance defines `RSC`, *"artık karbonat miktarı"*, as
+`(CO₃ + HCO₃) − (Ca + Mg)`: the mirror image of what this app computes, close enough that a Turkish
+agronomist would read a bare noun as that. The ministry solves the naming problem the same way this
+glossary now does — with a descriptive phrase, `…toplamından fazla olan …konsantrasyonu`. Do not coin
+a noun here. If a short label is unavoidable, `katyon–anyon farkı`; the surplus suffix in this field is
+`-lık`, as in the attested `sodyum fazlalığı`, not `-ı`.
 
 **nutrient** — an element a plant takes up. In this app always an element, never a product.
 
@@ -247,7 +300,7 @@ Chloride and sodium in this app.
 | nl | tegenion |
 | es | contraión |
 | pl | przeciwjon |
-| tr | karşı iyon ⚠ |
+| tr | ⚠ unattested in agronomy — name the ions, or `yük dengeleyici iyon` |
 
 **nitrate nitrogen / ammonium nitrogen / amide nitrogen** — the three forms nitrogen arrives in. They
 behave differently at the root: ammonium acidifies, nitrate alkalises, and urea's amide nitrogen
@@ -261,7 +314,7 @@ carries no charge at all. Never collapse them into one word.
 | nl | nitraatstikstof / ammoniumstikstof / amidestikstof (ureum) |
 | es | nitrógeno nítrico / nitrógeno amoniacal / nitrógeno ureico |
 | pl | azot azotanowy / azot amonowy / azot amidowy |
-| tr | nitrat azotu / amonyum azotu / amid azotu ⚠ |
+| tr | nitrat azotu / amonyum azotu / **üre** azotu |
 
 **Checked; both stay distinct, and in Spanish by law.** Royal Decree 824/2005 requires nitrogen to
 be declared as *"nítrico, amoniacal, ureico y orgánico"*, so the three cannot merge on a Spanish
@@ -269,6 +322,21 @@ label — and note the fourth, `nitrógeno orgánico`, which anything parsing Sp
 Dutch attests all three, though the `-stikstof` vocabulary belongs to the arable world: greenhouse
 practice reads NO₃⁻ and NH₄⁺ in mmol/l off an analysis and rarely mentions urea, which is scarce in
 hydroponic recipes. `NO₃-N (nitraatstikstof)` reads to both audiences.
+
+**Turkish `amid azotu` was wrong, and the correction comes from label law.** The annex to the
+Turkish chemical-fertilizer regulation, decoded locally, contains `nitrat azotu` 49 times, `amonyak
+azotu` 29, `üre azotu` 30 — and **`amid azotu` zero times**; the only `amid` in it is the chemical name
+`disiyandiamid`. Ministry registration certificates for water-soluble NPK confirm it on the package
+text itself: *"Toplam N %:18 Amonyum N:7,6 Nitrat N:4,2 Üre N:6,2"*. So the third form is `üre azotu`,
+and all three are declared side by side, which is the strongest possible guarantee they stay distinct.
+`Amid` does have a legitimate Turkish use, but as an adjective for the fertilizer class — Toros Tarım
+on urea: *"azotun NH2 formunda olması nedeniyle amidli bir gübredir"*. Prefer `amonyum azotu` over the
+older `amonyak azotu` of the 2004 annex: it is chemically right and it is what current labels print.
+
+Polish keeps all three and puts them in four columns on the bag — Grupa Azoty's label table reads
+`Azot N ogółem | Azot N azotanowy | Azot N amonowy | Azot N amidowy` — so unlike Turkish, `amidowy`
+**is** the Polish label word. Watch the fourth column: `azot ogółem` is the total and must not merge
+with any of the three. Yara Poland's fertigation tables use `NO3-N`, `NH4-N`, `NH2-N`.
 
 **chelate / chelated** — a metal held by an organic molecule so it stays available. `EDTA`, `DTPA`,
 `EDDHA` and `HBED` are written as they are in every language. Nothing to do with shells.
@@ -292,7 +360,7 @@ hydroponic recipes. `NO₃-N (nitraatstikstof)` reads to both audiences.
 | de | nicht chelatiert |
 | nl | niet-gechelateerd |
 | es | no quelatado |
-| pl | niechelatowany ⚠ |
+| pl | nieschelatowany — with the **s** |
 | tr | şelatsız |
 
 ## Fertilizers and recipes
@@ -307,7 +375,7 @@ hydroponic recipes. `NO₃-N (nitraatstikstof)` reads to both audiences.
 | de | Düngesalz |
 | nl | enkelvoudige meststof |
 | es | sal fertilizante — **not** `abono simple`, see below |
-| pl | sól nawozowa ⚠ |
+| pl | nawóz pojedynczy |
 | tr | gübre tuzu |
 
 **`meststofzout` is deleted, not corrected: it does not exist.** Zero occurrences across the three
@@ -329,6 +397,19 @@ of Latin America `abono` means manure or compost.
 Product names worth carrying into the Dutch translation, because a grower recognises the trade name
 before the chemistry: KNO₃ is `Kalisalpeter`, Ca(NO₃)₂ is `Kalksalpeter`, MKP is `Monokaliumfosfaat`.
 
+**Polish repeats the Spanish legal trap exactly, in the same regulation.** EU 2019/1009 in Polish
+defines a `prosty` fertilizer as declaring *"tylko jednego makroskładnika pokarmowego"* — only one —
+so potassium nitrate, declaring N and K, is `wieloskładnikowy`. `nawóz jednoskładnikowy` would
+therefore be wrong for most of this app's shelf. The horticultural term of art is `nawóz pojedynczy`,
+and Instytut Ogrodnictwa uses it for exactly this set: *"Pożywki do fertygacji róż… możemy
+przygotowywać z nawozów pojedynczych lub wieloskładnikowych"*, with saletra potasowa named among them.
+`sól nawozowa` is intelligible but belongs to the planted-aquarium hobby. KNO₃ on a Polish sack is
+`saletra potasowa`; MKP is `fosforan jednopotasowy`.
+
+Polish spells non-chelated with an **s**: the verb is *schelatować*, so the participle is
+*schelatowany* and the negative is `nieschelatowany`, solid, as in ADOB's own chart caption *"w postaci
+nieschelatowanej (FeSO₄)"*. `niechelatowany` and the hyphenated forms produced no attestations.
+
 **target** — the nutrient profile in ppm that the recipe has to hit. Not a "goal" in the motivational
 sense.
 
@@ -341,6 +422,14 @@ sense.
 | es | perfil objetivo |
 | pl | profil docelowy |
 | tr | hedef profil |
+
+**One term I could not confirm at all, and am recording as such.** `karşı iyon` returns nothing
+from the Turkish Language Association's dictionaries, nothing from two downloaded Turkish theses that
+were grepped for it, and nothing from any ministry, MEGEP or agronomy document checked. Turkish
+ion-exchange writing says `karşı yük` — counter-*charge* — instead. The word may exist in Turkish
+colloid chemistry, but it has no currency in agronomy, and a grower in Antalya will not recognise it.
+The interface should name the ions and describe them rather than reach for a noun. This is the one
+entry in the file I would not ship without a Turkish agronomist reading it.
 
 **recipe** — one set of weights that reaches the target. The app produces several.
 
@@ -389,8 +478,14 @@ letters.
 | de | Konzentrat (Stammlösung), Behälter A und B |
 | nl | concentraat (stockoplossing), tanks A en B |
 | es | concentrado (solución madre), tanques A y B |
-| pl | koncentrat (roztwór zapasowy), zbiorniki A i B ⚠ |
+| pl | koncentrat, zbiornik A i zbiornik B — the diluted feed is `pożywka robocza` |
 | tr | konsantre (ana çözelti), tank A ve B |
+
+`roztwór zapasowy` is deleted for the same reason as `meststofzout`: zero attestations. Polish
+already carries the distinction this app needs — `koncentrat` for the strong solution against `pożywka
+robocza` for the diluted feed, from a nursery fertigation article that also gives the A/B split in the
+same terms this app uses: nitrates and iron chelate in `zbiornik A`, sulfates and phosphates in
+`zbiornik B`.
 
 **solubility** — how much of a salt dissolves in a litre before it stops dissolving.
 
@@ -502,9 +597,16 @@ Spanish word for the declared percentage is `riqueza`.
 | Language | State |
 |---|---|
 | ru, uk, de | written with confidence, not externally checked |
-| nl | **checked against primary sources**; three entries changed, one deleted as non-existent |
-| es | **checked against primary sources**; three entries were wrong and are corrected |
-| pl, tr | still to check — the ⚠ marks below stand |
+| nl | checked; three entries changed, one deleted as non-existent |
+| es | checked; three entries were wrong |
+| pl | checked; six entries changed, including the one this file was opened to settle |
+| tr | checked; four entries changed, one could not be attested at all |
+
+**Fourteen entries were wrong across the four languages, and only six of them carried a ⚠.** The marks
+were a fair record of where I felt uncertain and a poor predictor of where I was mistaken: `abono
+simple` and `nawóz jednoskładnikowy` both read as obviously right and are both legally wrong for
+potassium nitrate, while `alkaliczność`, which I flagged, was merely the less standard of two real
+words.
 
 **A note on method, because it changed the outcome twice.** Both reviews found that fetching a PDF and
 letting a summariser describe it *invented terms that were not in the document*: one reported
@@ -517,18 +619,50 @@ mistake can take here.
 
 ## What a reviewer should check first
 
-For **Polish and Turkish**, the entries marked ⚠, and then these four, because getting them wrong
-changes what a grower does:
+Two entries are still open, and both are honest gaps rather than pending work:
 
-1. **alkalinity** vs **hardness** — different quantities, and Polish especially has two competing words
-   for the first. Note what the Dutch and Spanish checks found: both languages name the ion,
-   bicarbonate, rather than the abstract quantity. Polish may do the same.
-2. **carbonate hardness** — must not drift towards "carbon" or "firmness", and the unit convention has
-   to be established separately for water reports and for drop-test kits, which disagree in Spain.
-3. **the three nitrogen forms** — collapsing them loses the pH behaviour that makes them worth showing.
-4. **softened water** — if this reads as a synonym for soft water, the whole reason the preset exists
-   disappears.
+- **`carbonaathardheid` / KH in Dutch** is real but belongs to the aquarium and pond register; no
+  professional horticultural or utility source uses KH or GH, and the trade press says `tijdelijke
+  hardheid` and `blijvende hardheid`. Keep KH/GH as the label a hobbyist arriving from aquarium tooling
+  will look for, and know it is not the professional word.
+- **`karşı iyon` in Turkish could not be attested at all** — nothing in the Turkish Language
+  Association's dictionaries, nothing in two theses grepped for it, nothing in any ministry or
+  ziraat-fakültesi document. Turkish ion-exchange writing says `karşı yük`, counter-*charge*. The
+  interface should name sodium and chloride and describe them. This is the one entry I would not ship
+  without a Turkish agronomist reading it.
 
-And one lesson that generalises: check whether a category word is a **legal** term before using it as a
-description. `abono simple` was the trap in Spanish; Polish and Turkish fertilizer labelling law will
-have its own.
+## Four patterns that held across every language checked
+
+Each was a surprise once and then stopped being one.
+
+1. **Nobody routes the acid dose through a word meaning "alkalinity".** Dutch, Spanish, Polish and
+   Turkish reports and horticultural writing all name the bicarbonate ion, in mmol/L or mg/L. The
+   abstract noun exists in all four and is correct in all four; it is simply not what a grower reads off
+   the paper in their hand. Label the field with the ion and gloss it with the quantity.
+2. **The everyday phrase for "irrigation water" means the water *before* fertilizer, not after.** I
+   assumed the opposite and was wrong in Spanish, Polish and Turkish alike. The mixed solution has its
+   own word everywhere — `voedingsoplossing`, `solución nutritiva`, `pożywka`, `besin çözeltisi` — and
+   those are the words that must never leak into the input field.
+3. **Check whether a category word is a legal term before using it as a description.** `abono simple`
+   and `nawóz jednoskładnikowy` are both defined by regulation as declaring a *single* macronutrient, so
+   both are wrong for potassium nitrate, which declares two. The same regulation, in two languages, in
+   both cases.
+4. **The oxide convention reaches further than P and K, and it is law rather than custom.** Spain,
+   Poland and Turkey all mandate the oxide form and all three extend it to calcium and magnesium —
+   CaO, MgO — with Turkey adding Na₂O and SO₃ and Poland publishing the conversion factors in the same
+   table as P and K. An app that warns about P₂O₅ and K₂O alone is warning about half of it.
+
+## Three things this changes in the app, not in this file
+
+1. **The ppm-meter factor.** Turkish irrigation literature converts with **×640** — the ministry's own
+   guidance states `ppm = mg/l = (EC mmhos/cm) x 640`. The interface offers 500 and 700 only, so a
+   Turkish grower comparing against their own report will find a mismatch it does not explain.
+2. **The hardness unit label per language.** Polish drop-test kits print German degrees but write them
+   **`°n`**; Spanish reports use French degrees while the kits sold in Spain are German and print °dH;
+   Flanders uses French degrees where the Netherlands uses °dH and mmol/l. The app asks for a drop-test
+   reading, so °dH is the right default everywhere — but the label must carry the unit in the form that
+   market prints, and confusing °dH with °fH is a factor of 1,78.
+3. **The oxide warning.** It names P₂O₅ and K₂O. Calcium and magnesium are declared as oxides on Spanish,
+   Polish and Turkish bags too, and a Turkish professor's own summary is the sentence worth borrowing:
+   *"Ambalaj üzerindekiler form değil sadece bir simgedir"* — what is on the packaging is a symbol, not
+   a form.
