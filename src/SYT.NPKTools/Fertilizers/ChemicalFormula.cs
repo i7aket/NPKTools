@@ -11,8 +11,10 @@ namespace SYT.NPKTools.Fertilizers;
 /// <para>
 /// Exists so a grower can describe a fertilizer the catalogue does not carry by writing what is on
 /// the bag rather than working out percentages by hand. Deriving them from the formula is both less
-/// work and less error-prone: fertilizer labels quote phosphorus and potassium as their oxides,
-/// P₂O₅ and K₂O, and a figure copied straight off a label overstates phosphorus by a factor of 2.3.
+/// work and less error-prone: fertilizer labels quote nutrients as their oxides, and a figure copied
+/// straight off a label overstates phosphorus by a factor of 2.3. It is not only P₂O₅ and K₂O — Spanish,
+/// Polish and Turkish labelling rules all extend the convention to calcium and magnesium, so a bag may
+/// declare CaO and MgO, and Turkish labels add Na₂O and SO₃.
 /// </para>
 /// <para>
 /// Nitrogen is reported by group as well as in total, because the library treats nitrate, ammonium

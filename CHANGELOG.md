@@ -50,6 +50,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
+- The oxide warning covers calcium and magnesium, not only phosphorus and potassium. Checking the
+  terminology for the eight languages turned up that the convention is law rather than custom and that
+  it reaches further than P₂O₅ and K₂O: Spanish, Polish and Turkish labelling rules all declare calcium
+  and magnesium as CaO and MgO, Turkish adds Na₂O and SO₃, and Poland publishes the conversion factors
+  in the same table as phosphorus and potassium. Divide CaO by 1.40, MgO by 1.66 and SO₃ by 2.5 — the
+  note now says so, because a warning about half of a trap reads as permission for the other half.
 - The acidification card now appears when the water has alkalinity to neutralise. It never did:
   Blazor does not re-render a child component whose parameters have not changed, and each panel takes
   one — a callback to the same method on the page, equal on every pass — so a panel redrew only when it
