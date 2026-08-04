@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using SYT.NPKTools.Calculator.Localisation;
 using SYT.NPKTools.Concentrates;
+using SYT.NPKTools.Fertilizers;
 using SYT.NPKTools.Nutrients;
 using Xunit;
 
@@ -240,6 +241,43 @@ public class TranslationsTests
 
         t.Plural("recipe.salts", 1).Should().Be("1 salt");
         t.Plural("recipe.salts", 6).Should().Be("6 salts");
+    }
+
+    /// <summary>
+    /// Every way a formula can be refused has words in the interface, and the offending text travels
+    /// with it.
+    /// </summary>
+    /// <remarks>
+    /// The parser reports a kind; the app writes the sentence. Walking the enum is what catches a kind
+    /// added to the library and not to the resource files — the alternative is a grower who has just
+    /// mistyped a formula being shown <c>salt.error.UnexpectedCharacter</c>.
+    /// </remarks>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void EveryFormulaProblemKind_HasWords()
+    {
+        Translations t = new();
+
+        foreach (FormulaProblemKind kind in Enum.GetValues<FormulaProblemKind>())
+        {
+            t[$"salt.error.{kind}"].Should().NotBe($"salt.error.{kind}");
+        }
+    }
+
+    /// <summary>
+    /// The character and its position both reach the sentence about them.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void From_CarriesTheCharacterAndItsPosition()
+    {
+        Translations t = new();
+        ChemicalFormula.TryParse("KNO3!", out _, out FormulaProblem? problem).Should().BeFalse();
+
+        SaltProblem described = SaltProblem.From(problem!);
+
+        described.Key.Should().Be("salt.error.UnexpectedCharacter");
+        t.Format(described.Key, [.. described.Values]).Should().Be("Unexpected '!' at position 5.");
     }
 
     /// <summary>

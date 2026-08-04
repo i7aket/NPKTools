@@ -83,16 +83,11 @@ else
     </div>
 </div>
 
-@*
-    Still English: this comes from the formula parser and from TryAddCustomSalt, which describe nine
-    different failures in prose written for developers. They need reason codes before the app can write
-    its own sentences — the same change the concentrate warnings need, and its own piece of work.
-*@
-@if (_error is not null)
+@if (_problem is { } problem)
 {
     <div class="notice error" role="alert">
         <Icon Kind="IconKind.Error" />
-        <span>@_error</span>
+        <span>@T.Format(problem.Key, [.. problem.Values])</span>
     </div>
 }
 
@@ -115,7 +110,7 @@ else
     private string _formula = string.Empty;
     private ConcentrateType _tank = ConcentrateType.A;
     private double? _solubility;
-    private string? _error;
+    private SaltProblem? _problem;
     private ChemicalFormula? _parsed;
     private readonly Dictionary<string, double> _percentages = new(StringComparer.Ordinal);
 
@@ -137,9 +132,9 @@ else
     private void OnFormulaChanged(ChangeEventArgs e)
     {
         _formula = e.Value?.ToString() ?? string.Empty;
-        _error = null;
+        _problem = null;
 
-        if (ChemicalFormula.TryParse(_formula, out ChemicalFormula? parsed, out string? error))
+        if (ChemicalFormula.TryParse(_formula, out ChemicalFormula? parsed, out FormulaProblem? problem))
         {
             _parsed = parsed;
             _tank = FormulaComposition.SuggestTank(parsed!);
@@ -147,7 +142,9 @@ else
         else
         {
             _parsed = null;
-            _error = string.IsNullOrWhiteSpace(_formula) ? null : error;
+
+            // An empty field is not a mistake yet, so it says nothing until there is something to read.
+            _problem = string.IsNullOrWhiteSpace(_formula) ? null : SaltProblem.From(problem!);
         }
     }
 
@@ -190,9 +187,9 @@ else
             }
         }
 
-        if (!Model.TryAddCustomSalt(salt, out string? error))
+        if (!Model.TryAddCustomSalt(salt, out SaltProblem? problem))
         {
-            _error = error;
+            _problem = problem;
             return;
         }
 
@@ -200,7 +197,7 @@ else
         _formula = string.Empty;
         _parsed = null;
         _percentages.Clear();
-        _error = null;
+        _problem = null;
 
         await Changed.InvokeAsync();
         await Cancelled.InvokeAsync();

@@ -18,7 +18,7 @@ public class CustomSaltTests
     {
         CustomSalt salt = new() { Name = "Shop KNO3", Formula = "KNO3", Tank = ConcentrateType.A };
 
-        salt.TryMaterialise(out Fertilizer? built, out string? error).Should().BeTrue(because: error);
+        salt.TryMaterialise(out Fertilizer? built, out SaltProblem? problem).Should().BeTrue(because: problem?.ToString());
 
         built!.Potassium.Value.Should().BeApproximately(38.672, 0.02);
     }
@@ -38,7 +38,7 @@ public class CustomSaltTests
             Percentages = { ["FeEdta"] = 13 },
         };
 
-        salt.TryMaterialise(out Fertilizer? built, out string? error).Should().BeTrue(because: error);
+        salt.TryMaterialise(out Fertilizer? built, out SaltProblem? problem).Should().BeTrue(because: problem?.ToString());
 
         built!.Iron.Value.Should().BeApproximately(13, 0.01);
         FertilizerBundleGenerator.IsMicro(built).Should().BeTrue();
@@ -54,10 +54,10 @@ public class CustomSaltTests
     {
         CustomSalt salt = new() { Name = "Empty", Tank = ConcentrateType.A };
 
-        salt.TryMaterialise(out Fertilizer? built, out string? error).Should().BeFalse();
+        salt.TryMaterialise(out Fertilizer? built, out SaltProblem? problem).Should().BeFalse();
 
         built.Should().BeNull();
-        error.Should().NotBeNullOrWhiteSpace();
+        problem.Should().NotBeNull();
     }
 
     /// <summary>
@@ -74,8 +74,9 @@ public class CustomSaltTests
             Percentages = { ["K"] = 70, ["Ca"] = 45 },
         };
 
-        salt.TryMaterialise(out _, out string? error).Should().BeFalse();
-        error.Should().Contain("100");
+        salt.TryMaterialise(out _, out SaltProblem? problem).Should().BeFalse();
+        problem!.Key.Should().Be("salt.error.percentagesOver100");
+        problem.Values.Should().Equal("115.0");
     }
 
     /// <summary>
@@ -108,7 +109,8 @@ public class CustomSaltTests
     {
         CustomSalt salt = new() { Name = "Odd", Percentages = { ["Unobtainium"] = 5 } };
 
-        salt.TryMaterialise(out _, out string? error).Should().BeFalse();
-        error.Should().Contain("Unobtainium");
+        salt.TryMaterialise(out _, out SaltProblem? problem).Should().BeFalse();
+        problem!.Key.Should().Be("salt.error.unknownForm");
+        problem.Values.Should().Equal("Unobtainium");
     }
 }

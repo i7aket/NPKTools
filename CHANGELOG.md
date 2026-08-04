@@ -38,6 +38,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   collapsed, and is still what links and files carry — so a typo in it no longer destroys the target.
 - Links carry the water and acid settings. Existing links keep working.
 
+- **Breaking, `SYT.NPKTools`.** `ChemicalFormula.TryParse` and `FormulaComposition.TryCreate` report a
+  `FormulaProblem` rather than a `string`: which failure it is, the offending character or symbol, and
+  where it is. The English prose is still there as `FormulaProblem.Message`, for a developer reading a
+  log. An application showing a refused formula to the person who typed it cannot write a sentence in
+  their language from prose, and that notice reaches somebody who has just made a mistake.
+
 ### Fixed
 
 - The acidification card now appears when the water has alkalinity to neutralise. It never did:

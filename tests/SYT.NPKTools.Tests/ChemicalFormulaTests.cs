@@ -16,8 +16,8 @@ public class ChemicalFormulaTests
 {
     private static ChemicalFormula Parse(string text)
     {
-        ChemicalFormula.TryParse(text, out ChemicalFormula? formula, out string? error)
-            .Should().BeTrue(because: error);
+        ChemicalFormula.TryParse(text, out ChemicalFormula? formula, out FormulaProblem? problem)
+            .Should().BeTrue(because: problem?.ToString());
         return formula!;
     }
 
@@ -157,11 +157,11 @@ public class ChemicalFormulaTests
     [Trait("Category", "Unit")]
     public void TryParse_ForNonsense_FailsWithAMessage(string text)
     {
-        bool parsed = ChemicalFormula.TryParse(text, out ChemicalFormula? formula, out string? error);
+        bool parsed = ChemicalFormula.TryParse(text, out ChemicalFormula? formula, out FormulaProblem? problem);
 
         parsed.Should().BeFalse();
         formula.Should().BeNull();
-        error.Should().NotBeNullOrWhiteSpace();
+        problem.Should().NotBeNull();
     }
 
     /// <summary>
