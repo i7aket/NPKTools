@@ -22,11 +22,15 @@
     The browser calculator under web/. Not shipped as a package — it is the reference application that
     demonstrates the library runs client-side.
 
-    Held at 10.0.0 rather than the newest patch, which is not laziness: Blazor 10.0.10 requires
-    Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.10, and transitive pinning would then
-    force that package up from the 10.0.0 declared above. That 10.0.0 is a deliberate floor for the
-    shipped DI add-on, so the app yields rather than the library's contract moving. Raise both together
-    if the app ever needs a newer Blazor.
+    The two versions differ on purpose. The runtime package is held at 10.0.0, which is not laziness:
+    Blazor 10.0.10 requires Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.10, and
+    transitive pinning would then force that package up from the 10.0.0 declared above. That 10.0.0 is a
+    deliberate floor for the shipped DI add-on, so the app yields rather than the library's contract
+    moving. Raising it alone fails restore with NU1109; raise both together if the app ever needs a
+    newer Blazor.
+
+    The dev server is free to follow the newest patch. It is a `dotnet run` host for local work, never
+    referenced by anything shipped, and it does not reach the library's dependency graph.
   -->
   <ItemGroup Label="Web">
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
