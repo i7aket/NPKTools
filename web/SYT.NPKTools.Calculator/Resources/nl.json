@@ -58,7 +58,7 @@
   "salt.form.molarMass": "M = {0} g/mol — {1}",
   "salt.form.chelate.lead": "This looks like a chelate.",
   "salt.form.chelate.body": "A chelating agent carries nitrogen that holds the metal rather than feeding the plant, and a formula cannot tell the two apart — entered this way the salt would offer nitrogen it does not have. Describe it by percentages instead, where the agent is named.",
-  "salt.form.percentages.note": "Percentages by weight, as on the label — but as elements, not oxides. A bag quoting P₂O₅ or K₂O needs converting first: divide by 2.29 for phosphorus, by 1.20 for potassium.",
+  "salt.form.percentages.note": "Percentages by weight, as on the label — but as elements, not oxides. Labels quote oxides, and not only for phosphorus and potassium: divide P₂O₅ by 2.29, K₂O by 1.20, CaO by 1.40, MgO by 1.66 and SO₃ by 2.5 before entering them.",
   "salt.error.Empty": "The formula is empty.",
   "salt.error.StartsWithNumber": "A formula cannot start with a number.",
   "salt.error.NoElements": "The formula names no elements.",
