@@ -85,7 +85,7 @@
   "acid.waterPh": "Water pH",
   "acid.targetPh": "Target pH",
   "acid.metric.volume": "Acid",
-  "acid.metric.strength": "Strength",
+  "acid.metric.strength": "Neutralised",
   "acid.metric.adds": "Adds {0}",
   "acid.overshoot.lead": "This acid overshoots the {0} target on its own.",
   "acid.overshoot.detail": "{0} ppm against a target of {1}. Fertilizer only adds, so no recipe can bring it back down.",

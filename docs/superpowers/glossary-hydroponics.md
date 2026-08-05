@@ -553,18 +553,25 @@ is often quoted as P₂O₅.
 Element symbols and chemical formulas are **never translated**: `N`, `P`, `K`, `Ca`, `Ca(NO₃)₂·4H₂O`
 are written identically in all eight markets.
 
-| Unit | ru | uk | de | nl | es | pl | tr |
-|---|---|---|---|---|---|---|---|
-| mS/cm | мС/см | мС/см | mS/cm | mS/cm | mS/cm | mS/cm | mS/cm |
-| µS/cm | мкСм/см | мкСм/см | µS/cm | µS/cm | µS/cm | µS/cm | µS/cm |
-| meq/L | мэкв/л | мекв/л | meq/L | meq/L | meq/L | meq/L | meq/L |
-| ppm | ppm | ppm | ppm | ppm | ppm | ppm | ppm |
-| g/L | г/л | г/л | g/L | g/L | g/L | g/L | g/L |
-| litre | л | л | L | L | L | L | L |
-| °dH / °dKH | °dH / °dKH | °dH / °dKH | °dH / °dKH | °dH / °dKH | °dH / °dKH | °dH / °dKH | °dH / °dKH |
+**Units are shown in Latin in all eight languages, and that is a deliberate limitation rather than a
+claim about language.** The app prints them from the markup — `<span class="unit">µS/cm</span>` — not
+from these resource files, so they are the same string everywhere.
 
-Russian and Ukrainian localise unit abbreviations; the other five keep the Latin forms, which is what
-their own agronomic writing does.
+For five of the languages that is also what their own agronomic writing does. For **Russian and
+Ukrainian it is not**: those markets write `мСм/см`, `мкСм/см`, `мэкв/л` / `мекв/л`, `г/л`, `л`. Both
+translators noticed the mismatch and left the Latin forms alone rather than putting `мэкв/л` beside
+`meq/L` in the same panel, which is what localising only the resource file would have produced. That
+was the right call, and it leaves a real gap rather than a solved problem.
+
+If Cyrillic units are wanted, it is a change to the components and not to a translation: about eight
+unit strings move out of the markup into keys, and the layout has to be re-measured, because `мкСм/см`
+is wider than `µS/cm` in a metric tile that is already tight. Recorded here so the decision gets made
+rather than inherited.
+
+The hardness unit is the exception that already lives in a key, because it differs by market rather than
+by language: `°dH` everywhere except Polish, whose kits print German degrees as `°n`.
+
+An earlier version of this section gave `мС/см`. That was wrong: `См` is siemens, `С` alone is coulomb.
 
 ## The oxide trap, for every translator
 
