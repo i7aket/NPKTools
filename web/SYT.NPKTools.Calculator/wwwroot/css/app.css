@@ -427,6 +427,13 @@ tfoot td:first-child { text-align: left; font-family: var(--font-ui); }
 
 .metric .label { font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; }
 
+/*
+  A concentrate tank's caption is a line of prose — "Tank A — 118 g/L, 14 % saturated" — not a caption
+  like the ones beside it, and at phone widths it was 175px of text in a 133px box, spilling out of the
+  card. Nowrap earns its place on the short ones; here it has to give way.
+*/
+.metric.tank .label { white-space: normal; }
+
 .metric .value {
   font-family: var(--font-data);
   font-size: var(--text-lg);
