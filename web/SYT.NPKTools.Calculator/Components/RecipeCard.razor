@@ -130,7 +130,7 @@
                 @foreach (ConcentrateTank tank in plan.Tanks.Where(t => !t.IsEmpty))
                 {
                     <div class="col-4" style="grid-column:span 6">
-                        <div class="metric">
+                        <div class="metric tank">
                             <div class="label">
                                 @Describe(T, tank)
                             </div>
