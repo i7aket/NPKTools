@@ -17,6 +17,10 @@ the browser under WebAssembly.
 dotnet add package SYT.NPKTools
 ```
 
+**Documentation:** [worked examples](docs/examples.md) (every one of them a test) ·
+[API reference](docs/api-reference.md) · [architecture](docs/architecture.md) ·
+[FAQ](docs/faq.md) · [contributing](CONTRIBUTING.md)
+
 > **This is `1.0.0-preview.3`.** It supersedes the `NPKTools.*` packages, which are no longer
 > updated. If you are coming from those, see [Migrating from NPKTools 1.x](#migrating-from-npktools-1x).
 

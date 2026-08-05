@@ -87,10 +87,11 @@ Three consequences worth knowing before changing anything here:
 
 - **Coverage is reported, not enforced.** `UncoveredElements` names what nothing on the shelf supplies,
   and it is shown when no recipe was found — but it is advisory. No filter disqualifies a bundle for
-  missing an element, and a two-salt shelf does solve a target whose other elements are zero. What makes
-  a small shelf fail is that `RangeFactor` defaults to 1, which turns every non-zero element into an
-  exact equality: the mix is over-constrained rather than disqualified. Loosen the range factor and
-  shelves that "cannot" solve begin to.
+  missing an element, and a two-salt shelf does solve a target that does not mention the others. What makes
+  a small shelf fail is that `RangeFactor` defaults to 1 — the tightest it goes — which turns every element
+  the target names into an exact equality: the mix is over-constrained rather than disqualified. *Lower* the
+  factor and shelves that "cannot" solve begin to. An element the target never mentions is unconstrained;
+  one you set to zero is pinned to zero.
 - **Bundles are not combinations.** The generator takes the whole shelf, then the shelf minus each salt in
   turn, capped by `MaxBundles`. That is `n + 1` linear programs for `n` salts, not `2ⁿ` — which is why the
   search is fast enough to run on every edit, and why it is not exhaustive.
