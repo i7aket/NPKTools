@@ -32,6 +32,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   English text for now; the words come next. No ICU — the app is still built with
   `InvariantGlobalization=true`.
 
+- **The interface speaks eight languages.** English, Russian, Ukrainian, Dutch, German, Spanish, Polish
+  and Turkish, translated against a glossary that was checked term by term against primary sources —
+  extension services, fertilizer registration certificates, national standards and labelling law — rather
+  than word by word. Plural forms follow each language's own rules, so a Polish grower reads
+  "21 przepisów" and not "21 przepis". Units stay Latin in all eight, which is a limitation the glossary
+  records rather than a claim: Russian and Ukrainian markets write мкСм/см, and moving units out of the
+  markup is a separate change.
+
 ### Changed
 
 - The target is entered as a table, with macro and micro in separate cards. The string format is kept,
@@ -50,6 +58,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
+- Changing the language now redraws the page, not just the header. Blazor skips a child component whose
+  parameters have not changed, and a language change is not a parameter — the same mechanism that had
+  kept the acidification card invisible. Every panel now listens for it. Found by measuring the rendered
+  text in each language and noticing that all eight came out the same length.
+- `acid.metric.strength` was called "Strength" and shows milliequivalents per litre, which is the
+  alkalinity the dose neutralises rather than how strong the acid is. Three translators independently
+  stumbled on it and picked three different wrong words; it is "Neutralised" now, in all eight languages.
 - The oxide warning covers calcium and magnesium, not only phosphorus and potassium. Checking the
   terminology for the eight languages turned up that the convention is law rather than custom and that
   it reaches further than P₂O₅ and K₂O: Spanish, Polish and Turkish labelling rules all declare calcium

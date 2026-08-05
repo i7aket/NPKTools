@@ -1,4 +1,5 @@
 @inject Translations T
+@implements IDisposable
 
 @*
     One recipe: what to weigh, what it produces, and how to store it.
@@ -180,6 +181,14 @@
 </article>
 
 @code {
+    // Redrawn when the language changes. Its parameters do not change then, and Blazor skips a child
+    // whose parameters have not changed, so without this it would keep the words it was built with.
+    protected override void OnInitialized() => T.Changed += Redraw;
+
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => T.Changed -= Redraw;
+
     [Parameter, EditorRequired]
     public required RecipeView Recipe { get; set; }
 

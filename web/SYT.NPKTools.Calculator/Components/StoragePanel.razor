@@ -74,7 +74,11 @@
     [Parameter]
     public EventCallback Changed { get; set; }
 
-    protected override void OnInitialized() => Model.Changed += Redraw;
+    protected override void OnInitialized()
+    {
+        Model.Changed += Redraw;
+        T.Changed += Redraw;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -246,6 +250,7 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
         Model.Changed -= Redraw;
+        T.Changed -= Redraw;
 
         if (_module is not null)
         {

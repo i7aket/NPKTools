@@ -1,6 +1,7 @@
 @page "/"
 @inject CalculatorModel Model
 @inject Translations T
+@implements IDisposable
 
 <PageTitle>@T["page.title"]</PageTitle>
 
@@ -115,7 +116,18 @@
                 Model.Target!.Liters.Value.ToString("F0", System.Globalization.CultureInfo.InvariantCulture),
                 StringComparison.Ordinal);
 
-    protected override void OnInitialized() => Model.Recalculate();
+    protected override void OnInitialized()
+    {
+        Model.Recalculate();
+
+        // The page's own markup is full of keys, and a language change is not a parameter change, so
+        // nothing would otherwise ask it to draw them again.
+        T.Changed += Redraw;
+    }
+
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => T.Changed -= Redraw;
 
     // Every edit recalculates and then persists, so the link in the address bar and the copy this
     // browser remembers are never a step behind what is on screen.

@@ -1,5 +1,6 @@
 @inject CalculatorModel Model
 @inject Translations T
+@implements IDisposable
 
 @*
     Two ways in. The formula tab covers plain salts and works out the percentages, which also avoids
@@ -97,6 +98,14 @@ else
 </div>
 
 @code {
+    // Redrawn when the language changes. Its parameters do not change then, and Blazor skips a child
+    // whose parameters have not changed, so without this it would keep the words it was built with.
+    protected override void OnInitialized() => T.Changed += Redraw;
+
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => T.Changed -= Redraw;
+
     /// <summary>Raised after a salt is added, so the page can recalculate and persist.</summary>
     [Parameter]
     public EventCallback Changed { get; set; }
